@@ -1,0 +1,11 @@
+<resources>
+    <dimen name="screen_padding_horizontal">20dp</dimen>
+    <dimen name="screen_padding_vertical">20dp</dimen>
+    <dimen name="drawer_width">300dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_lg">20dp</dimen>
+    <dimen name="text_title">26sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+    <dimen name="menu_button_size">48dp</dimen>
+</resources>

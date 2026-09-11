@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navigationDrawer"
+    android:layout_width="@dimen/drawer_width"
+    android:layout_height="match_parent"
+    android:layout_gravity="end"
+    android:background="@color/ui_surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding_horizontal">
+
+        <TextView
+            style="@style/UiScreenTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_lg"
+            android:text="@string/app_name"
+            android:textStyle="bold" />
+
+        <TextView android:id="@+id/navApps" style="@style/UiDrawerItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/nav_apps" />
+        <TextView android:id="@+id/navCategories" style="@style/UiDrawerItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/nav_categories" />
+        <TextView android:id="@+id/navFavorites" style="@style/UiDrawerItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/nav_favorites" />
+        <TextView android:id="@+id/navShortcuts" style="@style/UiDrawerItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/nav_shortcuts" />
+        <TextView android:id="@+id/navSettings" style="@style/UiDrawerItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/nav_settings" />
+        <TextView android:id="@+id/navHelp" style="@style/UiDrawerItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/nav_help" />
+        <TextView android:id="@+id/navAbout" style="@style/UiDrawerItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/nav_about" />
+
+    </LinearLayout>
+</ScrollView>
