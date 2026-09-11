@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">ShortcutLauncher</string>
+    <string name="action_open_menu">Menü öffnen</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_categories">Kategorien</string>
+    <string name="nav_favorites">Favoriten</string>
+    <string name="nav_shortcuts">Shortcuts</string>
+    <string name="nav_settings">Einstellungen</string>
+    <string name="nav_help">Hilfe</string>
+    <string name="nav_about">Über</string>
+    <string name="home_title">Apps</string>
+    <string name="home_empty">Installierte Apps werden hier angezeigt.</string>
+</resources>
