@@ -1,5 +1,21 @@
 plugins { id("com.android.application") }
 
+val releaseStoreFile =
+    providers.environmentVariable("SHORTCUTLAUNCHER_KEYSTORE_PATH").orNull
+val releaseStorePassword =
+    providers.environmentVariable("SHORTCUTLAUNCHER_KEYSTORE_PASSWORD").orNull
+val releaseKeyAlias =
+    providers.environmentVariable("SHORTCUTLAUNCHER_KEY_ALIAS").orNull
+val releaseKeyPassword =
+    providers.environmentVariable("SHORTCUTLAUNCHER_KEY_PASSWORD").orNull
+
+val releaseSigningConfigured = listOf(
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "de.pritcloud.shortcutlauncher"
     compileSdk = 35
@@ -13,18 +29,48 @@ android {
         applicationId = "de.pritcloud.shortcutlauncher"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        versionCode =
+            providers.environmentVariable("SHORTCUTLAUNCHER_VERSION_CODE")
+                .orNull?.toIntOrNull() ?: 1
         versionName = "0.1.0"
+    }
+
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            create("release") {
+                storeFile = file(requireNotNull(releaseStoreFile))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+                enableV4Signing = true
+            }
+        }
     }
 
     buildTypes {
         debug {
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
+
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
+
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }
