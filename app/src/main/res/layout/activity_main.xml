@@ -28,8 +28,8 @@
 
             <TextView
                 android:id="@+id/buttonOpenMenu"
-                android:layout_width="@dimen/menu_button_size"
-                android:layout_height="@dimen/menu_button_size"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
                 android:gravity="center"
                 android:text="☰"
                 android:textColor="@color/ui_text_primary"
