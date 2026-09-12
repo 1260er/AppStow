@@ -36,6 +36,16 @@
                 android:src="@drawable/ic_menu" />
         </LinearLayout>
 
+        <EditText
+            android:id="@+id/appSearch"
+            style="@style/UiSearchInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:hint="@string/search_apps_hint"
+            android:inputType="text"
+            android:visibility="gone" />
+
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"

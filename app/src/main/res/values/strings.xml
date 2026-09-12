@@ -10,4 +10,5 @@
     <string name="nav_about">Über</string>
     <string name="home_title">Apps</string>
     <string name="home_empty">Installierte Apps werden hier angezeigt.</string>
+    <string name="search_apps_hint">Apps durchsuchen</string>
 </resources>
