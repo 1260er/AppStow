@@ -3,7 +3,7 @@
     <color name="ui_surface">#FF17171F</color>
     <color name="ui_text_primary">#FFFFFFFF</color>
     <color name="ui_text_secondary">#FFAAAAAA</color>
-    <color name="ui_accent">#FFE91E63</color>
+    <color name="ui_accent">#FF9A9AA3</color>
     <color name="search_input_background">#FF23232C</color>
     <color name="search_border">#FF5E5E68</color>
     <color name="search_border_focused">#FF9A9AA3</color>
