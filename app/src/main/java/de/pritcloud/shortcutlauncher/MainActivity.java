@@ -233,9 +233,9 @@ public class MainActivity extends Activity {
                 showCategoryManagement());
 
         bindMenu(
-                R.id.navSettings,
-                "Einstellungen",
-                "Einstellungen des ShortcutLaunchers.");
+                R.id.navShortcuts,
+                "Eigene Shortcuts verwalten",
+                "Hier verwaltest du deine eigenen Shortcuts.");
 
         bindMenu(
                 R.id.navHelp,

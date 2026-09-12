@@ -44,11 +44,11 @@
             android:text="@string/nav_categories" />
 
         <TextView
-            android:id="@+id/navSettings"
+            android:id="@+id/navShortcuts"
             style="@style/UiDrawerItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/nav_settings" />
+            android:text="@string/nav_shortcuts_manage" />
 
         <Space
             android:layout_width="match_parent"
