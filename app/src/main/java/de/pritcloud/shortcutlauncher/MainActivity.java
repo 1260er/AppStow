@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
     private EditText appSearch;
     private View appSearchContainer;
     private ImageButton appSearchClear;
-    private TextView overviewSortButton;
+    private ImageButton overviewSortButton;
 
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
@@ -517,9 +517,53 @@ public class MainActivity extends Activity {
         drawerLayout.closeDrawer(Gravity.END);
     }
 
-    private void refreshCategories() {
+    private List<CategoryEntry> getCategoriesInOverviewOrder() {
         List<CategoryEntry> categories =
                 categoryStore.getCategories();
+
+        List<String> savedOrder =
+                overviewOrderStore.getOrder();
+
+        if (savedOrder.isEmpty()) {
+            return categories;
+        }
+
+        Map<String, CategoryEntry> remaining =
+                new HashMap<>();
+
+        for (CategoryEntry category : categories) {
+            remaining.put(
+                    "category:" + category.id,
+                    category);
+        }
+
+        List<CategoryEntry> ordered =
+                new ArrayList<>();
+
+        for (String sectionId : savedOrder) {
+            CategoryEntry category =
+                    remaining.remove(sectionId);
+
+            if (category != null) {
+                ordered.add(category);
+            }
+        }
+
+        for (CategoryEntry category : categories) {
+            String sectionId =
+                    "category:" + category.id;
+
+            if (remaining.remove(sectionId) != null) {
+                ordered.add(category);
+            }
+        }
+
+        return ordered;
+    }
+
+    private void refreshCategories() {
+        List<CategoryEntry> categories =
+                getCategoriesInOverviewOrder();
 
         categoryAdapter.setCategories(categories);
 

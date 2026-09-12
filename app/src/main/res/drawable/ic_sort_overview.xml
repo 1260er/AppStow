@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp"
+    android:height="28dp"
+    android:viewportWidth="28"
+    android:viewportHeight="28">
+
+    <!-- A -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/ui_text_primary"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.8"
+        android:pathData="M2.5,7 L4.5,2.5 L6.5,7 M3.3,5.3 L5.7,5.3" />
+
+    <!-- Pfeil nach unten -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/ui_text_primary"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.8"
+        android:pathData="M4.5,9 L4.5,17 M2,14.5 L4.5,17 L7,14.5" />
+
+    <!-- Z -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/ui_text_primary"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.8"
+        android:pathData="M2.5,20.5 L6.5,20.5 L2.5,25.5 L6.5,25.5" />
+
+    <!-- absteigende Sortierlinien -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/ui_text_primary"
+        android:strokeLineCap="round"
+        android:strokeWidth="1.8"
+        android:pathData="M10,4 L26,4 M10,9 L23,9 M10,14 L20,14 M10,19 L17,19 M10,24 L14,24" />
+
+</vector>

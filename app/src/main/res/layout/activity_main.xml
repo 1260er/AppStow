@@ -26,19 +26,14 @@
                 android:text="@string/home_title"
                 android:textStyle="bold" />
 
-            <TextView
+            <ImageButton
                 android:id="@+id/buttonSortOverview"
                 android:layout_width="@dimen/icon_button_size"
                 android:layout_height="@dimen/icon_button_size"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
                 android:contentDescription="@string/action_sort_overview"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="@string/overview_sort_label"
-                android:textColor="@color/ui_text_primary"
-                android:textSize="12sp"
-                android:textStyle="bold"
+                android:padding="10dp"
+                android:src="@drawable/ic_sort_overview"
                 android:visibility="gone" />
 
             <ImageButton
