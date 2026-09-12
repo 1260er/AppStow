@@ -136,6 +136,7 @@ public class MainActivity extends Activity {
         appAdapter = new AppAdapter(
                 getPackageManager(),
                 favoritesStore,
+                categoryStore,
                 this::launchApp,
                 this::handleAppLongClick);
 
@@ -160,6 +161,7 @@ public class MainActivity extends Activity {
                         overviewSections,
                         getPackageManager(),
                         favoritesStore,
+                        categoryStore,
                         this::launchApp,
                         this::handleAppLongClick);
 
@@ -265,7 +267,7 @@ public class MainActivity extends Activity {
                         : View.GONE);
 
         renderApps(appSearch.getText().toString());
-        appList.post(appAdapter::refreshFavoriteStates);
+        appList.post(appAdapter::refreshAppRows);
 
         drawerLayout.closeDrawer(Gravity.END);
     }
@@ -570,7 +572,71 @@ public class MainActivity extends Activity {
     }
 
     private void handleAppLongClick(AppEntry app) {
-        // Kategoriezuweisung wird im Kategorie-Schritt ergänzt.
+        List<CategoryEntry> categories =
+                categoryStore.getCategories();
+
+        if (categories.isEmpty()) {
+            Toast.makeText(
+                    this,
+                    R.string.category_assign_none,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        CharSequence[] names =
+                new CharSequence[categories.size()];
+
+        boolean[] checked =
+                new boolean[categories.size()];
+
+        Set<String> assignedIds =
+                categoryStore.getAssignedCategoryIds(
+                        app.packageName);
+
+        Set<String> selectedIds =
+                new HashSet<>(assignedIds);
+
+        for (int i = 0; i < categories.size(); i++) {
+            CategoryEntry category =
+                    categories.get(i);
+
+            names[i] = category.name;
+            checked[i] =
+                    assignedIds.contains(category.id);
+        }
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.category_assign_title)
+                        .setMultiChoiceItems(
+                                names,
+                                checked,
+                                (currentDialog, which, isChecked) -> {
+                                    String categoryId =
+                                            categories.get(which).id;
+
+                                    if (isChecked) {
+                                        selectedIds.add(categoryId);
+                                    } else {
+                                        selectedIds.remove(categoryId);
+                                    }
+                                })
+                        .setPositiveButton(
+                                R.string.action_save,
+                                (currentDialog, which) -> {
+                                    categoryStore.setAssignedCategoryIds(
+                                            app.packageName,
+                                            selectedIds);
+
+                                    appAdapter.refreshAppRows();
+                                    overviewAdapter.refreshAppRows();
+                                })
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .show();
+
+        styleCategoryDialog(dialog, false);
     }
 
     private void launchApp(AppEntry app) {

@@ -31,4 +31,6 @@
     <string name="category_invalid_name">Bitte einen eindeutigen Kategorienamen eingeben.</string>
     <string name="action_save">Speichern</string>
     <string name="action_cancel">Abbrechen</string>
+    <string name="category_assign_title">Kategorien zuweisen</string>
+    <string name="category_assign_none">Noch keine Kategorien vorhanden. Lege zuerst unter „Kategorien verwalten“ eine Kategorie an.</string>
 </resources>

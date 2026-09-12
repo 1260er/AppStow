@@ -35,6 +35,7 @@ final class OverviewAdapter
 
     private final PackageManager packageManager;
     private final FavoritesStore favoritesStore;
+    private final CategoryStore categoryStore;
     private final OnAppClickListener clickListener;
     private final OnAppLongClickListener longClickListener;
 
@@ -42,12 +43,14 @@ final class OverviewAdapter
             List<OverviewSection> sections,
             PackageManager packageManager,
             FavoritesStore favoritesStore,
+            CategoryStore categoryStore,
             OnAppClickListener clickListener,
             OnAppLongClickListener longClickListener) {
 
         this.sections = sections;
         this.packageManager = packageManager;
         this.favoritesStore = favoritesStore;
+        this.categoryStore = categoryStore;
         this.clickListener = clickListener;
         this.longClickListener = longClickListener;
 
@@ -179,8 +182,16 @@ final class OverviewAdapter
                 app.resolveInfo.loadIcon(packageManager));
 
         holder.name.setText(app.label);
-        holder.categories.setText("");
-        holder.categories.setVisibility(View.INVISIBLE);
+
+        String categoryLabel =
+                categoryStore.getAssignedCategoryLabel(
+                        app.packageName);
+
+        holder.categories.setText(categoryLabel);
+        holder.categories.setVisibility(
+                categoryLabel.isEmpty()
+                        ? View.INVISIBLE
+                        : View.VISIBLE);
 
         holder.favorite.setImageResource(
                 R.drawable.ic_star_filled);
@@ -210,6 +221,10 @@ final class OverviewAdapter
             longClickListener.onAppLongClick(app);
             return true;
         });
+    }
+
+    void refreshAppRows() {
+        notifyDataSetChanged();
     }
 
     @Override

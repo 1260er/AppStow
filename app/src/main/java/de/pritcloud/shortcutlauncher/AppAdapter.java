@@ -26,12 +26,14 @@ public class AppAdapter
 
     private final PackageManager packageManager;
     private final FavoritesStore favoritesStore;
+    private final CategoryStore categoryStore;
     private final OnAppClickListener clickListener;
     private final OnAppLongClickListener longClickListener;
 
     AppAdapter(
             PackageManager packageManager,
             FavoritesStore favoritesStore,
+            CategoryStore categoryStore,
             OnAppClickListener clickListener,
             OnAppLongClickListener longClickListener) {
 
@@ -39,6 +41,7 @@ public class AppAdapter
 
         this.packageManager = packageManager;
         this.favoritesStore = favoritesStore;
+        this.categoryStore = categoryStore;
         this.clickListener = clickListener;
         this.longClickListener = longClickListener;
     }
@@ -88,8 +91,16 @@ public class AppAdapter
                 app.resolveInfo.loadIcon(packageManager));
 
         holder.name.setText(app.label);
-        holder.categories.setText("");
-        holder.categories.setVisibility(View.INVISIBLE);
+
+        String categoryLabel =
+                categoryStore.getAssignedCategoryLabel(
+                        app.packageName);
+
+        holder.categories.setText(categoryLabel);
+        holder.categories.setVisibility(
+                categoryLabel.isEmpty()
+                        ? View.INVISIBLE
+                        : View.VISIBLE);
 
         updateFavoriteButton(holder, app);
 
@@ -129,7 +140,7 @@ public class AppAdapter
                                 : R.string.action_add_favorite));
     }
 
-    void refreshFavoriteStates() {
+    void refreshAppRows() {
         notifyDataSetChanged();
     }
 

@@ -140,6 +140,30 @@ final class CategoryStore {
         }
     }
 
+    String getAssignedCategoryLabel(
+            String packageName) {
+
+        Set<String> assignedIds =
+                getAssignedCategoryIds(packageName);
+
+        StringBuilder label =
+                new StringBuilder();
+
+        for (CategoryEntry category : categories) {
+            if (!assignedIds.contains(category.id)) {
+                continue;
+            }
+
+            if (label.length() > 0) {
+                label.append(" · ");
+            }
+
+            label.append(category.name);
+        }
+
+        return label.toString();
+    }
+
     private boolean nameExists(
             String name,
             String excludedId) {
