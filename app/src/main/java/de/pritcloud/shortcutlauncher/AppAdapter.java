@@ -89,7 +89,7 @@ public class AppAdapter
 
         holder.name.setText(app.label);
         holder.categories.setText("");
-        holder.categories.setVisibility(View.GONE);
+        holder.categories.setVisibility(View.INVISIBLE);
 
         updateFavoriteButton(holder, app);
 

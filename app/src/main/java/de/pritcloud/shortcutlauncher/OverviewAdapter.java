@@ -180,7 +180,7 @@ final class OverviewAdapter
 
         holder.name.setText(app.label);
         holder.categories.setText("");
-        holder.categories.setVisibility(View.GONE);
+        holder.categories.setVisibility(View.INVISIBLE);
 
         holder.favorite.setImageResource(
                 R.drawable.ic_star_filled);
