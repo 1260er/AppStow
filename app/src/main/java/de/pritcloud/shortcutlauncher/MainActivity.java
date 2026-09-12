@@ -123,7 +123,12 @@ public class MainActivity extends Activity {
                         getString(R.string.overview_shortcuts_empty)));
 
         overviewAdapter =
-                new OverviewAdapter(overviewSections);
+                new OverviewAdapter(
+                        overviewSections,
+                        getPackageManager(),
+                        favoritesStore,
+                        this::launchApp,
+                        this::handleAppLongClick);
 
         overviewList.setLayoutManager(
                 new LinearLayoutManager(this));
@@ -193,6 +198,9 @@ public class MainActivity extends Activity {
     }
 
     private void showOverview() {
+        loadApps();
+        overviewAdapter.setFavoriteApps(getFavoriteApps());
+
         pageTitle.setText(R.string.nav_overview);
 
         appSearchContainer.setVisibility(View.GONE);
@@ -219,6 +227,7 @@ public class MainActivity extends Activity {
                         : View.GONE);
 
         renderApps(appSearch.getText().toString());
+        appList.post(appAdapter::refreshFavoriteStates);
 
         drawerLayout.closeDrawer(Gravity.END);
     }
@@ -279,6 +288,19 @@ public class MainActivity extends Activity {
         apps.sort((first, second) ->
                 first.label.compareToIgnoreCase(
                         second.label));
+    }
+
+    private List<AppEntry> getFavoriteApps() {
+        List<AppEntry> favoriteApps =
+                new ArrayList<>();
+
+        for (AppEntry app : apps) {
+            if (favoritesStore.isFavorite(app.packageName)) {
+                favoriteApps.add(app);
+            }
+        }
+
+        return favoriteApps;
     }
 
     private void renderApps(String query) {

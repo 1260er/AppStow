@@ -128,6 +128,10 @@ public class AppAdapter
                                 : R.string.action_add_favorite));
     }
 
+    void refreshFavoriteStates() {
+        notifyDataSetChanged();
+    }
+
     static final class AppViewHolder
             extends RecyclerView.ViewHolder {
 
