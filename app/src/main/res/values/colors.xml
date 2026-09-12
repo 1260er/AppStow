@@ -9,4 +9,5 @@
     <color name="search_input_background">#FFF2F2F5</color>
     <color name="search_border">#FF696970</color>
     <color name="search_border_focused">#FF3F3F46</color>
+    <color name="ui_danger">#FFB3261E</color>
 </resources>

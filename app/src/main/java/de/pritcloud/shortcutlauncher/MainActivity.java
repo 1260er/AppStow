@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
@@ -18,6 +19,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -306,27 +308,30 @@ public class MainActivity extends Activity {
     private void showAddCategoryDialog() {
         EditText input = createCategoryInput("");
 
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.category_add_title)
-                .setView(input)
-                .setPositiveButton(
-                        R.string.action_save,
-                        (dialog, which) -> {
-                            if (!categoryStore.addCategory(
-                                    input.getText().toString())) {
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.category_add_title)
+                        .setView(input)
+                        .setPositiveButton(
+                                R.string.action_save,
+                                (currentDialog, which) -> {
+                                    if (!categoryStore.addCategory(
+                                            input.getText().toString())) {
 
-                                Toast.makeText(
-                                        this,
-                                        R.string.category_invalid_name,
-                                        Toast.LENGTH_SHORT).show();
-                            }
+                                        Toast.makeText(
+                                                this,
+                                                R.string.category_invalid_name,
+                                                Toast.LENGTH_SHORT).show();
+                                    }
 
-                            refreshCategories();
-                        })
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
+                                    refreshCategories();
+                                })
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .show();
+
+        styleCategoryDialog(dialog, false);
     }
 
     private void showRenameCategoryDialog(
@@ -335,51 +340,83 @@ public class MainActivity extends Activity {
         EditText input =
                 createCategoryInput(category.name);
 
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.category_rename_title)
-                .setView(input)
-                .setPositiveButton(
-                        R.string.action_save,
-                        (dialog, which) -> {
-                            if (!categoryStore.renameCategory(
-                                    category.id,
-                                    input.getText().toString())) {
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.category_rename_title)
+                        .setView(input)
+                        .setPositiveButton(
+                                R.string.action_save,
+                                (currentDialog, which) -> {
+                                    if (!categoryStore.renameCategory(
+                                            category.id,
+                                            input.getText().toString())) {
 
-                                Toast.makeText(
-                                        this,
-                                        R.string.category_invalid_name,
-                                        Toast.LENGTH_SHORT).show();
-                            }
+                                        Toast.makeText(
+                                                this,
+                                                R.string.category_invalid_name,
+                                                Toast.LENGTH_SHORT).show();
+                                    }
 
-                            refreshCategories();
-                        })
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
+                                    refreshCategories();
+                                })
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .show();
+
+        styleCategoryDialog(dialog, false);
     }
 
     private void showDeleteCategoryDialog(
             CategoryEntry category) {
 
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.category_delete_title)
-                .setMessage(
-                        getString(
-                                R.string.category_delete_message,
-                                category.name))
-                .setPositiveButton(
-                        R.string.action_delete_category,
-                        (dialog, which) -> {
-                            categoryStore.deleteCategory(
-                                    category.id);
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.category_delete_title)
+                        .setMessage(
+                                getString(
+                                        R.string.category_delete_message,
+                                        category.name))
+                        .setPositiveButton(
+                                R.string.action_delete_category,
+                                (currentDialog, which) -> {
+                                    categoryStore.deleteCategory(
+                                            category.id);
 
-                            refreshCategories();
-                        })
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
+                                    refreshCategories();
+                                })
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .show();
+
+        styleCategoryDialog(dialog, true);
+    }
+
+    private void styleCategoryDialog(
+            AlertDialog dialog,
+            boolean destructive) {
+
+        int neutralColor =
+                ContextCompat.getColor(
+                        this,
+                        R.color.ui_text_primary);
+
+        int dangerColor =
+                ContextCompat.getColor(
+                        this,
+                        R.color.ui_danger);
+
+        dialog.getButton(
+                        AlertDialog.BUTTON_NEGATIVE)
+                .setTextColor(neutralColor);
+
+        dialog.getButton(
+                        AlertDialog.BUTTON_POSITIVE)
+                .setTextColor(
+                        destructive
+                                ? dangerColor
+                                : neutralColor);
     }
 
     private EditText createCategoryInput(
@@ -387,10 +424,37 @@ public class MainActivity extends Activity {
 
         EditText input = new EditText(this);
 
+        int textColor =
+                ContextCompat.getColor(
+                        this,
+                        R.color.ui_text_primary);
+
+        int hintColor =
+                ContextCompat.getColor(
+                        this,
+                        R.color.ui_text_secondary);
+
+        int borderColor =
+                ContextCompat.getColor(
+                        this,
+                        R.color.ui_border);
+
         input.setHint(R.string.category_name_hint);
         input.setSingleLine(true);
         input.setText(value);
         input.setSelectAllOnFocus(true);
+
+        input.setTextColor(textColor);
+        input.setHintTextColor(hintColor);
+
+        input.setBackgroundTintList(
+                ColorStateList.valueOf(borderColor));
+
+        if (Build.VERSION.SDK_INT
+                >= Build.VERSION_CODES.Q) {
+            input.setTextCursorDrawable(
+                    R.drawable.search_cursor);
+        }
 
         return input;
     }

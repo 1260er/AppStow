@@ -7,4 +7,5 @@
     <color name="search_input_background">#FF23232C</color>
     <color name="search_border">#FF5E5E68</color>
     <color name="search_border_focused">#FF9A9AA3</color>
+    <color name="ui_danger">#FFFFB4AB</color>
 </resources>
