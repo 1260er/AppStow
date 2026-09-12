@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
 
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
+    private FavoritesStore favoritesStore;
 
     private final List<AppEntry> apps = new ArrayList<>();
     private final List<OverviewSection> overviewSections =
@@ -97,9 +98,13 @@ public class MainActivity extends Activity {
         appSearchContainer = findViewById(R.id.appSearchContainer);
         appSearchClear = findViewById(R.id.appSearchClear);
 
+        favoritesStore = new FavoritesStore(this);
+
         appAdapter = new AppAdapter(
                 getPackageManager(),
-                this::launchApp);
+                favoritesStore,
+                this::launchApp,
+                this::handleAppLongClick);
 
         appList.setLayoutManager(new LinearLayoutManager(this));
         appList.setAdapter(appAdapter);
@@ -313,6 +318,10 @@ public class MainActivity extends Activity {
             pageMessage.setVisibility(View.GONE);
             appList.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void handleAppLongClick(AppEntry app) {
+        // Kategoriezuweisung wird im Kategorie-Schritt ergänzt.
     }
 
     private void launchApp(AppEntry app) {

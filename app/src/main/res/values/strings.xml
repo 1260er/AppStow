@@ -17,4 +17,6 @@
 
     <string name="search_apps_hint">Apps durchsuchen</string>
     <string name="action_clear_search">Suche löschen</string>
+    <string name="action_add_favorite">Zu Favoriten hinzufügen</string>
+    <string name="action_remove_favorite">Aus Favoriten entfernen</string>
 </resources>

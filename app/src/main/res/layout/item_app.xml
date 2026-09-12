@@ -37,4 +37,12 @@
 
     </LinearLayout>
 
+    <ImageButton
+        android:id="@+id/appFavorite"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:padding="12dp"
+        android:src="@drawable/ic_star_outline" />
+
 </LinearLayout>
