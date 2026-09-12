@@ -28,12 +28,13 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/appPackage"
+            android:id="@+id/appCategories"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/ui_text_secondary"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:visibility="gone" />
 
     </LinearLayout>
 

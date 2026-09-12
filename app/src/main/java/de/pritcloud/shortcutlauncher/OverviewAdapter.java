@@ -179,7 +179,8 @@ final class OverviewAdapter
                 app.resolveInfo.loadIcon(packageManager));
 
         holder.name.setText(app.label);
-        holder.packageName.setText(app.packageName);
+        holder.categories.setText("");
+        holder.categories.setVisibility(View.GONE);
 
         holder.favorite.setImageResource(
                 R.drawable.ic_star_filled);
@@ -292,7 +293,7 @@ final class OverviewAdapter
 
         final ImageView icon;
         final TextView name;
-        final TextView packageName;
+        final TextView categories;
         final ImageButton favorite;
 
         AppViewHolder(@NonNull View itemView) {
@@ -300,7 +301,7 @@ final class OverviewAdapter
 
             icon = itemView.findViewById(R.id.appIcon);
             name = itemView.findViewById(R.id.appName);
-            packageName = itemView.findViewById(R.id.appPackage);
+            categories = itemView.findViewById(R.id.appCategories);
             favorite = itemView.findViewById(R.id.appFavorite);
         }
     }

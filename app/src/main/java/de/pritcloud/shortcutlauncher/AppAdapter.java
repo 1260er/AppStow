@@ -88,7 +88,8 @@ public class AppAdapter
                 app.resolveInfo.loadIcon(packageManager));
 
         holder.name.setText(app.label);
-        holder.packageName.setText(app.packageName);
+        holder.categories.setText("");
+        holder.categories.setVisibility(View.GONE);
 
         updateFavoriteButton(holder, app);
 
@@ -137,7 +138,7 @@ public class AppAdapter
 
         final ImageView icon;
         final TextView name;
-        final TextView packageName;
+        final TextView categories;
         final ImageButton favorite;
 
         AppViewHolder(@NonNull View itemView) {
@@ -145,7 +146,7 @@ public class AppAdapter
 
             icon = itemView.findViewById(R.id.appIcon);
             name = itemView.findViewById(R.id.appName);
-            packageName = itemView.findViewById(R.id.appPackage);
+            categories = itemView.findViewById(R.id.appCategories);
             favorite = itemView.findViewById(R.id.appFavorite);
         }
     }
