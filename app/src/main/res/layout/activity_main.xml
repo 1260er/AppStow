@@ -26,16 +26,14 @@
                 android:text="@string/home_title"
                 android:textStyle="bold" />
 
-            <TextView
+            <ImageButton
                 android:id="@+id/buttonOpenMenu"
                 android:layout_width="@dimen/icon_button_size"
                 android:layout_height="@dimen/icon_button_size"
-                android:gravity="center"
-                android:text="☰"
-                android:textColor="@color/ui_text_primary"
-                android:textSize="28sp"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/action_open_menu" />
+                android:contentDescription="@string/action_open_menu"
+                android:padding="@dimen/spacing_sm"
+                android:src="@drawable/ic_menu" />
         </LinearLayout>
 
         <TextView
