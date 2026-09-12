@@ -37,6 +37,13 @@
             android:text="@string/nav_apps" />
 
         <TextView
+            android:id="@+id/navCategories"
+            style="@style/UiDrawerItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_categories" />
+
+        <TextView
             android:id="@+id/navSettings"
             style="@style/UiDrawerItem"
             android:layout_width="match_parent"

@@ -1,6 +1,7 @@
 package de.pritcloud.shortcutlauncher;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,6 +35,9 @@ public class MainActivity extends Activity {
     private TextView pageMessage;
     private RecyclerView appList;
     private RecyclerView overviewList;
+    private RecyclerView categoryList;
+    private View categoryManagement;
+    private TextView categoryEmptyMessage;
     private EditText appSearch;
     private View appSearchContainer;
     private ImageButton appSearchClear;
@@ -41,6 +45,8 @@ public class MainActivity extends Activity {
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
     private FavoritesStore favoritesStore;
+    private CategoryStore categoryStore;
+    private CategoryAdapter categoryAdapter;
 
     private final List<AppEntry> apps = new ArrayList<>();
     private final List<OverviewSection> overviewSections =
@@ -94,11 +100,36 @@ public class MainActivity extends Activity {
         pageMessage = findViewById(R.id.pageMessage);
         appList = findViewById(R.id.appList);
         overviewList = findViewById(R.id.overviewList);
+        categoryList = findViewById(R.id.categoryList);
+        categoryManagement = findViewById(R.id.categoryManagement);
+        categoryEmptyMessage = findViewById(R.id.categoryEmptyMessage);
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
         appSearchClear = findViewById(R.id.appSearchClear);
 
         favoritesStore = new FavoritesStore(this);
+        categoryStore = new CategoryStore(this);
+
+        categoryAdapter = new CategoryAdapter(
+                new CategoryAdapter.Listener() {
+                    @Override
+                    public void onRename(CategoryEntry category) {
+                        showRenameCategoryDialog(category);
+                    }
+
+                    @Override
+                    public void onDelete(CategoryEntry category) {
+                        showDeleteCategoryDialog(category);
+                    }
+                });
+
+        categoryList.setLayoutManager(
+                new LinearLayoutManager(this));
+        categoryList.setAdapter(categoryAdapter);
+
+        findViewById(R.id.categoryAddButton)
+                .setOnClickListener(v ->
+                        showAddCategoryDialog());
 
         appAdapter = new AppAdapter(
                 getPackageManager(),
@@ -142,6 +173,9 @@ public class MainActivity extends Activity {
 
         findViewById(R.id.navApps).setOnClickListener(v ->
                 showApps());
+
+        findViewById(R.id.navCategories).setOnClickListener(v ->
+                showCategoryManagement());
 
         bindMenu(
                 R.id.navSettings,
@@ -198,6 +232,7 @@ public class MainActivity extends Activity {
     }
 
     private void showOverview() {
+        categoryManagement.setVisibility(View.GONE);
         loadApps();
         overviewAdapter.setFavoriteApps(getFavoriteApps());
 
@@ -215,6 +250,7 @@ public class MainActivity extends Activity {
     }
 
     private void showApps() {
+        categoryManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
         loadApps();
 
@@ -230,6 +266,133 @@ public class MainActivity extends Activity {
         appList.post(appAdapter::refreshFavoriteStates);
 
         drawerLayout.closeDrawer(Gravity.END);
+    }
+
+    private void showCategoryManagement() {
+        pageTitle.setText(R.string.nav_categories);
+
+        appSearchContainer.setVisibility(View.GONE);
+        appSearchClear.setVisibility(View.GONE);
+        appSearch.clearFocus();
+
+        overviewList.setVisibility(View.GONE);
+        appList.setVisibility(View.GONE);
+        pageMessage.setVisibility(View.GONE);
+
+        categoryManagement.setVisibility(View.VISIBLE);
+
+        refreshCategories();
+
+        drawerLayout.closeDrawer(Gravity.END);
+    }
+
+    private void refreshCategories() {
+        List<CategoryEntry> categories =
+                categoryStore.getCategories();
+
+        categoryAdapter.setCategories(categories);
+
+        categoryEmptyMessage.setVisibility(
+                categories.isEmpty()
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        categoryList.setVisibility(
+                categories.isEmpty()
+                        ? View.GONE
+                        : View.VISIBLE);
+    }
+
+    private void showAddCategoryDialog() {
+        EditText input = createCategoryInput("");
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.category_add_title)
+                .setView(input)
+                .setPositiveButton(
+                        R.string.action_save,
+                        (dialog, which) -> {
+                            if (!categoryStore.addCategory(
+                                    input.getText().toString())) {
+
+                                Toast.makeText(
+                                        this,
+                                        R.string.category_invalid_name,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            refreshCategories();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
+    private void showRenameCategoryDialog(
+            CategoryEntry category) {
+
+        EditText input =
+                createCategoryInput(category.name);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.category_rename_title)
+                .setView(input)
+                .setPositiveButton(
+                        R.string.action_save,
+                        (dialog, which) -> {
+                            if (!categoryStore.renameCategory(
+                                    category.id,
+                                    input.getText().toString())) {
+
+                                Toast.makeText(
+                                        this,
+                                        R.string.category_invalid_name,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            refreshCategories();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
+    private void showDeleteCategoryDialog(
+            CategoryEntry category) {
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.category_delete_title)
+                .setMessage(
+                        getString(
+                                R.string.category_delete_message,
+                                category.name))
+                .setPositiveButton(
+                        R.string.action_delete_category,
+                        (dialog, which) -> {
+                            categoryStore.deleteCategory(
+                                    category.id);
+
+                            refreshCategories();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
+    private EditText createCategoryInput(
+            String value) {
+
+        EditText input = new EditText(this);
+
+        input.setHint(R.string.category_name_hint);
+        input.setSingleLine(true);
+        input.setText(value);
+        input.setSelectAllOnFocus(true);
+
+        return input;
     }
 
     private void loadApps() {
@@ -380,6 +543,7 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
+        categoryManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
         appSearchContainer.setVisibility(View.GONE);
         appSearchClear.setVisibility(View.GONE);

@@ -4,6 +4,7 @@
 
     <string name="nav_overview">Übersicht</string>
     <string name="nav_apps">Apps zuweisen</string>
+    <string name="nav_categories">Kategorien verwalten</string>
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_help">Hilfe</string>
     <string name="nav_about">Über</string>
@@ -19,4 +20,15 @@
     <string name="action_clear_search">Suche löschen</string>
     <string name="action_add_favorite">Zu Favoriten hinzufügen</string>
     <string name="action_remove_favorite">Aus Favoriten entfernen</string>
+    <string name="action_add_category">Kategorie hinzufügen</string>
+    <string name="action_delete_category">Kategorie löschen</string>
+    <string name="category_empty">Noch keine Kategorien angelegt.</string>
+    <string name="category_name_hint">Kategoriename</string>
+    <string name="category_add_title">Kategorie hinzufügen</string>
+    <string name="category_rename_title">Kategorie umbenennen</string>
+    <string name="category_delete_title">Kategorie löschen</string>
+    <string name="category_delete_message">Kategorie „%1$s“ löschen? Zugehörige App-Zuweisungen werden ebenfalls entfernt.</string>
+    <string name="category_invalid_name">Bitte einen eindeutigen Kategorienamen eingeben.</string>
+    <string name="action_save">Speichern</string>
+    <string name="action_cancel">Abbrechen</string>
 </resources>
