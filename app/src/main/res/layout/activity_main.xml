@@ -36,13 +36,19 @@
                 android:src="@drawable/ic_menu" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/pageContent"
-            style="@style/UiBodyText"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:layout_marginTop="@dimen/spacing_lg"
-            android:text="@string/home_empty" />
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/pageContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
     </LinearLayout>
 
     <include layout="@layout/view_navigation_drawer" />
