@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 final class OverviewAdapter
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -20,6 +21,7 @@ final class OverviewAdapter
     private static final int TYPE_SECTION = 0;
     private static final int TYPE_MESSAGE = 1;
     private static final int TYPE_APP = 2;
+    private static final String CATEGORY_PREFIX = "category:";
 
     interface OnAppClickListener {
         void onAppClick(AppEntry app);
@@ -31,6 +33,7 @@ final class OverviewAdapter
 
     private final List<OverviewSection> sections;
     private final List<Row> rows = new ArrayList<>();
+    private final List<AppEntry> allApps = new ArrayList<>();
     private final List<AppEntry> favoriteApps = new ArrayList<>();
 
     private final PackageManager packageManager;
@@ -57,12 +60,23 @@ final class OverviewAdapter
         rebuildRows();
     }
 
-    void setFavoriteApps(List<AppEntry> apps) {
-        favoriteApps.clear();
-        favoriteApps.addAll(apps);
+    void setApps(List<AppEntry> apps) {
+        allApps.clear();
+        allApps.addAll(apps);
 
+        refreshFavoriteApps();
         rebuildRows();
         notifyDataSetChanged();
+    }
+
+    private void refreshFavoriteApps() {
+        favoriteApps.clear();
+
+        for (AppEntry app : allApps) {
+            if (favoritesStore.isFavorite(app.packageName)) {
+                favoriteApps.add(app);
+            }
+        }
     }
 
     private void rebuildRows() {
@@ -83,10 +97,50 @@ final class OverviewAdapter
                         rows.add(Row.app(section, app));
                     }
                 }
-            } else {
-                rows.add(Row.message(section));
+
+                continue;
+            }
+
+            if (section.id.startsWith(CATEGORY_PREFIX)) {
+                String categoryId =
+                        section.id.substring(
+                                CATEGORY_PREFIX.length());
+
+                List<AppEntry> categoryApps =
+                        getCategoryApps(categoryId);
+
+                if (categoryApps.isEmpty()) {
+                    rows.add(Row.message(section));
+                } else {
+                    for (AppEntry app : categoryApps) {
+                        rows.add(Row.app(section, app));
+                    }
+                }
+
+                continue;
+            }
+
+            rows.add(Row.message(section));
+        }
+    }
+
+    private List<AppEntry> getCategoryApps(
+            String categoryId) {
+
+        List<AppEntry> result =
+                new ArrayList<>();
+
+        for (AppEntry app : allApps) {
+            Set<String> assignedIds =
+                    categoryStore.getAssignedCategoryIds(
+                            app.packageName);
+
+            if (assignedIds.contains(categoryId)) {
+                result.add(app);
             }
         }
+
+        return result;
     }
 
     @Override
@@ -146,6 +200,7 @@ final class OverviewAdapter
         if (holder instanceof AppViewHolder) {
             bindApp(
                     (AppViewHolder) holder,
+                    row.section,
                     row.app);
             return;
         }
@@ -176,6 +231,7 @@ final class OverviewAdapter
 
     private void bindApp(
             AppViewHolder holder,
+            OverviewSection section,
             AppEntry app) {
 
         holder.icon.setImageDrawable(
@@ -193,25 +249,14 @@ final class OverviewAdapter
                         ? View.INVISIBLE
                         : View.VISIBLE);
 
-        holder.favorite.setImageResource(
-                R.drawable.ic_star_filled);
-
-        holder.favorite.setContentDescription(
-                holder.itemView.getContext().getString(
-                        R.string.action_remove_favorite));
+        updateFavoriteButton(holder, app);
 
         holder.favorite.setOnClickListener(v -> {
-            boolean stillFavorite =
-                    favoritesStore.toggle(app.packageName);
+            favoritesStore.toggle(app.packageName);
 
-            if (!stillFavorite) {
-                favoriteApps.removeIf(
-                        entry -> entry.packageName.equals(
-                                app.packageName));
-
-                rebuildRows();
-                notifyDataSetChanged();
-            }
+            refreshFavoriteApps();
+            rebuildRows();
+            notifyDataSetChanged();
         });
 
         holder.itemView.setOnClickListener(v ->
@@ -223,7 +268,29 @@ final class OverviewAdapter
         });
     }
 
+    private void updateFavoriteButton(
+            AppViewHolder holder,
+            AppEntry app) {
+
+        boolean favorite =
+                favoritesStore.isFavorite(
+                        app.packageName);
+
+        holder.favorite.setImageResource(
+                favorite
+                        ? R.drawable.ic_star_filled
+                        : R.drawable.ic_star_outline);
+
+        holder.favorite.setContentDescription(
+                holder.itemView.getContext().getString(
+                        favorite
+                                ? R.string.action_remove_favorite
+                                : R.string.action_add_favorite));
+    }
+
     void refreshAppRows() {
+        refreshFavoriteApps();
+        rebuildRows();
         notifyDataSetChanged();
     }
 

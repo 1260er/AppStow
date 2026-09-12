@@ -25,8 +25,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
 
@@ -144,17 +146,7 @@ public class MainActivity extends Activity {
         appList.setAdapter(appAdapter);
         appList.setHasFixedSize(true);
 
-        overviewSections.add(
-                new OverviewSection(
-                        "favorites",
-                        getString(R.string.overview_favorites),
-                        getString(R.string.overview_favorites_empty)));
-
-        overviewSections.add(
-                new OverviewSection(
-                        "shortcuts",
-                        getString(R.string.overview_shortcuts),
-                        getString(R.string.overview_shortcuts_empty)));
+        rebuildOverviewSections();
 
         overviewAdapter =
                 new OverviewAdapter(
@@ -235,10 +227,69 @@ public class MainActivity extends Activity {
         showOverview();
     }
 
+    private void rebuildOverviewSections() {
+        Map<String, Boolean> expandedStates =
+                new HashMap<>();
+
+        for (OverviewSection section : overviewSections) {
+            expandedStates.put(
+                    section.id,
+                    section.expanded);
+        }
+
+        overviewSections.clear();
+
+        OverviewSection favorites =
+                new OverviewSection(
+                        "favorites",
+                        getString(R.string.overview_favorites),
+                        getString(R.string.overview_favorites_empty));
+
+        favorites.expanded =
+                expandedStates.getOrDefault(
+                        favorites.id,
+                        false);
+
+        overviewSections.add(favorites);
+
+        for (CategoryEntry category :
+                categoryStore.getCategories()) {
+
+            OverviewSection section =
+                    new OverviewSection(
+                            "category:" + category.id,
+                            category.name,
+                            getString(
+                                    R.string.overview_category_empty));
+
+            section.expanded =
+                    expandedStates.getOrDefault(
+                            section.id,
+                            false);
+
+            overviewSections.add(section);
+        }
+
+        OverviewSection shortcuts =
+                new OverviewSection(
+                        "shortcuts",
+                        getString(R.string.overview_shortcuts),
+                        getString(R.string.overview_shortcuts_empty));
+
+        shortcuts.expanded =
+                expandedStates.getOrDefault(
+                        shortcuts.id,
+                        false);
+
+        overviewSections.add(shortcuts);
+    }
+
     private void showOverview() {
         categoryManagement.setVisibility(View.GONE);
         loadApps();
-        overviewAdapter.setFavoriteApps(getFavoriteApps());
+
+        rebuildOverviewSections();
+        overviewAdapter.setApps(apps);
 
         pageTitle.setText(R.string.nav_overview);
 
