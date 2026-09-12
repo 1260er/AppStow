@@ -13,6 +13,7 @@ import android.view.DisplayCutout;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -32,6 +33,8 @@ public class MainActivity extends Activity {
     private TextView pageTitle;
     private LinearLayout pageContent;
     private EditText appSearch;
+    private View appSearchContainer;
+    private ImageButton appSearchClear;
 
     private final List<AppEntry> apps = new ArrayList<>();
 
@@ -81,6 +84,8 @@ public class MainActivity extends Activity {
         pageTitle = findViewById(R.id.pageTitle);
         pageContent = findViewById(R.id.pageContent);
         appSearch = findViewById(R.id.appSearch);
+        appSearchContainer = findViewById(R.id.appSearchContainer);
+        appSearchClear = findViewById(R.id.appSearchClear);
 
         findViewById(R.id.buttonOpenMenu).setOnClickListener(v ->
                 drawerLayout.openDrawer(Gravity.END));
@@ -100,6 +105,11 @@ public class MainActivity extends Activity {
         bindMenu(R.id.navAbout, "Über",
                 "ShortcutLauncher 0.1.0");
 
+        appSearchClear.setOnClickListener(v -> {
+            appSearch.setText("");
+            appSearch.requestFocus();
+        });
+
         appSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(
@@ -113,7 +123,10 @@ public class MainActivity extends Activity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (appSearch.getVisibility() == View.VISIBLE) {
+                appSearchClear.setVisibility(
+                        editable.length() > 0 ? View.VISIBLE : View.GONE);
+
+                if (appSearchContainer.getVisibility() == View.VISIBLE) {
                     renderApps(editable.toString());
                 }
             }
@@ -126,7 +139,9 @@ public class MainActivity extends Activity {
         loadApps();
 
         pageTitle.setText(R.string.nav_apps);
-        appSearch.setVisibility(View.VISIBLE);
+        appSearchContainer.setVisibility(View.VISIBLE);
+        appSearchClear.setVisibility(
+                appSearch.length() > 0 ? View.VISIBLE : View.GONE);
 
         renderApps(appSearch.getText().toString());
 
@@ -285,7 +300,8 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
-        appSearch.setVisibility(View.GONE);
+        appSearchContainer.setVisibility(View.GONE);
+        appSearchClear.setVisibility(View.GONE);
         appSearch.clearFocus();
 
         pageContent.removeAllViews();

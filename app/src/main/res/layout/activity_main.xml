@@ -36,15 +36,35 @@
                 android:src="@drawable/ic_menu" />
         </LinearLayout>
 
-        <EditText
-            android:id="@+id/appSearch"
-            style="@style/UiSearchInput"
+        <FrameLayout
+            android:id="@+id/appSearchContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
-            android:hint="@string/search_apps_hint"
-            android:inputType="text"
-            android:visibility="gone" />
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/appSearch"
+                style="@style/UiSearchInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/search_apps_hint"
+                android:inputType="text"
+                android:paddingEnd="56dp" />
+
+            <ImageButton
+                android:id="@+id/appSearchClear"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:layout_gravity="end|center_vertical"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_clear_search"
+                android:focusable="false"
+                android:padding="12dp"
+                android:src="@drawable/ic_clear"
+                android:visibility="gone" />
+
+        </FrameLayout>
 
         <ScrollView
             android:layout_width="match_parent"
