@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,12 +46,15 @@ public class MainActivity extends Activity {
     private EditText appSearch;
     private View appSearchContainer;
     private ImageButton appSearchClear;
+    private TextView overviewSortButton;
 
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
     private FavoritesStore favoritesStore;
     private CategoryStore categoryStore;
     private CategoryAdapter categoryAdapter;
+    private OverviewOrderStore overviewOrderStore;
+    private ItemTouchHelper overviewItemTouchHelper;
 
     private final List<AppEntry> apps = new ArrayList<>();
     private final List<OverviewSection> overviewSections =
@@ -110,9 +114,13 @@ public class MainActivity extends Activity {
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
         appSearchClear = findViewById(R.id.appSearchClear);
+        overviewSortButton =
+                findViewById(R.id.buttonSortOverview);
 
         favoritesStore = new FavoritesStore(this);
         categoryStore = new CategoryStore(this);
+        overviewOrderStore =
+                new OverviewOrderStore(this);
 
         categoryAdapter = new CategoryAdapter(
                 new CategoryAdapter.Listener() {
@@ -155,11 +163,62 @@ public class MainActivity extends Activity {
                         favoritesStore,
                         categoryStore,
                         this::launchApp,
-                        this::handleAppLongClick);
+                        this::handleAppLongClick,
+                        this::startOverviewDrag);
 
         overviewList.setLayoutManager(
                 new LinearLayoutManager(this));
         overviewList.setAdapter(overviewAdapter);
+
+        overviewItemTouchHelper =
+                new ItemTouchHelper(
+                        new ItemTouchHelper.SimpleCallback(
+                                ItemTouchHelper.UP
+                                        | ItemTouchHelper.DOWN,
+                                0) {
+
+                            @Override
+                            public boolean isLongPressDragEnabled() {
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onMove(
+                                    RecyclerView recyclerView,
+                                    RecyclerView.ViewHolder source,
+                                    RecyclerView.ViewHolder target) {
+
+                                return overviewAdapter.moveSection(
+                                        source.getBindingAdapterPosition(),
+                                        target.getBindingAdapterPosition());
+                            }
+
+                            @Override
+                            public void onSwiped(
+                                    RecyclerView.ViewHolder viewHolder,
+                                    int direction) {
+                            }
+
+                            @Override
+                            public void clearView(
+                                    RecyclerView recyclerView,
+                                    RecyclerView.ViewHolder viewHolder) {
+
+                                super.clearView(
+                                        recyclerView,
+                                        viewHolder);
+
+                                overviewOrderStore.saveOrder(
+                                        overviewSections);
+                            }
+                        });
+
+        overviewItemTouchHelper.attachToRecyclerView(
+                overviewList);
+
+        overviewSortButton.setOnClickListener(v ->
+                setOverviewSortMode(
+                        !overviewAdapter.isSortMode()));
 
         findViewById(R.id.buttonOpenMenu).setOnClickListener(v ->
                 drawerLayout.openDrawer(Gravity.END));
@@ -282,10 +341,124 @@ public class MainActivity extends Activity {
                         false);
 
         overviewSections.add(shortcuts);
+
+        applySavedOverviewOrder();
+    }
+
+    private void applySavedOverviewOrder() {
+        List<String> savedOrder =
+                overviewOrderStore.getOrder();
+
+        if (savedOrder.isEmpty()) {
+            return;
+        }
+
+        List<OverviewSection> defaultSections =
+                new ArrayList<>(overviewSections);
+
+        Map<String, OverviewSection> remaining =
+                new HashMap<>();
+
+        for (OverviewSection section : defaultSections) {
+            remaining.put(section.id, section);
+        }
+
+        List<OverviewSection> ordered =
+                new ArrayList<>();
+
+        for (String id : savedOrder) {
+            OverviewSection section =
+                    remaining.remove(id);
+
+            if (section != null) {
+                ordered.add(section);
+            }
+        }
+
+        for (OverviewSection section : defaultSections) {
+            if (!remaining.containsKey(section.id)) {
+                continue;
+            }
+
+            remaining.remove(section.id);
+
+            if ("favorites".equals(section.id)) {
+                ordered.add(0, section);
+                continue;
+            }
+
+            if ("shortcuts".equals(section.id)) {
+                ordered.add(section);
+                continue;
+            }
+
+            int shortcutsIndex = -1;
+
+            for (int i = 0; i < ordered.size(); i++) {
+                if ("shortcuts".equals(
+                        ordered.get(i).id)) {
+                    shortcutsIndex = i;
+                    break;
+                }
+            }
+
+            if (shortcutsIndex >= 0) {
+                ordered.add(
+                        shortcutsIndex,
+                        section);
+            } else {
+                ordered.add(section);
+            }
+        }
+
+        overviewSections.clear();
+        overviewSections.addAll(ordered);
+
+        overviewOrderStore.saveOrder(
+                overviewSections);
+    }
+
+    private void startOverviewDrag(
+            RecyclerView.ViewHolder holder) {
+
+        if (overviewItemTouchHelper != null
+                && overviewAdapter.isSortMode()) {
+
+            overviewItemTouchHelper.startDrag(
+                    holder);
+        }
+    }
+
+    private void setOverviewSortMode(
+            boolean enabled) {
+
+        if (!enabled
+                && overviewAdapter.isSortMode()) {
+
+            overviewOrderStore.saveOrder(
+                    overviewSections);
+        }
+
+        overviewAdapter.setSortMode(enabled);
+
+        overviewSortButton.setContentDescription(
+                getString(
+                        enabled
+                                ? R.string.action_finish_sorting
+                                : R.string.action_sort_overview));
+    }
+
+    private void hideOverviewSortMode() {
+        setOverviewSortMode(false);
+        overviewSortButton.setVisibility(View.GONE);
     }
 
     private void showOverview() {
         categoryManagement.setVisibility(View.GONE);
+
+        setOverviewSortMode(false);
+        overviewSortButton.setVisibility(View.VISIBLE);
+
         loadApps();
 
         rebuildOverviewSections();
@@ -305,6 +478,7 @@ public class MainActivity extends Activity {
     }
 
     private void showApps() {
+        hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
         loadApps();
@@ -324,6 +498,8 @@ public class MainActivity extends Activity {
     }
 
     private void showCategoryManagement() {
+        hideOverviewSortMode();
+
         pageTitle.setText(R.string.nav_categories);
 
         appSearchContainer.setVisibility(View.GONE);
@@ -724,6 +900,7 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
+        hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
         appSearchContainer.setVisibility(View.GONE);

@@ -34,4 +34,8 @@
     <string name="action_cancel">Abbrechen</string>
     <string name="category_assign_title">Kategorien zuweisen</string>
     <string name="category_assign_none">Noch keine Kategorien vorhanden. Lege zuerst unter „Kategorien verwalten“ eine Kategorie an.</string>
+    <string name="overview_sort_label">A–Z</string>
+    <string name="action_sort_overview">Übersicht sortieren</string>
+    <string name="action_finish_sorting">Sortieren beenden</string>
+    <string name="action_drag_section">Bereich verschieben</string>
 </resources>

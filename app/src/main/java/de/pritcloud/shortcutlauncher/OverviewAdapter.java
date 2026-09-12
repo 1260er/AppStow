@@ -2,6 +2,7 @@ package de.pritcloud.shortcutlauncher;
 
 import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +33,10 @@ final class OverviewAdapter
         void onAppLongClick(AppEntry app);
     }
 
+    interface OnSectionDragStartListener {
+        void onDragStart(RecyclerView.ViewHolder holder);
+    }
+
     private final List<OverviewSection> sections;
     private final List<Row> rows = new ArrayList<>();
     private final List<AppEntry> allApps = new ArrayList<>();
@@ -41,6 +47,9 @@ final class OverviewAdapter
     private final CategoryStore categoryStore;
     private final OnAppClickListener clickListener;
     private final OnAppLongClickListener longClickListener;
+    private final OnSectionDragStartListener dragStartListener;
+
+    private boolean sortMode;
 
     OverviewAdapter(
             List<OverviewSection> sections,
@@ -48,7 +57,8 @@ final class OverviewAdapter
             FavoritesStore favoritesStore,
             CategoryStore categoryStore,
             OnAppClickListener clickListener,
-            OnAppLongClickListener longClickListener) {
+            OnAppLongClickListener longClickListener,
+            OnSectionDragStartListener dragStartListener) {
 
         this.sections = sections;
         this.packageManager = packageManager;
@@ -56,6 +66,7 @@ final class OverviewAdapter
         this.categoryStore = categoryStore;
         this.clickListener = clickListener;
         this.longClickListener = longClickListener;
+        this.dragStartListener = dragStartListener;
 
         rebuildRows();
     }
@@ -84,6 +95,10 @@ final class OverviewAdapter
 
         for (OverviewSection section : sections) {
             rows.add(Row.section(section));
+
+            if (sortMode) {
+                continue;
+            }
 
             if (!section.expanded) {
                 continue;
@@ -218,8 +233,38 @@ final class OverviewAdapter
 
         holder.title.setText(section.title);
 
+        holder.chevron.setVisibility(
+                sortMode
+                        ? View.GONE
+                        : View.VISIBLE);
+
+        holder.dragHandle.setVisibility(
+                sortMode
+                        ? View.VISIBLE
+                        : View.GONE);
+
         holder.chevron.setRotation(
                 section.expanded ? 180f : 0f);
+
+        if (sortMode) {
+            holder.itemView.setOnClickListener(null);
+
+            holder.dragHandle.setOnTouchListener(
+                    (view, event) -> {
+                        if (event.getActionMasked()
+                                == MotionEvent.ACTION_DOWN) {
+
+                            dragStartListener.onDragStart(
+                                    holder);
+                        }
+
+                        return false;
+                    });
+
+            return;
+        }
+
+        holder.dragHandle.setOnTouchListener(null);
 
         holder.itemView.setOnClickListener(v -> {
             section.expanded = !section.expanded;
@@ -288,6 +333,49 @@ final class OverviewAdapter
                                 : R.string.action_add_favorite));
     }
 
+    void setSortMode(boolean enabled) {
+        if (sortMode == enabled) {
+            return;
+        }
+
+        sortMode = enabled;
+        rebuildRows();
+        notifyDataSetChanged();
+    }
+
+    boolean isSortMode() {
+        return sortMode;
+    }
+
+    boolean moveSection(
+            int fromPosition,
+            int toPosition) {
+
+        if (!sortMode
+                || fromPosition < 0
+                || toPosition < 0
+                || fromPosition >= sections.size()
+                || toPosition >= sections.size()) {
+            return false;
+        }
+
+        Collections.swap(
+                sections,
+                fromPosition,
+                toPosition);
+
+        Collections.swap(
+                rows,
+                fromPosition,
+                toPosition);
+
+        notifyItemMoved(
+                fromPosition,
+                toPosition);
+
+        return true;
+    }
+
     void refreshAppRows() {
         refreshFavoriteApps();
         rebuildRows();
@@ -345,6 +433,7 @@ final class OverviewAdapter
 
         final TextView title;
         final ImageView chevron;
+        final ImageView dragHandle;
 
         SectionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -354,6 +443,9 @@ final class OverviewAdapter
 
             chevron = itemView.findViewById(
                     R.id.overviewSectionChevron);
+
+            dragHandle = itemView.findViewById(
+                    R.id.overviewSectionDragHandle);
         }
     }
 
