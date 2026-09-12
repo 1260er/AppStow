@@ -77,4 +77,5 @@ android {
 
 dependencies {
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
 }

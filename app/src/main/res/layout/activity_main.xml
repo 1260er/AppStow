@@ -66,19 +66,26 @@
 
         </FrameLayout>
 
-        <ScrollView
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginTop="@dimen/spacing_lg"
-            android:fillViewport="true">
+            android:layout_marginTop="@dimen/spacing_lg">
 
-            <LinearLayout
-                android:id="@+id/pageContent"
+            <TextView
+                android:id="@+id/pageMessage"
+                style="@style/UiBodyText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-        </ScrollView>
+                android:layout_height="wrap_content" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/appList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:visibility="gone" />
+
+        </FrameLayout>
     </LinearLayout>
 
     <include layout="@layout/view_navigation_drawer" />
