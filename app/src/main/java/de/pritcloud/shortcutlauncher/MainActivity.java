@@ -37,6 +37,7 @@ public class MainActivity extends Activity {
     private ImageButton appSearchClear;
 
     private final List<AppEntry> apps = new ArrayList<>();
+    private Runnable pendingAppRender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +128,7 @@ public class MainActivity extends Activity {
                         editable.length() > 0 ? View.VISIBLE : View.GONE);
 
                 if (appSearchContainer.getVisibility() == View.VISIBLE) {
-                    renderApps(editable.toString());
+                    scheduleRenderApps(editable.toString());
                 }
             }
         });
@@ -189,6 +190,22 @@ public class MainActivity extends Activity {
 
         apps.sort((first, second) ->
                 first.label.compareToIgnoreCase(second.label));
+    }
+
+    private void scheduleRenderApps(String query) {
+        if (pendingAppRender != null) {
+            pageContent.removeCallbacks(pendingAppRender);
+        }
+
+        pendingAppRender = () -> {
+            pendingAppRender = null;
+
+            if (appSearchContainer.getVisibility() == View.VISIBLE) {
+                renderApps(query);
+            }
+        };
+
+        pageContent.post(pendingAppRender);
     }
 
     private void renderApps(String query) {
@@ -300,6 +317,11 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
+        if (pendingAppRender != null) {
+            pageContent.removeCallbacks(pendingAppRender);
+            pendingAppRender = null;
+        }
+
         appSearchContainer.setVisibility(View.GONE);
         appSearchClear.setVisibility(View.GONE);
         appSearch.clearFocus();
