@@ -1,15 +1,20 @@
 <resources>
     <string name="app_name">ShortcutLauncher</string>
     <string name="action_open_menu">Menü öffnen</string>
+
+    <string name="nav_overview">Übersicht</string>
     <string name="nav_apps">Apps</string>
-    <string name="nav_categories">Kategorien</string>
-    <string name="nav_favorites">Favoriten</string>
-    <string name="nav_shortcuts">Shortcuts</string>
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_help">Hilfe</string>
     <string name="nav_about">Über</string>
-    <string name="home_title">Apps</string>
-    <string name="home_empty">Installierte Apps werden hier angezeigt.</string>
+
+    <string name="home_title">Übersicht</string>
+
+    <string name="overview_favorites">Favoriten</string>
+    <string name="overview_shortcuts">Eigene Shortcuts</string>
+    <string name="overview_favorites_empty">Noch keine Favoriten.</string>
+    <string name="overview_shortcuts_empty">Noch keine eigenen Shortcuts.</string>
+
     <string name="search_apps_hint">Apps durchsuchen</string>
     <string name="action_clear_search">Suche löschen</string>
 </resources>

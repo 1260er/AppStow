@@ -33,13 +33,17 @@ public class MainActivity extends Activity {
     private TextView pageTitle;
     private TextView pageMessage;
     private RecyclerView appList;
+    private RecyclerView overviewList;
     private EditText appSearch;
     private View appSearchContainer;
     private ImageButton appSearchClear;
 
     private AppAdapter appAdapter;
+    private OverviewAdapter overviewAdapter;
 
     private final List<AppEntry> apps = new ArrayList<>();
+    private final List<OverviewSection> overviewSections =
+            new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +92,7 @@ public class MainActivity extends Activity {
         pageTitle = findViewById(R.id.pageTitle);
         pageMessage = findViewById(R.id.pageMessage);
         appList = findViewById(R.id.appList);
+        overviewList = findViewById(R.id.overviewList);
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
         appSearchClear = findViewById(R.id.appSearchClear);
@@ -100,26 +105,33 @@ public class MainActivity extends Activity {
         appList.setAdapter(appAdapter);
         appList.setHasFixedSize(true);
 
+        overviewSections.add(
+                new OverviewSection(
+                        "favorites",
+                        getString(R.string.overview_favorites),
+                        getString(R.string.overview_favorites_empty)));
+
+        overviewSections.add(
+                new OverviewSection(
+                        "shortcuts",
+                        getString(R.string.overview_shortcuts),
+                        getString(R.string.overview_shortcuts_empty)));
+
+        overviewAdapter =
+                new OverviewAdapter(overviewSections);
+
+        overviewList.setLayoutManager(
+                new LinearLayoutManager(this));
+        overviewList.setAdapter(overviewAdapter);
+
         findViewById(R.id.buttonOpenMenu).setOnClickListener(v ->
                 drawerLayout.openDrawer(Gravity.END));
 
+        findViewById(R.id.navOverview).setOnClickListener(v ->
+                showOverview());
+
         findViewById(R.id.navApps).setOnClickListener(v ->
                 showApps());
-
-        bindMenu(
-                R.id.navCategories,
-                "Kategorien",
-                "Kategorien werden hier verwaltet.");
-
-        bindMenu(
-                R.id.navFavorites,
-                "Favoriten",
-                "Favorisierte Apps und Shortcuts.");
-
-        bindMenu(
-                R.id.navShortcuts,
-                "Shortcuts",
-                "Eigene Shortcuts werden hier verwaltet.");
 
         bindMenu(
                 R.id.navSettings,
@@ -172,10 +184,25 @@ public class MainActivity extends Activity {
             }
         });
 
-        showMessage(getString(R.string.home_empty));
+        showOverview();
+    }
+
+    private void showOverview() {
+        pageTitle.setText(R.string.nav_overview);
+
+        appSearchContainer.setVisibility(View.GONE);
+        appSearchClear.setVisibility(View.GONE);
+        appSearch.clearFocus();
+
+        appList.setVisibility(View.GONE);
+        pageMessage.setVisibility(View.GONE);
+        overviewList.setVisibility(View.VISIBLE);
+
+        drawerLayout.closeDrawer(Gravity.END);
     }
 
     private void showApps() {
+        overviewList.setVisibility(View.GONE);
         loadApps();
 
         pageTitle.setText(R.string.nav_apps);
@@ -322,6 +349,7 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
+        overviewList.setVisibility(View.GONE);
         appSearchContainer.setVisibility(View.GONE);
         appSearchClear.setVisibility(View.GONE);
         appSearch.clearFocus();

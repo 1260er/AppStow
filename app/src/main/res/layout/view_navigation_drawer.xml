@@ -22,24 +22,25 @@
             android:text="@string/app_name"
             android:textStyle="bold" />
 
-        <TextView android:id="@+id/navApps" style="@style/UiDrawerItem"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+        <TextView
+            android:id="@+id/navOverview"
+            style="@style/UiDrawerItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_overview" />
+
+        <TextView
+            android:id="@+id/navApps"
+            style="@style/UiDrawerItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/nav_apps" />
 
-        <TextView android:id="@+id/navCategories" style="@style/UiDrawerItem"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/nav_categories" />
-
-        <TextView android:id="@+id/navFavorites" style="@style/UiDrawerItem"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/nav_favorites" />
-
-        <TextView android:id="@+id/navShortcuts" style="@style/UiDrawerItem"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/nav_shortcuts" />
-
-        <TextView android:id="@+id/navSettings" style="@style/UiDrawerItem"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+        <TextView
+            android:id="@+id/navSettings"
+            style="@style/UiDrawerItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/nav_settings" />
 
         <Space
@@ -47,12 +48,18 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <TextView android:id="@+id/navHelp" style="@style/UiDrawerItem"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+        <TextView
+            android:id="@+id/navHelp"
+            style="@style/UiDrawerItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/nav_help" />
 
-        <TextView android:id="@+id/navAbout" style="@style/UiDrawerItem"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+        <TextView
+            android:id="@+id/navAbout"
+            style="@style/UiDrawerItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/nav_about" />
 
     </LinearLayout>
