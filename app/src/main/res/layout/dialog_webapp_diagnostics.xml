@@ -37,7 +37,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/webappDiagnosticOpenChromium"
+            android:id="@+id/webappDiagnosticOpenBrowserLauncher"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -49,7 +49,7 @@
             android:gravity="center_vertical"
             android:minHeight="56dp"
             android:paddingHorizontal="16dp"
-            android:text="@string/webapp_diagnostics_open_chromium" />
+            android:text="@string/webapp_diagnostics_open_browser_launcher" />
 
         <TextView
             android:id="@+id/webappDiagnosticResult"

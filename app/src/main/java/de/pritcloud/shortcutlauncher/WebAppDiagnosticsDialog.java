@@ -26,9 +26,6 @@ final class WebAppDiagnosticsDialog {
     private static final String GENERIC_URL =
             "https://example.com/";
 
-    private static final String CHROMIUM_MAIN_ACTIVITY =
-            "com.google.android.apps.chrome.Main";
-
     private WebAppDiagnosticsDialog() {
     }
 
@@ -49,9 +46,9 @@ final class WebAppDiagnosticsDialog {
                 view.findViewById(
                         R.id.webappDiagnosticAnalyze);
 
-        TextView openChromium =
+        TextView openBrowserLauncher =
                 view.findViewById(
-                        R.id.webappDiagnosticOpenChromium);
+                        R.id.webappDiagnosticOpenBrowserLauncher);
 
         TextView result =
                 view.findViewById(
@@ -69,7 +66,7 @@ final class WebAppDiagnosticsDialog {
                         url,
                         result));
 
-        openChromium.setOnClickListener(v -> {
+        openBrowserLauncher.setOnClickListener(v -> {
             Uri uri =
                     getUri(
                             activity,
@@ -79,7 +76,7 @@ final class WebAppDiagnosticsDialog {
                 return;
             }
 
-            openChromiumAppMode(
+            openBrowserLauncher(
                     activity,
                     uri);
         });
@@ -160,6 +157,15 @@ final class WebAppDiagnosticsDialog {
                         packageManager,
                         uri);
 
+        String defaultBrowserPackage =
+                getDefaultBrowserPackage(
+                        packageManager);
+
+        ComponentName browserLaunchComponent =
+                getBrowserLaunchComponent(
+                        packageManager,
+                        defaultBrowserPackage);
+
         StringBuilder report =
                 new StringBuilder();
 
@@ -185,6 +191,20 @@ final class WebAppDiagnosticsDialog {
                         describe(
                                 packageManager,
                                 targetDefault))
+                .append("\n\n");
+
+        report.append("Ermittelter Standardbrowser:\n")
+                .append(
+                        defaultBrowserPackage == null
+                                ? "Keiner"
+                                : defaultBrowserPackage)
+                .append("\n");
+
+        report.append("Browser-Launcher-Activity:\n")
+                .append(
+                        browserLaunchComponent == null
+                                ? "Keine gefunden"
+                                : browserLaunchComponent.getClassName())
                 .append("\n\n");
 
         report.append("Spezifische Handler:\n");
@@ -267,12 +287,48 @@ final class WebAppDiagnosticsDialog {
         return result;
     }
 
-    private static void openChromiumAppMode(
+    private static void openBrowserLauncher(
             Activity activity,
             Uri uri) {
 
         PackageManager packageManager =
                 activity.getPackageManager();
+
+        String packageName =
+                getDefaultBrowserPackage(
+                        packageManager);
+
+        ComponentName launchComponent =
+                getBrowserLaunchComponent(
+                        packageManager,
+                        packageName);
+
+        if (launchComponent == null) {
+            showLaunchError(
+                    activity);
+
+            return;
+        }
+
+        Intent intent =
+                createViewIntent(
+                        uri);
+
+        intent.setComponent(
+                launchComponent);
+
+        try {
+            activity.startActivity(
+                    intent);
+
+        } catch (Exception exception) {
+            showLaunchError(
+                    activity);
+        }
+    }
+
+    private static String getDefaultBrowserPackage(
+            PackageManager packageManager) {
 
         ResolveInfo defaultHandler =
                 resolve(
@@ -284,10 +340,7 @@ final class WebAppDiagnosticsDialog {
         if (defaultHandler == null
                 || defaultHandler.activityInfo == null) {
 
-            showLaunchError(
-                    activity);
-
-            return;
+            return null;
         }
 
         String packageName =
@@ -300,29 +353,29 @@ final class WebAppDiagnosticsDialog {
                 || "android".equals(
                         packageName)) {
 
-            showLaunchError(
-                    activity);
-
-            return;
+            return null;
         }
 
-        Intent intent =
-                createViewIntent(
-                        uri);
+        return packageName;
+    }
 
-        intent.setComponent(
-                new ComponentName(
-                        packageName,
-                        CHROMIUM_MAIN_ACTIVITY));
+    private static ComponentName getBrowserLaunchComponent(
+            PackageManager packageManager,
+            String packageName) {
 
-        try {
-            activity.startActivity(
-                    intent);
-
-        } catch (Exception exception) {
-            showLaunchError(
-                    activity);
+        if (packageName == null) {
+            return null;
         }
+
+        Intent launchIntent =
+                packageManager.getLaunchIntentForPackage(
+                        packageName);
+
+        if (launchIntent == null) {
+            return null;
+        }
+
+        return launchIntent.getComponent();
     }
 
     private static Uri getUri(
