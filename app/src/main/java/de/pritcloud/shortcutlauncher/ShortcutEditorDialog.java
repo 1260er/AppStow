@@ -58,10 +58,6 @@ final class ShortcutEditorDialog {
                 view.findViewById(
                         R.id.shortcutEditTarget);
 
-        TextView deepLinkTemplates =
-                view.findViewById(
-                        R.id.shortcutDeepLinkTemplates);
-
         TextView pickApp =
                 view.findViewById(
                         R.id.shortcutPickApp);
@@ -117,7 +113,8 @@ final class ShortcutEditorDialog {
                 selectedPackage[0] =
                         existing.target;
             } else {
-                target.setText(existing.target);
+                target.setText(
+                        existing.target);
             }
         }
 
@@ -133,11 +130,13 @@ final class ShortcutEditorDialog {
                 selectedCategories,
                 categoryStore.getCategories());
 
+        int[] previousType = {
+                type.getSelectedItemPosition()
+        };
+
         updateTypeUi(
-                activity,
                 type.getSelectedItemPosition(),
                 target,
-                deepLinkTemplates,
                 pickApp);
 
         type.setOnItemSelectedListener(
@@ -149,11 +148,38 @@ final class ShortcutEditorDialog {
                             int position,
                             long id) {
 
+                        String currentTarget =
+                                target.getText()
+                                        .toString()
+                                        .trim();
+
+                        if (previousType[0] == 1
+                                && position != 1
+                                && "https://".equals(
+                                        currentTarget)) {
+
+                            target.setText("");
+                        }
+
+                        if (position == 1
+                                && target.getText()
+                                        .toString()
+                                        .trim()
+                                        .isEmpty()) {
+
+                            target.setText(
+                                    "https://");
+
+                            target.setSelection(
+                                    target.length());
+                        }
+
+                        previousType[0] =
+                                position;
+
                         updateTypeUi(
-                                activity,
                                 position,
                                 target,
-                                deepLinkTemplates,
                                 pickApp);
                     }
 
@@ -162,11 +188,6 @@ final class ShortcutEditorDialog {
                             android.widget.AdapterView<?> parent) {
                     }
                 });
-
-        deepLinkTemplates.setOnClickListener(v ->
-                showDeepLinkTemplates(
-                        activity,
-                        target));
 
         pickApp.setOnClickListener(v ->
                 showAppPicker(
@@ -205,11 +226,13 @@ final class ShortcutEditorDialog {
 
             dialog.getButton(
                             AlertDialog.BUTTON_POSITIVE)
-                    .setTextColor(neutralColor);
+                    .setTextColor(
+                            neutralColor);
 
             dialog.getButton(
                             AlertDialog.BUTTON_NEGATIVE)
-                    .setTextColor(neutralColor);
+                    .setTextColor(
+                            neutralColor);
 
             dialog.getButton(
                             AlertDialog.BUTTON_POSITIVE)
@@ -262,10 +285,8 @@ final class ShortcutEditorDialog {
     }
 
     private static void updateTypeUi(
-            Activity activity,
             int typeIndex,
             EditText target,
-            TextView deepLinkTemplates,
             TextView pickApp) {
 
         boolean appTarget =
@@ -281,62 +302,12 @@ final class ShortcutEditorDialog {
                         ? View.VISIBLE
                         : View.GONE);
 
-        deepLinkTemplates.setVisibility(
-                typeIndex == 3
-                        ? View.VISIBLE
-                        : View.GONE);
-
         if (!appTarget) {
             target.setHint(
                     typeIndex == 3
                             ? R.string.shortcut_target_deep_link_hint
                             : R.string.shortcut_target_url_hint);
         }
-    }
-
-    private static void showDeepLinkTemplates(
-            Activity activity,
-            EditText target) {
-
-        CharSequence[] labels = {
-                activity.getString(
-                        R.string.shortcut_template_navigation),
-                activity.getString(
-                        R.string.shortcut_template_phone),
-                activity.getString(
-                        R.string.shortcut_template_sms),
-                activity.getString(
-                        R.string.shortcut_template_email),
-                activity.getString(
-                        R.string.shortcut_template_play_store)
-        };
-
-        String[] templates = {
-                "geo:0,0?q=",
-                "tel:",
-                "sms:",
-                "mailto:",
-                "market://details?id="
-        };
-
-        new AlertDialog.Builder(activity)
-                .setTitle(
-                        R.string.shortcut_deep_link_template_title)
-                .setItems(
-                        labels,
-                        (dialog, which) -> {
-                            target.setText(
-                                    templates[which]);
-
-                            target.setSelection(
-                                    target.length());
-
-                            target.requestFocus();
-                        })
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
     }
 
     private static void showAppPicker(
@@ -350,14 +321,20 @@ final class ShortcutEditorDialog {
                     activity,
                     R.string.shortcut_no_apps,
                     Toast.LENGTH_SHORT).show();
+
             return;
         }
 
         CharSequence[] names =
-                new CharSequence[apps.size()];
+                new CharSequence[
+                        apps.size()];
 
-        for (int i = 0; i < apps.size(); i++) {
-            AppEntry app = apps.get(i);
+        for (int i = 0;
+             i < apps.size();
+             i++) {
+
+            AppEntry app =
+                    apps.get(i);
 
             names[i] =
                     app.label
@@ -366,7 +343,8 @@ final class ShortcutEditorDialog {
         }
 
         new AlertDialog.Builder(activity)
-                .setTitle(R.string.shortcut_pick_app)
+                .setTitle(
+                        R.string.shortcut_pick_app)
                 .setItems(
                         names,
                         (dialog, which) -> {
@@ -402,37 +380,51 @@ final class ShortcutEditorDialog {
                     activity,
                     R.string.category_assign_none,
                     Toast.LENGTH_LONG).show();
+
             return;
         }
 
         CharSequence[] names =
-                new CharSequence[categories.size()];
+                new CharSequence[
+                        categories.size()];
 
         boolean[] checked =
-                new boolean[categories.size()];
+                new boolean[
+                        categories.size()];
 
         Set<String> temporary =
                 new HashSet<>(
                         selectedCategories);
 
-        for (int i = 0; i < categories.size(); i++) {
+        for (int i = 0;
+             i < categories.size();
+             i++) {
+
             CategoryEntry category =
                     categories.get(i);
 
-            names[i] = category.name;
+            names[i] =
+                    category.name;
 
             checked[i] =
-                    temporary.contains(category.id);
+                    temporary.contains(
+                            category.id);
         }
 
         new AlertDialog.Builder(activity)
-                .setTitle(R.string.shortcut_categories)
+                .setTitle(
+                        R.string.shortcut_categories)
                 .setMultiChoiceItems(
                         names,
                         checked,
-                        (dialog, which, isChecked) -> {
+                        (dialog,
+                         which,
+                         isChecked) -> {
+
                             String id =
-                                    categories.get(which).id;
+                                    categories
+                                            .get(which)
+                                            .id;
 
                             if (isChecked) {
                                 temporary.add(id);
@@ -470,16 +462,20 @@ final class ShortcutEditorDialog {
 
             view.setText(
                     R.string.shortcut_pick_app);
+
             return;
         }
 
-        String label = packageName;
+        String label =
+                packageName;
 
         for (AppEntry app : apps) {
             if (app.packageName.equals(
                     packageName)) {
 
-                label = app.label;
+                label =
+                        app.label;
+
                 break;
             }
         }
@@ -499,15 +495,19 @@ final class ShortcutEditorDialog {
         if (selectedIds.isEmpty()) {
             view.setText(
                     R.string.shortcut_categories);
+
             return;
         }
 
         StringBuilder label =
                 new StringBuilder();
 
-        for (CategoryEntry category : categories) {
+        for (CategoryEntry category :
+                categories) {
+
             if (!selectedIds.contains(
                     category.id)) {
+
                 continue;
             }
 
@@ -515,7 +515,8 @@ final class ShortcutEditorDialog {
                 label.append(" · ");
             }
 
-            label.append(category.name);
+            label.append(
+                    category.name);
         }
 
         view.setText(
@@ -531,14 +532,18 @@ final class ShortcutEditorDialog {
 
         if (name.isEmpty()
                 || target.isEmpty()) {
+
             return false;
         }
 
         if (ShortcutEntry.TYPE_WEBSITE.equals(type)
                 || ShortcutEntry.TYPE_WEB_APP.equals(type)) {
-            Uri uri = Uri.parse(target);
 
-            String scheme = uri.getScheme();
+            Uri uri =
+                    Uri.parse(target);
+
+            String scheme =
+                    uri.getScheme();
 
             if (scheme == null) {
                 return false;

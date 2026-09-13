@@ -37,6 +37,16 @@
                 android:visibility="gone" />
 
             <ImageButton
+                android:id="@+id/buttonShortcutHelp"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_shortcut_help"
+                android:padding="12dp"
+                android:src="@drawable/ic_help_circle"
+                android:visibility="gone" />
+
+            <ImageButton
                 android:id="@+id/buttonOpenMenu"
                 android:layout_width="@dimen/icon_button_size"
                 android:layout_height="@dimen/icon_button_size"

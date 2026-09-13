@@ -67,4 +67,46 @@
     <string name="shortcut_template_sms">SMS schreiben</string>
     <string name="shortcut_template_email">E-Mail schreiben</string>
     <string name="shortcut_template_play_store">App im Play Store öffnen</string>
+    <string name="action_shortcut_help">Hilfe zu eigenen Shortcuts</string>
+    <string name="shortcut_help_title">Eigene Shortcuts</string>
+    <string name="action_close">Schließen</string>
+    <string name="shortcut_help_content"><b>Webseite</b>
+Eine normale http- oder https-Adresse. Android öffnet sie mit der dafür zuständigen App oder dem Standardbrowser.
+
+<b>Web-App</b>
+Gib die URL der installierten Web-App ein. ShortcutLauncher übergibt die Adresse an Android bzw. den Standardbrowser. Ist die Seite als Web-App eingerichtet, kann der Browser sie entsprechend öffnen.
+
+<b>App-Einstellungen</b>
+Wähle eine installierte App aus. Der Shortcut öffnet später direkt deren Android-App-Informationen.
+
+<b>Deep Link (erweitert)</b>
+Deep Links öffnen spezielle Funktionen einer App. Nicht jede App unterstützt jeden Aufruf. Hier kannst du bekannte Links oder Android-Intent-URIs direkt eintragen.
+
+<b>Google Maps:</b>
+https://www.google.com/maps/dir/?api=1&amp;destination=Berlin
+(Öffnet die Routenführung.)
+
+<b>WhatsApp:</b>
+whatsapp://send?phone=+491701234567&amp;text=Hallo
+(Öffnet das Chatfenster mit vorausgefülltem Text.)
+
+<b>Kamera:</b>
+intent:#Intent;action=android.media.action.IMAGE_CAPTURE;end
+(Öffnet die Kamera für eine Aufnahme.)
+
+<b>Telefon:</b>
+tel:+491701234567
+(Öffnet die Telefon-App mit vorausgefüllter Nummer.)
+
+<b>SMS:</b>
+sms:+491701234567
+(Öffnet die SMS-App mit vorausgefülltem Empfänger.)
+
+<b>E-Mail:</b>
+mailto:max@example.com?subject=Hallo
+(Öffnet die E-Mail-App mit Empfänger und Betreff.)
+
+<b>Play Store:</b>
+market://details?id=com.example.app
+(Öffnet die App-Seite im Play Store.)</string>
 </resources>

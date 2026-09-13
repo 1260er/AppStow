@@ -35,21 +35,6 @@
             android:singleLine="true" />
 
         <TextView
-            android:id="@+id/shortcutDeepLinkTemplates"
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:background="@drawable/overview_section_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="@dimen/spacing_md"
-            android:text="@string/shortcut_deep_link_templates"
-            android:visibility="gone" />
-
-        <TextView
             android:id="@+id/shortcutPickApp"
             style="@style/UiBodyText"
             android:layout_width="match_parent"

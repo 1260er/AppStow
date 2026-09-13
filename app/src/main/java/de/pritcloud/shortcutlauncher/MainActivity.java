@@ -51,6 +51,7 @@ public class MainActivity extends Activity {
     private View appSearchContainer;
     private ImageButton appSearchClear;
     private ImageButton overviewSortButton;
+    private ImageButton shortcutHelpButton;
 
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
@@ -131,6 +132,9 @@ public class MainActivity extends Activity {
         appSearchClear = findViewById(R.id.appSearchClear);
         overviewSortButton =
                 findViewById(R.id.buttonSortOverview);
+
+        shortcutHelpButton =
+                findViewById(R.id.buttonShortcutHelp);
 
         favoritesStore = new FavoritesStore(this);
         categoryStore = new CategoryStore(this);
@@ -277,6 +281,9 @@ public class MainActivity extends Activity {
         overviewSortButton.setOnClickListener(v ->
                 setOverviewSortMode(
                         !overviewAdapter.isSortMode()));
+
+        shortcutHelpButton.setOnClickListener(v ->
+                showShortcutHelpDialog());
 
         findViewById(R.id.buttonOpenMenu).setOnClickListener(v ->
                 drawerLayout.openDrawer(Gravity.END));
@@ -511,6 +518,8 @@ public class MainActivity extends Activity {
     }
 
     private void showOverview() {
+        shortcutHelpButton.setVisibility(View.GONE);
+
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
 
@@ -536,6 +545,8 @@ public class MainActivity extends Activity {
     }
 
     private void showApps() {
+        shortcutHelpButton.setVisibility(View.GONE);
+
         hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
@@ -557,6 +568,8 @@ public class MainActivity extends Activity {
     }
 
     private void showCategoryManagement() {
+        shortcutHelpButton.setVisibility(View.GONE);
+
         hideOverviewSortMode();
 
         shortcutManagement.setVisibility(View.GONE);
@@ -625,6 +638,9 @@ public class MainActivity extends Activity {
     private void showShortcutManagement() {
         hideOverviewSortMode();
 
+        shortcutHelpButton.setVisibility(
+                View.VISIBLE);
+
         categoryManagement.setVisibility(
                 View.GONE);
 
@@ -657,6 +673,28 @@ public class MainActivity extends Activity {
 
         drawerLayout.closeDrawer(
                 Gravity.END);
+    }
+
+    private void showShortcutHelpDialog() {
+        View view =
+                getLayoutInflater().inflate(
+                        R.layout.dialog_shortcut_help,
+                        null,
+                        false);
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.shortcut_help_title)
+                        .setView(view)
+                        .setPositiveButton(
+                                R.string.action_close,
+                                null)
+                        .show();
+
+        styleCategoryDialog(
+                dialog,
+                false);
     }
 
     private void refreshShortcuts() {
@@ -1127,6 +1165,7 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
+        shortcutHelpButton.setVisibility(View.GONE);
         hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
