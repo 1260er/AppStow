@@ -103,7 +103,9 @@ final class BackupManager {
                         output.toString(
                                 StandardCharsets.UTF_8.name()));
 
-        validateBackup(backup);
+        validateBackup(
+                backup,
+                true);
 
         return backup;
     }
@@ -113,7 +115,9 @@ final class BackupManager {
             JSONObject backup)
             throws JSONException, IOException {
 
-        validateBackup(backup);
+        validateBackup(
+                backup,
+                true);
 
         JSONArray categories =
                 backup.getJSONArray(
@@ -513,13 +517,86 @@ final class BackupManager {
                 "sectionItemOrder",
                 sectionItemOrder);
 
-        validateBackup(backup);
+        validateBackup(
+                backup,
+                false);
 
         return backup;
     }
 
+    private static boolean isKnownShortcutType(
+            String type) {
+
+        return ShortcutEntry.TYPE_WEBSITE.equals(type)
+                || ShortcutEntry.TYPE_WEB_APP.equals(type)
+                || ShortcutEntry.TYPE_DEEP_LINK.equals(type)
+                || ShortcutEntry.TYPE_APP_SETTINGS.equals(type);
+    }
+
+    private static boolean isValidShortcutTarget(
+            String type,
+            String target) {
+
+        try {
+            if (ShortcutEntry.TYPE_APP_SETTINGS.equals(
+                    type)) {
+
+                String packageName =
+                        target.startsWith(
+                                "package:")
+                                ? target.substring(
+                                        "package:".length())
+                                : target;
+
+                return !packageName
+                        .trim()
+                        .isEmpty();
+            }
+
+            Uri uri =
+                    Uri.parse(target);
+
+            String scheme =
+                    uri.getScheme();
+
+            if (ShortcutEntry.TYPE_DEEP_LINK.equals(
+                    type)) {
+
+                return scheme != null
+                        && !scheme.trim()
+                                .isEmpty();
+            }
+
+            String host =
+                    uri.getHost();
+
+            if (scheme == null
+                    || host == null
+                    || host.isEmpty()) {
+
+                return false;
+            }
+
+            if (ShortcutEntry.TYPE_WEB_APP.equals(
+                    type)) {
+
+                return "https".equalsIgnoreCase(
+                        scheme);
+            }
+
+            return "http".equalsIgnoreCase(
+                    scheme)
+                    || "https".equalsIgnoreCase(
+                            scheme);
+
+        } catch (RuntimeException exception) {
+            return false;
+        }
+    }
+
     private static void validateBackup(
-            JSONObject backup)
+            JSONObject backup,
+            boolean strictShortcutValidation)
             throws JSONException {
 
         if (!FORMAT_ID.equals(
@@ -622,17 +699,24 @@ final class BackupManager {
             }
         }
 
+        Set<String> favoritePackageIds =
+                new HashSet<>();
+
         for (int i = 0;
              i < favoritePackages.length();
              i++) {
 
-            if (favoritePackages
-                    .getString(i)
-                    .trim()
-                    .isEmpty()) {
+            String packageName =
+                    favoritePackages
+                            .getString(i)
+                            .trim();
+
+            if (packageName.isEmpty()
+                    || !favoritePackageIds.add(
+                            packageName)) {
 
                 throw new JSONException(
-                        "Ungültiger Favorit im Backup.");
+                        "Ungültiger oder doppelter Favorit im Backup.");
             }
         }
 
@@ -666,7 +750,12 @@ final class BackupManager {
                     || name.isEmpty()
                     || type.isEmpty()
                     || target.isEmpty()
-                    || !shortcutIds.add(id)) {
+                    || !shortcutIds.add(id)
+                    || (strictShortcutValidation
+                    && (!isKnownShortcutType(type)
+                    || !isValidShortcutTarget(
+                            type,
+                            target)))) {
 
                 throw new JSONException(
                         "Ungültiger Shortcut im Backup.");
@@ -696,17 +785,24 @@ final class BackupManager {
             }
         }
 
+        Set<String> overviewIds =
+                new HashSet<>();
+
         for (int i = 0;
              i < overviewOrder.length();
              i++) {
 
-            if (overviewOrder
-                    .getString(i)
-                    .trim()
-                    .isEmpty()) {
+            String sectionId =
+                    overviewOrder
+                            .getString(i)
+                            .trim();
+
+            if (sectionId.isEmpty()
+                    || !overviewIds.add(
+                            sectionId)) {
 
                 throw new JSONException(
-                        "Ungültige Sortierung im Backup.");
+                        "Ungültige oder doppelte Sortierung im Backup.");
             }
         }
 
