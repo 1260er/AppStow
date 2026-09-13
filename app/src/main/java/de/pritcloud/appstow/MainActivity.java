@@ -18,6 +18,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,6 +58,8 @@ public class MainActivity extends Activity {
     private View shortcutManagement;
     private TextView shortcutEmptyMessage;
     private View backupManagement;
+    private ScrollView helpManagement;
+    private View helpShortcutSection;
     private EditText appSearch;
     private View appSearchContainer;
     private ImageButton appSearchClear;
@@ -149,6 +152,12 @@ public class MainActivity extends Activity {
 
         backupManagement =
                 findViewById(R.id.backupManagement);
+
+        helpManagement =
+                findViewById(R.id.helpManagement);
+
+        helpShortcutSection =
+                findViewById(R.id.helpShortcutSection);
 
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
@@ -357,7 +366,7 @@ public class MainActivity extends Activity {
         });
 
         shortcutHelpButton.setOnClickListener(v ->
-                showShortcutHelpDialog());
+                showHelp(true));
 
         findViewById(R.id.navApps).setOnClickListener(v ->
                 showApps());
@@ -373,10 +382,9 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         showBackupManagement());
 
-        bindMenu(
-                R.id.navHelp,
-                "Hilfe",
-                "Hilfe und Bedienung.");
+        findViewById(R.id.navHelp)
+                .setOnClickListener(v ->
+                        showHelp(false));
 
         bindMenu(
                 R.id.navAbout,
@@ -621,6 +629,7 @@ public class MainActivity extends Activity {
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
+        helpManagement.setVisibility(View.GONE);
 
         setOverviewSortMode(false);
         overviewSortButton.setVisibility(View.VISIBLE);
@@ -656,6 +665,7 @@ public class MainActivity extends Activity {
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
+        helpManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
 
         loadAppsAsync();
@@ -683,6 +693,7 @@ public class MainActivity extends Activity {
 
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
+        helpManagement.setVisibility(View.GONE);
 
         pageTitle.setText(R.string.nav_categories);
 
@@ -759,6 +770,9 @@ public class MainActivity extends Activity {
         backupManagement.setVisibility(
                 View.GONE);
 
+        helpManagement.setVisibility(
+                View.GONE);
+
         overviewList.setVisibility(
                 View.GONE);
 
@@ -786,28 +800,6 @@ public class MainActivity extends Activity {
 
         drawerLayout.closeDrawer(
                 Gravity.END);
-    }
-
-    private void showShortcutHelpDialog() {
-        View view =
-                getLayoutInflater().inflate(
-                        R.layout.dialog_shortcut_help,
-                        null,
-                        false);
-
-        AlertDialog dialog =
-                new AlertDialog.Builder(this)
-                        .setTitle(
-                                R.string.shortcut_help_title)
-                        .setView(view)
-                        .setPositiveButton(
-                                R.string.action_close,
-                                null)
-                        .show();
-
-        styleCategoryDialog(
-                dialog,
-                false);
     }
 
     private void refreshShortcuts() {
@@ -1589,6 +1581,62 @@ public class MainActivity extends Activity {
         super.onBackPressed();
     }
 
+    private void showHelp(
+            boolean jumpToShortcuts) {
+
+        setTopNavigation(false);
+
+        shortcutHelpButton.setVisibility(
+                View.GONE);
+
+        hideOverviewSortMode();
+
+        categoryManagement.setVisibility(
+                View.GONE);
+
+        shortcutManagement.setVisibility(
+                View.GONE);
+
+        backupManagement.setVisibility(
+                View.GONE);
+
+        overviewList.setVisibility(
+                View.GONE);
+
+        appList.setVisibility(
+                View.GONE);
+
+        pageMessage.setVisibility(
+                View.GONE);
+
+        appSearchContainer.setVisibility(
+                View.GONE);
+
+        appSearchClear.setVisibility(
+                View.GONE);
+
+        appSearch.clearFocus();
+
+        pageTitle.setText(
+                R.string.nav_help);
+
+        helpManagement.setVisibility(
+                View.VISIBLE);
+
+        drawerLayout.closeDrawer(
+                Gravity.END);
+
+        helpManagement.post(() -> {
+            if (jumpToShortcuts) {
+                helpManagement.smoothScrollTo(
+                        0,
+                        helpShortcutSection.getTop());
+            } else {
+                helpManagement.scrollTo(0, 0);
+            }
+        });
+    }
+
     private void showBackupManagement() {
         setTopNavigation(false);
 
@@ -1601,6 +1649,9 @@ public class MainActivity extends Activity {
                 View.GONE);
 
         shortcutManagement.setVisibility(
+                View.GONE);
+
+        helpManagement.setVisibility(
                 View.GONE);
 
         overviewList.setVisibility(
@@ -1813,6 +1864,8 @@ public class MainActivity extends Activity {
         hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
+        backupManagement.setVisibility(View.GONE);
+        helpManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
         appSearchContainer.setVisibility(View.GONE);
         appSearchClear.setVisibility(View.GONE);

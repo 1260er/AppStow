@@ -76,48 +76,6 @@
     <string name="shortcut_template_email">E-Mail schreiben</string>
     <string name="shortcut_template_play_store">App im Play Store öffnen</string>
     <string name="action_shortcut_help">Hilfe zu eigenen Shortcuts</string>
-    <string name="shortcut_help_title">Eigene Shortcuts</string>
-    <string name="action_close">Schließen</string>
-    <string name="shortcut_help_content"><b>Webseite</b>
-Eine normale http- oder https-Adresse. Android öffnet sie mit der dafür zuständigen App oder dem Standardbrowser.
-
-<b>Web-App</b>
-Öffnet eine http- oder https-Adresse direkt in AppStow im Vollbild. Die Anmeldung erfolgt unabhängig vom normalen Browser und bleibt normalerweise in den App-Daten gespeichert. Für Web-Apps wird eine nutzbare Netzwerkverbindung benötigt.
-
-<b>Deep Link (erweitert)</b>
-Deep Links öffnen spezielle Funktionen einer App. Nicht jede App unterstützt jeden Aufruf. Hier kannst du bekannte Links oder Android-Intent-URIs direkt eintragen.
-
-<b>App-Einstellungen:</b>
-package:com.example.app
-(Öffnet die Android-App-Informationen für die angegebene App.)
-
-<b>Google Maps:</b>
-https://www.google.com/maps/dir/?api=1&amp;destination=Berlin
-(Öffnet die Routenführung.)
-
-<b>WhatsApp:</b>
-whatsapp://send?phone=+491701234567&amp;text=Hallo
-(Öffnet das Chatfenster mit vorausgefülltem Text.)
-
-<b>Kamera:</b>
-intent:#Intent;action=android.media.action.IMAGE_CAPTURE;end
-(Öffnet die Kamera für eine Aufnahme.)
-
-<b>Telefon:</b>
-tel:+491701234567
-(Öffnet die Telefon-App mit vorausgefüllter Nummer.)
-
-<b>SMS:</b>
-sms:+491701234567
-(Öffnet die SMS-App mit vorausgefülltem Empfänger.)
-
-<b>E-Mail:</b>
-mailto:max@example.com?subject=Hallo
-(Öffnet die E-Mail-App mit Empfänger und Betreff.)
-
-<b>Play Store:</b>
-market://details?id=com.example.app
-(Öffnet die App-Seite im Play Store.)</string>
     <string name="shortcut_launch_failed">Shortcut konnte nicht gestartet werden.</string>
     <string name="webapp_network_missing">Kein Netzwerkzugriff</string>
     <string name="webapp_network_check">Netzwerk prüfen</string>
@@ -126,6 +84,48 @@ market://details?id=com.example.app
     <string name="webapp_network_message">Es besteht derzeit keine nutzbare Netzwerkverbindung. Prüfe WLAN, mobile Daten oder den Flugmodus. Bei manchen Custom-ROMs kann der Netzwerkzugriff zusätzlich pro App deaktiviert sein.</string>
     <string name="webapp_network_open_settings">App-Einstellungen</string>
     <string name="webapp_network_open_network_settings">Netzwerk-Einstellungen</string>
+
+    <string name="help_overview_title">App starten</string>
+    <string name="help_overview_text">Hier findest du Favoriten, deine Kategorien und eigene Shortcuts. Tippe auf eine Überschrift, um den Bereich auf- oder zuzuklappen. Apps und Shortcuts werden durch Antippen gestartet.</string>
+
+    <string name="help_categories_title">Favoriten &amp; Kategorien</string>
+    <string name="help_categories_text">Favoriten erscheinen im Bereich „Favoriten“. Kategorien kannst du unter „Kategorien verwalten“ anlegen, umbenennen oder löschen.</string>
+
+    <string name="help_apps_title">Apps zuweisen</string>
+    <string name="help_apps_text">Halte eine App länger gedrückt, um sie einer oder mehreren Kategorien zuzuweisen. Über das Filtersymbol kannst du nur Apps anzeigen, die noch keiner Kategorie zugewiesen sind.</string>
+
+    <string name="help_shortcuts_title">Eigene Shortcuts</string>
+
+    <string name="help_shortcut_website_title">Webseite</string>
+    <string name="help_shortcut_website_text">Öffnet eine normale http- oder https-Adresse mit der zuständigen App oder dem Standardbrowser.</string>
+
+    <string name="help_shortcut_webapp_title">Web-App</string>
+    <string name="help_shortcut_webapp_text">Öffnet eine Webseite direkt in AppStow im Vollbild. Anmeldung und Cookies werden unabhängig vom normalen Browser in den App-Daten gespeichert. Eine Netzwerkverbindung wird benötigt.</string>
+
+    <string name="help_shortcut_deeplink_title">Deep Link (erweitert)</string>
+    <string name="help_shortcut_deeplink_text">Öffnet eine bestimmte Funktion einer App. Welche Links funktionieren, hängt von der jeweiligen App ab. Auch Android-Intent-URIs können verwendet werden.</string>
+
+    <string name="help_example_maps_title">Google Maps – Navigation</string>
+    <string name="help_example_maps">https://www.google.com/maps/dir/?api=1&amp;destination=Berlin</string>
+
+    <string name="help_example_whatsapp_title">WhatsApp – Nachricht</string>
+    <string name="help_example_whatsapp">whatsapp://send?phone=+491701234567&amp;text=Hallo</string>
+
+    <string name="help_example_camera_title">Kamera</string>
+    <string name="help_example_camera">intent:#Intent;action=android.media.action.IMAGE_CAPTURE;end</string>
+
+    <string name="help_example_phone_title">Telefon</string>
+    <string name="help_example_phone">tel:+491701234567</string>
+
+    <string name="help_shortcut_settings_title">App-Einstellungen</string>
+    <string name="help_shortcut_settings_text">Öffnet direkt die Android-App-Informationen der angegebenen App.</string>
+    <string name="help_example_settings">package:com.example.app</string>
+
+    <string name="help_sort_title">Sortieren</string>
+    <string name="help_sort_text">Mit dem Sortiersymbol oben kannst du die Bereiche verschieben. Das Sortiersymbol innerhalb eines Bereichs sortiert dessen Apps und Shortcuts. Ziehe die eingeblendeten Griffe an die gewünschte Position.</string>
+
+    <string name="help_backup_title">Backup &amp; Wiederherstellen</string>
+    <string name="help_backup_text">Ein Backup enthält Kategorien, Zuweisungen, Favoriten, eigene Shortcuts und alle Sortierungen. Web-App-Anmeldungen, Cookies und Android-Berechtigungen werden nicht gesichert.</string>
 
     <string name="nav_backup">Backup &amp; Wiederherstellen</string>
     <string name="backup_create">Backup erstellen</string>
