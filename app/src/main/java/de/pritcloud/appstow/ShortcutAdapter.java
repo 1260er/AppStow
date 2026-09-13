@@ -8,13 +8,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 final class ShortcutAdapter
-        extends RecyclerView.Adapter<ShortcutAdapter.ViewHolder> {
+        extends ListAdapter<ShortcutEntry, ShortcutAdapter.ViewHolder> {
 
     interface Listener {
         void onEdit(ShortcutEntry shortcut);
@@ -22,8 +24,30 @@ final class ShortcutAdapter
         void onFavorite(ShortcutEntry shortcut);
     }
 
-    private final List<ShortcutEntry> shortcuts =
-            new ArrayList<>();
+    private static final DiffUtil.ItemCallback<ShortcutEntry> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<ShortcutEntry>() {
+                @Override
+                public boolean areItemsTheSame(
+                        @NonNull ShortcutEntry oldItem,
+                        @NonNull ShortcutEntry newItem) {
+
+                    return oldItem.id.equals(
+                            newItem.id);
+                }
+
+                @Override
+                public boolean areContentsTheSame(
+                        @NonNull ShortcutEntry oldItem,
+                        @NonNull ShortcutEntry newItem) {
+
+                    return oldItem.name.equals(newItem.name)
+                            && oldItem.type.equals(newItem.type)
+                            && oldItem.target.equals(newItem.target)
+                            && oldItem.favorite == newItem.favorite
+                            && oldItem.categoryIds.equals(
+                                    newItem.categoryIds);
+                }
+            };
 
     private final CategoryStore categoryStore;
     private final Listener listener;
@@ -32,14 +56,15 @@ final class ShortcutAdapter
             CategoryStore categoryStore,
             Listener listener) {
 
+        super(DIFF_CALLBACK);
+
         this.categoryStore = categoryStore;
         this.listener = listener;
     }
 
     void setShortcuts(List<ShortcutEntry> items) {
-        shortcuts.clear();
-        shortcuts.addAll(items);
-        notifyDataSetChanged();
+        submitList(
+                new ArrayList<>(items));
     }
 
     @NonNull
@@ -64,7 +89,7 @@ final class ShortcutAdapter
             int position) {
 
         ShortcutEntry shortcut =
-                shortcuts.get(position);
+                getItem(position);
 
         holder.name.setText(
                 shortcut.name);
@@ -155,11 +180,6 @@ final class ShortcutAdapter
         }
 
         return result.toString();
-    }
-
-    @Override
-    public int getItemCount() {
-        return shortcuts.size();
     }
 
     static final class ViewHolder

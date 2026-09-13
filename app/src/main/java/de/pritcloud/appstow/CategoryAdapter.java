@@ -7,32 +7,52 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 final class CategoryAdapter
-        extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
+        extends ListAdapter<CategoryEntry, CategoryAdapter.CategoryViewHolder> {
 
     interface Listener {
         void onRename(CategoryEntry category);
         void onDelete(CategoryEntry category);
     }
 
-    private final List<CategoryEntry> categories =
-            new ArrayList<>();
+    private static final DiffUtil.ItemCallback<CategoryEntry> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<CategoryEntry>() {
+                @Override
+                public boolean areItemsTheSame(
+                        @NonNull CategoryEntry oldItem,
+                        @NonNull CategoryEntry newItem) {
+
+                    return oldItem.id.equals(
+                            newItem.id);
+                }
+
+                @Override
+                public boolean areContentsTheSame(
+                        @NonNull CategoryEntry oldItem,
+                        @NonNull CategoryEntry newItem) {
+
+                    return oldItem.name.equals(
+                            newItem.name);
+                }
+            };
 
     private final Listener listener;
 
     CategoryAdapter(Listener listener) {
+        super(DIFF_CALLBACK);
         this.listener = listener;
     }
 
     void setCategories(List<CategoryEntry> items) {
-        categories.clear();
-        categories.addAll(items);
-        notifyDataSetChanged();
+        submitList(
+                new ArrayList<>(items));
     }
 
     @NonNull
@@ -57,7 +77,7 @@ final class CategoryAdapter
             int position) {
 
         CategoryEntry category =
-                categories.get(position);
+                getItem(position);
 
         holder.name.setText(category.name);
 
@@ -66,11 +86,6 @@ final class CategoryAdapter
 
         holder.delete.setOnClickListener(v ->
                 listener.onDelete(category));
-    }
-
-    @Override
-    public int getItemCount() {
-        return categories.size();
     }
 
     static final class CategoryViewHolder
