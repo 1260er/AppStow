@@ -9,6 +9,8 @@
         <item name="android:windowLightNavigationBar">true</item>
     </style>
 
+    <style name="AppTheme.Starting" parent="@style/AppTheme" />
+
     <style name="UiScreenTitle">
         <item name="android:textColor">@color/ui_text_primary</item>
         <item name="android:textSize">@dimen/text_title</item>

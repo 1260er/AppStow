@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
 
@@ -64,6 +66,11 @@ public class MainActivity extends Activity {
     private ImageButton topNavigationButton;
     private boolean showingOverview;
     private boolean showOnlyUnassignedApps;
+    private boolean appsLoading;
+    private boolean appsLoaded;
+
+    private final ExecutorService appLoader =
+            Executors.newSingleThreadExecutor();
 
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
@@ -415,6 +422,12 @@ public class MainActivity extends Activity {
         showOverview();
     }
 
+    @Override
+    protected void onDestroy() {
+        appLoader.shutdownNow();
+        super.onDestroy();
+    }
+
     private void rebuildOverviewSections() {
         Map<String, Boolean> expandedStates =
                 new HashMap<>();
@@ -612,8 +625,6 @@ public class MainActivity extends Activity {
         setOverviewSortMode(false);
         overviewSortButton.setVisibility(View.VISIBLE);
 
-        loadApps();
-
         rebuildOverviewSections();
         overviewAdapter.setApps(apps);
 
@@ -628,6 +639,8 @@ public class MainActivity extends Activity {
         overviewList.setVisibility(View.VISIBLE);
 
         drawerLayout.closeDrawer(Gravity.END);
+
+        loadAppsAsync();
     }
 
     private void showApps() {
@@ -644,7 +657,8 @@ public class MainActivity extends Activity {
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
-        loadApps();
+
+        loadAppsAsync();
 
         pageTitle.setText(R.string.nav_apps);
 
@@ -1054,8 +1068,64 @@ public class MainActivity extends Activity {
         return input;
     }
 
-    private void loadApps() {
-        PackageManager packageManager = getPackageManager();
+    private void loadAppsAsync() {
+        if (appsLoading) {
+            return;
+        }
+
+        appsLoading = true;
+
+        PackageManager packageManager =
+                getPackageManager();
+
+        String ownPackageName =
+                getPackageName();
+
+        appLoader.execute(() -> {
+            List<AppEntry> loadedApps;
+
+            try {
+                loadedApps =
+                        queryLauncherApps(
+                                packageManager,
+                                ownPackageName);
+            } catch (RuntimeException exception) {
+                loadedApps =
+                        new ArrayList<>();
+            }
+
+            List<AppEntry> result =
+                    loadedApps;
+
+            runOnUiThread(() -> {
+                if (isFinishing()
+                        || isDestroyed()) {
+                    return;
+                }
+
+                appsLoading = false;
+                appsLoaded = true;
+
+                apps.clear();
+                apps.addAll(result);
+
+                rebuildOverviewSections();
+                overviewAdapter.setApps(apps);
+
+                if (appSearchContainer.getVisibility()
+                        == View.VISIBLE) {
+
+                    renderApps(
+                            appSearch.getText()
+                                    .toString());
+                }
+            });
+        });
+    }
+
+    private List<AppEntry> queryLauncherApps(
+            PackageManager packageManager,
+            String ownPackageName) {
 
         Intent launcherIntent =
                 new Intent(Intent.ACTION_MAIN);
@@ -1079,37 +1149,48 @@ public class MainActivity extends Activity {
                             0);
         }
 
-        apps.clear();
+        List<AppEntry> loadedApps =
+                new ArrayList<>();
 
-        Set<String> seenPackages = new HashSet<>();
+        Set<String> seenPackages =
+                new HashSet<>();
 
-        for (ResolveInfo resolveInfo : resolveInfos) {
+        for (ResolveInfo resolveInfo :
+                resolveInfos) {
+
             String packageName =
                     resolveInfo.activityInfo.packageName;
 
-            if (packageName.equals(getPackageName())
-                    || !seenPackages.add(packageName)) {
+            if (packageName.equals(
+                    ownPackageName)
+                    || !seenPackages.add(
+                            packageName)) {
+
                 continue;
             }
 
             CharSequence labelSequence =
-                    resolveInfo.loadLabel(packageManager);
+                    resolveInfo.loadLabel(
+                            packageManager);
 
             String label =
                     labelSequence != null
                             ? labelSequence.toString()
                             : packageName;
 
-            apps.add(
+            loadedApps.add(
                     new AppEntry(
                             label,
                             packageName,
                             resolveInfo));
         }
 
-        apps.sort((first, second) ->
-                first.label.compareToIgnoreCase(
-                        second.label));
+        loadedApps.sort(
+                (first, second) ->
+                        first.label.compareToIgnoreCase(
+                                second.label));
+
+        return loadedApps;
     }
 
     private List<AppEntry> getFavoriteApps() {
@@ -1162,10 +1243,18 @@ public class MainActivity extends Activity {
             appList.setVisibility(View.GONE);
             pageMessage.setVisibility(View.VISIBLE);
 
-            if (showOnlyUnassignedApps
+            if (appsLoading
+                    && !appsLoaded) {
+
+                pageMessage.setText(
+                        R.string.apps_loading);
+
+            } else if (showOnlyUnassignedApps
                     && normalizedQuery.isEmpty()) {
+
                 pageMessage.setText(
                         R.string.apps_unassigned_empty);
+
             } else {
                 pageMessage.setText(
                         normalizedQuery.isEmpty()

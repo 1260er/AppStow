@@ -19,6 +19,7 @@
     <string name="overview_category_empty">Noch keine Apps zugewiesen.</string>
 
     <string name="search_apps_hint">Apps durchsuchen</string>
+    <string name="apps_loading">Apps werden geladen …</string>
     <string name="action_clear_search">Suche löschen</string>
     <string name="action_filter_unassigned_apps">Nur nicht zugewiesene Apps anzeigen</string>
     <string name="action_show_all_apps">Alle Apps anzeigen</string>
