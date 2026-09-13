@@ -110,4 +110,5 @@ mailto:max@example.com?subject=Hallo
 <b>Play Store:</b>
 market://details?id=com.example.app
 (Öffnet die App-Seite im Play Store.)</string>
+    <string name="shortcut_launch_failed">Shortcut konnte nicht gestartet werden.</string>
 </resources>

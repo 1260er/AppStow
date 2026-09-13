@@ -23,10 +23,18 @@ final class OverviewAdapter
     private static final int TYPE_SECTION = 0;
     private static final int TYPE_MESSAGE = 1;
     private static final int TYPE_APP = 2;
-    private static final String CATEGORY_PREFIX = "category:";
+    private static final int TYPE_SHORTCUT = 3;
+
+    private static final String CATEGORY_PREFIX =
+            "category:";
 
     interface OnAppClickListener {
         void onAppClick(AppEntry app);
+    }
+
+    interface OnShortcutClickListener {
+        void onShortcutClick(
+                ShortcutEntry shortcut);
     }
 
     interface OnAppLongClickListener {
@@ -34,19 +42,31 @@ final class OverviewAdapter
     }
 
     interface OnSectionDragStartListener {
-        void onDragStart(RecyclerView.ViewHolder holder);
+        void onDragStart(
+                RecyclerView.ViewHolder holder);
     }
 
     private final List<OverviewSection> sections;
-    private final List<Row> rows = new ArrayList<>();
-    private final List<AppEntry> allApps = new ArrayList<>();
-    private final List<AppEntry> favoriteApps = new ArrayList<>();
+    private final List<Row> rows =
+            new ArrayList<>();
+
+    private final List<AppEntry> allApps =
+            new ArrayList<>();
+
+    private final List<AppEntry> favoriteApps =
+            new ArrayList<>();
+
+    private final List<ShortcutEntry> allShortcuts =
+            new ArrayList<>();
 
     private final PackageManager packageManager;
     private final FavoritesStore favoritesStore;
     private final CategoryStore categoryStore;
-    private final OnAppClickListener clickListener;
-    private final OnAppLongClickListener longClickListener;
+    private final ShortcutStore shortcutStore;
+
+    private final OnAppClickListener appClickListener;
+    private final OnShortcutClickListener shortcutClickListener;
+    private final OnAppLongClickListener appLongClickListener;
     private final OnSectionDragStartListener dragStartListener;
 
     private boolean sortMode;
@@ -56,18 +76,23 @@ final class OverviewAdapter
             PackageManager packageManager,
             FavoritesStore favoritesStore,
             CategoryStore categoryStore,
-            OnAppClickListener clickListener,
-            OnAppLongClickListener longClickListener,
+            ShortcutStore shortcutStore,
+            OnAppClickListener appClickListener,
+            OnShortcutClickListener shortcutClickListener,
+            OnAppLongClickListener appLongClickListener,
             OnSectionDragStartListener dragStartListener) {
 
         this.sections = sections;
         this.packageManager = packageManager;
         this.favoritesStore = favoritesStore;
         this.categoryStore = categoryStore;
-        this.clickListener = clickListener;
-        this.longClickListener = longClickListener;
+        this.shortcutStore = shortcutStore;
+        this.appClickListener = appClickListener;
+        this.shortcutClickListener = shortcutClickListener;
+        this.appLongClickListener = appLongClickListener;
         this.dragStartListener = dragStartListener;
 
+        refreshShortcutEntries();
         rebuildRows();
     }
 
@@ -76,6 +101,8 @@ final class OverviewAdapter
         allApps.addAll(apps);
 
         refreshFavoriteApps();
+        refreshShortcutEntries();
+
         rebuildRows();
         notifyDataSetChanged();
     }
@@ -84,17 +111,43 @@ final class OverviewAdapter
         favoriteApps.clear();
 
         for (AppEntry app : allApps) {
-            if (favoritesStore.isFavorite(app.packageName)) {
+            if (favoritesStore.isFavorite(
+                    app.packageName)) {
+
                 favoriteApps.add(app);
             }
         }
     }
 
+    private void refreshShortcutEntries() {
+        allShortcuts.clear();
+        allShortcuts.addAll(
+                shortcutStore.getShortcuts());
+    }
+
+    private List<ShortcutEntry> getFavoriteShortcuts() {
+        List<ShortcutEntry> result =
+                new ArrayList<>();
+
+        for (ShortcutEntry shortcut :
+                allShortcuts) {
+
+            if (shortcut.favorite) {
+                result.add(shortcut);
+            }
+        }
+
+        return result;
+    }
+
     private void rebuildRows() {
         rows.clear();
 
-        for (OverviewSection section : sections) {
-            rows.add(Row.section(section));
+        for (OverviewSection section :
+                sections) {
+
+            rows.add(
+                    Row.section(section));
 
             if (sortMode) {
                 continue;
@@ -104,38 +157,107 @@ final class OverviewAdapter
                 continue;
             }
 
-            if ("favorites".equals(section.id)) {
-                if (favoriteApps.isEmpty()) {
-                    rows.add(Row.message(section));
+            if ("favorites".equals(
+                    section.id)) {
+
+                List<ShortcutEntry> favoriteShortcuts =
+                        getFavoriteShortcuts();
+
+                if (favoriteApps.isEmpty()
+                        && favoriteShortcuts.isEmpty()) {
+
+                    rows.add(
+                            Row.message(section));
+
                 } else {
-                    for (AppEntry app : favoriteApps) {
-                        rows.add(Row.app(section, app));
+                    for (AppEntry app :
+                            favoriteApps) {
+
+                        rows.add(
+                                Row.app(
+                                        section,
+                                        app));
+                    }
+
+                    for (ShortcutEntry shortcut :
+                            favoriteShortcuts) {
+
+                        rows.add(
+                                Row.shortcut(
+                                        section,
+                                        shortcut));
                     }
                 }
 
                 continue;
             }
 
-            if (section.id.startsWith(CATEGORY_PREFIX)) {
+            if (section.id.startsWith(
+                    CATEGORY_PREFIX)) {
+
                 String categoryId =
                         section.id.substring(
                                 CATEGORY_PREFIX.length());
 
                 List<AppEntry> categoryApps =
-                        getCategoryApps(categoryId);
+                        getCategoryApps(
+                                categoryId);
 
-                if (categoryApps.isEmpty()) {
-                    rows.add(Row.message(section));
+                List<ShortcutEntry> categoryShortcuts =
+                        getCategoryShortcuts(
+                                categoryId);
+
+                if (categoryApps.isEmpty()
+                        && categoryShortcuts.isEmpty()) {
+
+                    rows.add(
+                            Row.message(section));
+
                 } else {
-                    for (AppEntry app : categoryApps) {
-                        rows.add(Row.app(section, app));
+                    for (AppEntry app :
+                            categoryApps) {
+
+                        rows.add(
+                                Row.app(
+                                        section,
+                                        app));
+                    }
+
+                    for (ShortcutEntry shortcut :
+                            categoryShortcuts) {
+
+                        rows.add(
+                                Row.shortcut(
+                                        section,
+                                        shortcut));
                     }
                 }
 
                 continue;
             }
 
-            rows.add(Row.message(section));
+            if ("shortcuts".equals(
+                    section.id)) {
+
+                if (allShortcuts.isEmpty()) {
+                    rows.add(
+                            Row.message(section));
+                } else {
+                    for (ShortcutEntry shortcut :
+                            allShortcuts) {
+
+                        rows.add(
+                                Row.shortcut(
+                                        section,
+                                        shortcut));
+                    }
+                }
+
+                continue;
+            }
+
+            rows.add(
+                    Row.message(section));
         }
     }
 
@@ -147,10 +269,13 @@ final class OverviewAdapter
 
         for (AppEntry app : allApps) {
             Set<String> assignedIds =
-                    categoryStore.getAssignedCategoryIds(
-                            app.packageName);
+                    categoryStore
+                            .getAssignedCategoryIds(
+                                    app.packageName);
 
-            if (assignedIds.contains(categoryId)) {
+            if (assignedIds.contains(
+                    categoryId)) {
+
                 result.add(app);
             }
         }
@@ -158,8 +283,29 @@ final class OverviewAdapter
         return result;
     }
 
+    private List<ShortcutEntry> getCategoryShortcuts(
+            String categoryId) {
+
+        List<ShortcutEntry> result =
+                new ArrayList<>();
+
+        for (ShortcutEntry shortcut :
+                allShortcuts) {
+
+            if (shortcut.categoryIds.contains(
+                    categoryId)) {
+
+                result.add(shortcut);
+            }
+        }
+
+        return result;
+    }
+
     @Override
-    public int getItemViewType(int position) {
+    public int getItemViewType(
+            int position) {
+
         return rows.get(position).type;
     }
 
@@ -170,32 +316,41 @@ final class OverviewAdapter
             int viewType) {
 
         LayoutInflater inflater =
-                LayoutInflater.from(parent.getContext());
+                LayoutInflater.from(
+                        parent.getContext());
 
         if (viewType == TYPE_SECTION) {
-            View view = inflater.inflate(
-                    R.layout.item_overview_section,
-                    parent,
-                    false);
+            View view =
+                    inflater.inflate(
+                            R.layout.item_overview_section,
+                            parent,
+                            false);
 
-            return new SectionViewHolder(view);
+            return new SectionViewHolder(
+                    view);
         }
 
-        if (viewType == TYPE_APP) {
-            View view = inflater.inflate(
-                    R.layout.item_app,
-                    parent,
-                    false);
+        if (viewType == TYPE_APP
+                || viewType == TYPE_SHORTCUT) {
 
-            return new AppViewHolder(view);
+            View view =
+                    inflater.inflate(
+                            R.layout.item_app,
+                            parent,
+                            false);
+
+            return new EntryViewHolder(
+                    view);
         }
 
-        View view = inflater.inflate(
-                R.layout.item_overview_message,
-                parent,
-                false);
+        View view =
+                inflater.inflate(
+                        R.layout.item_overview_message,
+                        parent,
+                        false);
 
-        return new MessageViewHolder(view);
+        return new MessageViewHolder(
+                view);
     }
 
     @Override
@@ -203,20 +358,28 @@ final class OverviewAdapter
             @NonNull RecyclerView.ViewHolder holder,
             int position) {
 
-        Row row = rows.get(position);
+        Row row =
+                rows.get(position);
 
         if (holder instanceof SectionViewHolder) {
             bindSection(
                     (SectionViewHolder) holder,
                     row.section);
+
             return;
         }
 
-        if (holder instanceof AppViewHolder) {
-            bindApp(
-                    (AppViewHolder) holder,
-                    row.section,
-                    row.app);
+        if (holder instanceof EntryViewHolder) {
+            if (row.type == TYPE_APP) {
+                bindApp(
+                        (EntryViewHolder) holder,
+                        row.app);
+            } else {
+                bindShortcut(
+                        (EntryViewHolder) holder,
+                        row.shortcut);
+            }
+
             return;
         }
 
@@ -231,7 +394,8 @@ final class OverviewAdapter
             SectionViewHolder holder,
             OverviewSection section) {
 
-        holder.title.setText(section.title);
+        holder.title.setText(
+                section.title);
 
         holder.chevron.setVisibility(
                 sortMode
@@ -244,82 +408,196 @@ final class OverviewAdapter
                         : View.GONE);
 
         holder.chevron.setRotation(
-                section.expanded ? 180f : 0f);
+                section.expanded
+                        ? 180f
+                        : 0f);
 
         if (sortMode) {
-            holder.itemView.setOnClickListener(null);
+            holder.itemView
+                    .setOnClickListener(
+                            null);
 
-            holder.dragHandle.setOnTouchListener(
-                    (view, event) -> {
-                        if (event.getActionMasked()
-                                == MotionEvent.ACTION_DOWN) {
+            holder.dragHandle
+                    .setOnTouchListener(
+                            (view, event) -> {
+                                if (event.getActionMasked()
+                                        == MotionEvent.ACTION_DOWN) {
 
-                            dragStartListener.onDragStart(
-                                    holder);
-                        }
+                                    dragStartListener
+                                            .onDragStart(
+                                                    holder);
+                                }
 
-                        return false;
-                    });
+                                return false;
+                            });
 
             return;
         }
 
-        holder.dragHandle.setOnTouchListener(null);
+        holder.dragHandle
+                .setOnTouchListener(
+                        null);
 
-        holder.itemView.setOnClickListener(v -> {
-            section.expanded = !section.expanded;
+        holder.itemView
+                .setOnClickListener(v -> {
+                    section.expanded =
+                            !section.expanded;
 
-            rebuildRows();
-            notifyDataSetChanged();
-        });
+                    rebuildRows();
+                    notifyDataSetChanged();
+                });
     }
 
     private void bindApp(
-            AppViewHolder holder,
-            OverviewSection section,
+            EntryViewHolder holder,
             AppEntry app) {
 
         holder.icon.setImageDrawable(
-                app.resolveInfo.loadIcon(packageManager));
+                app.resolveInfo.loadIcon(
+                        packageManager));
 
-        holder.name.setText(app.label);
+        holder.name.setText(
+                app.label);
 
         String categoryLabel =
-                categoryStore.getAssignedCategoryLabel(
-                        app.packageName);
+                categoryStore
+                        .getAssignedCategoryLabel(
+                                app.packageName);
 
-        holder.categories.setText(categoryLabel);
+        holder.categories.setText(
+                categoryLabel);
+
         holder.categories.setVisibility(
                 categoryLabel.isEmpty()
                         ? View.INVISIBLE
                         : View.VISIBLE);
 
-        updateFavoriteButton(holder, app);
-
-        holder.favorite.setOnClickListener(v -> {
-            favoritesStore.toggle(app.packageName);
-
-            refreshFavoriteApps();
-            rebuildRows();
-            notifyDataSetChanged();
-        });
-
-        holder.itemView.setOnClickListener(v ->
-                clickListener.onAppClick(app));
-
-        holder.itemView.setOnLongClickListener(v -> {
-            longClickListener.onAppLongClick(app);
-            return true;
-        });
-    }
-
-    private void updateFavoriteButton(
-            AppViewHolder holder,
-            AppEntry app) {
-
         boolean favorite =
                 favoritesStore.isFavorite(
                         app.packageName);
+
+        updateFavoriteButton(
+                holder,
+                favorite);
+
+        holder.favorite
+                .setOnClickListener(v -> {
+                    favoritesStore.toggle(
+                            app.packageName);
+
+                    refreshFavoriteApps();
+                    rebuildRows();
+                    notifyDataSetChanged();
+                });
+
+        holder.itemView
+                .setOnClickListener(v ->
+                        appClickListener
+                                .onAppClick(app));
+
+        holder.itemView
+                .setOnLongClickListener(v -> {
+                    appLongClickListener
+                            .onAppLongClick(app);
+
+                    return true;
+                });
+    }
+
+    private void bindShortcut(
+            EntryViewHolder holder,
+            ShortcutEntry shortcut) {
+
+        if (ShortcutEntry.TYPE_WEBSITE.equals(
+                shortcut.type)) {
+
+            holder.icon.setImageResource(
+                    R.drawable.ic_shortcut_web);
+
+        } else if (ShortcutEntry.TYPE_WEB_APP.equals(
+                shortcut.type)) {
+
+            holder.icon.setImageResource(
+                    R.drawable.ic_shortcut_webapp);
+
+        } else {
+
+            holder.icon.setImageResource(
+                    R.drawable.ic_shortcut_action);
+        }
+
+        holder.name.setText(
+                shortcut.name);
+
+        String categoryLabel =
+                getShortcutCategoryLabel(
+                        shortcut);
+
+        holder.categories.setText(
+                categoryLabel);
+
+        holder.categories.setVisibility(
+                categoryLabel.isEmpty()
+                        ? View.INVISIBLE
+                        : View.VISIBLE);
+
+        updateFavoriteButton(
+                holder,
+                shortcut.favorite);
+
+        holder.favorite
+                .setOnClickListener(v -> {
+                    shortcutStore.toggleFavorite(
+                            shortcut.id);
+
+                    refreshShortcutEntries();
+                    rebuildRows();
+                    notifyDataSetChanged();
+                });
+
+        holder.itemView
+                .setOnClickListener(v ->
+                        shortcutClickListener
+                                .onShortcutClick(
+                                        shortcut));
+
+        holder.itemView
+                .setOnLongClickListener(
+                        null);
+
+        holder.itemView.setLongClickable(
+                false);
+    }
+
+    private String getShortcutCategoryLabel(
+            ShortcutEntry shortcut) {
+
+        StringBuilder result =
+                new StringBuilder();
+
+        for (CategoryEntry category :
+                categoryStore.getCategories()) {
+
+            if (!shortcut.categoryIds.contains(
+                    category.id)) {
+
+                continue;
+            }
+
+            if (result.length() > 0) {
+                result.append(" · ");
+            }
+
+            result.append(
+                    category.name);
+        }
+
+        return result.toString();
+    }
+
+    private void updateFavoriteButton(
+            EntryViewHolder holder,
+            boolean favorite) {
 
         holder.favorite.setImageResource(
                 favorite
@@ -327,18 +605,23 @@ final class OverviewAdapter
                         : R.drawable.ic_star_outline);
 
         holder.favorite.setContentDescription(
-                holder.itemView.getContext().getString(
-                        favorite
-                                ? R.string.action_remove_favorite
-                                : R.string.action_add_favorite));
+                holder.itemView
+                        .getContext()
+                        .getString(
+                                favorite
+                                        ? R.string.action_remove_favorite
+                                        : R.string.action_add_favorite));
     }
 
-    void setSortMode(boolean enabled) {
+    void setSortMode(
+            boolean enabled) {
+
         if (sortMode == enabled) {
             return;
         }
 
         sortMode = enabled;
+
         rebuildRows();
         notifyDataSetChanged();
     }
@@ -356,6 +639,7 @@ final class OverviewAdapter
                 || toPosition < 0
                 || fromPosition >= sections.size()
                 || toPosition >= sections.size()) {
+
             return false;
         }
 
@@ -378,6 +662,8 @@ final class OverviewAdapter
 
     void refreshAppRows() {
         refreshFavoriteApps();
+        refreshShortcutEntries();
+
         rebuildRows();
         notifyDataSetChanged();
     }
@@ -392,28 +678,37 @@ final class OverviewAdapter
         final int type;
         final OverviewSection section;
         final AppEntry app;
+        final ShortcutEntry shortcut;
 
         private Row(
                 int type,
                 OverviewSection section,
-                AppEntry app) {
+                AppEntry app,
+                ShortcutEntry shortcut) {
 
             this.type = type;
             this.section = section;
             this.app = app;
+            this.shortcut = shortcut;
         }
 
-        static Row section(OverviewSection section) {
+        static Row section(
+                OverviewSection section) {
+
             return new Row(
                     TYPE_SECTION,
                     section,
+                    null,
                     null);
         }
 
-        static Row message(OverviewSection section) {
+        static Row message(
+                OverviewSection section) {
+
             return new Row(
                     TYPE_MESSAGE,
                     section,
+                    null,
                     null);
         }
 
@@ -424,7 +719,19 @@ final class OverviewAdapter
             return new Row(
                     TYPE_APP,
                     section,
-                    app);
+                    app,
+                    null);
+        }
+
+        static Row shortcut(
+                OverviewSection section,
+                ShortcutEntry shortcut) {
+
+            return new Row(
+                    TYPE_SHORTCUT,
+                    section,
+                    null,
+                    shortcut);
         }
     }
 
@@ -435,17 +742,22 @@ final class OverviewAdapter
         final ImageView chevron;
         final ImageView dragHandle;
 
-        SectionViewHolder(@NonNull View itemView) {
+        SectionViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
 
-            title = itemView.findViewById(
-                    R.id.overviewSectionTitle);
+            title =
+                    itemView.findViewById(
+                            R.id.overviewSectionTitle);
 
-            chevron = itemView.findViewById(
-                    R.id.overviewSectionChevron);
+            chevron =
+                    itemView.findViewById(
+                            R.id.overviewSectionChevron);
 
-            dragHandle = itemView.findViewById(
-                    R.id.overviewSectionDragHandle);
+            dragHandle =
+                    itemView.findViewById(
+                            R.id.overviewSectionDragHandle);
         }
     }
 
@@ -454,15 +766,18 @@ final class OverviewAdapter
 
         final TextView message;
 
-        MessageViewHolder(@NonNull View itemView) {
+        MessageViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
 
-            message = itemView.findViewById(
-                    R.id.overviewSectionMessage);
+            message =
+                    itemView.findViewById(
+                            R.id.overviewSectionMessage);
         }
     }
 
-    static final class AppViewHolder
+    static final class EntryViewHolder
             extends RecyclerView.ViewHolder {
 
         final ImageView icon;
@@ -470,13 +785,26 @@ final class OverviewAdapter
         final TextView categories;
         final ImageButton favorite;
 
-        AppViewHolder(@NonNull View itemView) {
+        EntryViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
 
-            icon = itemView.findViewById(R.id.appIcon);
-            name = itemView.findViewById(R.id.appName);
-            categories = itemView.findViewById(R.id.appCategories);
-            favorite = itemView.findViewById(R.id.appFavorite);
+            icon =
+                    itemView.findViewById(
+                            R.id.appIcon);
+
+            name =
+                    itemView.findViewById(
+                            R.id.appName);
+
+            categories =
+                    itemView.findViewById(
+                            R.id.appCategories);
+
+            favorite =
+                    itemView.findViewById(
+                            R.id.appFavorite);
         }
     }
 }

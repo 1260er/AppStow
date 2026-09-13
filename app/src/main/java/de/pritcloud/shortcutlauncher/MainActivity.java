@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -224,7 +226,9 @@ public class MainActivity extends Activity {
                         getPackageManager(),
                         favoritesStore,
                         categoryStore,
+                        shortcutStore,
                         this::launchApp,
+                        this::launchShortcut,
                         this::handleAppLongClick,
                         this::startOverviewDrag);
 
@@ -1126,6 +1130,138 @@ public class MainActivity extends Activity {
                         .show();
 
         styleCategoryDialog(dialog, false);
+    }
+
+    private void launchShortcut(
+            ShortcutEntry shortcut) {
+
+        try {
+            if (ShortcutEntry.TYPE_WEBSITE.equals(
+                    shortcut.type)
+                    || ShortcutEntry.TYPE_WEB_APP.equals(
+                            shortcut.type)) {
+
+                launchWebShortcut(
+                        shortcut.target);
+
+                return;
+            }
+
+            if (ShortcutEntry.TYPE_APP_SETTINGS.equals(
+                    shortcut.type)) {
+
+                launchAppSettings(
+                        shortcut.target);
+
+                return;
+            }
+
+            String target =
+                    shortcut.target.trim();
+
+            if (target.startsWith(
+                    "package:")) {
+
+                launchAppSettings(
+                        target);
+
+                return;
+            }
+
+            Intent intent;
+
+            if (target.startsWith(
+                    "intent:")) {
+
+                intent =
+                        Intent.parseUri(
+                                target,
+                                Intent.URI_INTENT_SCHEME);
+
+            } else {
+                intent =
+                        new Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(target));
+            }
+
+            startActivity(intent);
+
+        } catch (Exception exception) {
+            Toast.makeText(
+                    this,
+                    R.string.shortcut_launch_failed,
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void launchWebShortcut(
+            String target) {
+
+        Uri uri =
+                Uri.parse(target);
+
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_VIEW,
+                        uri);
+
+        intent.addCategory(
+                Intent.CATEGORY_BROWSABLE);
+
+        Intent browserSelector =
+                Intent.makeMainSelectorActivity(
+                        Intent.ACTION_MAIN,
+                        Intent.CATEGORY_APP_BROWSER);
+
+        ResolveInfo defaultBrowser =
+                getPackageManager()
+                        .resolveActivity(
+                                browserSelector,
+                                PackageManager.MATCH_DEFAULT_ONLY);
+
+        if (defaultBrowser != null
+                && defaultBrowser.activityInfo != null) {
+
+            String browserPackage =
+                    defaultBrowser
+                            .activityInfo
+                            .packageName;
+
+            if (browserPackage != null
+                    && !browserPackage.isEmpty()
+                    && !"android".equals(
+                            browserPackage)) {
+
+                intent.setPackage(
+                        browserPackage);
+            }
+        }
+
+        try {
+            startActivity(intent);
+
+        } catch (ActivityNotFoundException exception) {
+            intent.setPackage(null);
+            startActivity(intent);
+        }
+    }
+
+    private void launchAppSettings(
+            String target) {
+
+        String packageTarget =
+                target.startsWith(
+                        "package:")
+                        ? target
+                        : "package:" + target;
+
+        Intent intent =
+                new Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse(packageTarget));
+
+        startActivity(intent);
     }
 
     private void launchApp(AppEntry app) {
