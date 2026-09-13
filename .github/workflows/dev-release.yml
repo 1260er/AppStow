@@ -19,9 +19,9 @@ jobs:
 
     env:
       KEYSTORE_PATH: /tmp/appstow-release.p12
-      APPSTOW_KEYSTORE_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEYSTORE_PASSWORD }}
-      APPSTOW_KEY_ALIAS: ${{ secrets.SHORTCUTLAUNCHER_KEY_ALIAS }}
-      APPSTOW_KEY_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEY_PASSWORD }}
+      APPSTOW_KEYSTORE_PASSWORD: ${{ secrets.APPSTOW_KEYSTORE_PASSWORD }}
+      APPSTOW_KEY_ALIAS: ${{ secrets.APPSTOW_KEY_ALIAS }}
+      APPSTOW_KEY_PASSWORD: ${{ secrets.APPSTOW_KEY_PASSWORD }}
 
     steps:
       - name: Check out source
@@ -29,7 +29,7 @@ jobs:
 
       - name: Validate signing secrets
         env:
-          KEYSTORE_BASE64: ${{ secrets.SHORTCUTLAUNCHER_KEYSTORE_BASE64 }}
+          KEYSTORE_BASE64: ${{ secrets.APPSTOW_KEYSTORE_BASE64 }}
         shell: bash
         run: |
           set -euo pipefail
@@ -40,7 +40,7 @@ jobs:
 
       - name: Restore release keystore
         env:
-          KEYSTORE_BASE64: ${{ secrets.SHORTCUTLAUNCHER_KEYSTORE_BASE64 }}
+          KEYSTORE_BASE64: ${{ secrets.APPSTOW_KEYSTORE_BASE64 }}
         shell: bash
         run: |
           set -euo pipefail
