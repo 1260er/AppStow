@@ -165,8 +165,31 @@ public class AppAdapter
                                 : R.string.action_add_favorite));
     }
 
-    void refreshAppRows() {
-        notifyDataSetChanged();
+    void refreshVisibleState() {
+        if (getItemCount() > 0) {
+            notifyItemRangeChanged(
+                    0,
+                    getItemCount());
+        }
+    }
+
+    void refreshPackage(
+            String packageName) {
+
+        for (int position = 0;
+             position < getItemCount();
+             position++) {
+
+            if (!getItem(position)
+                    .packageName
+                    .equals(packageName)) {
+
+                continue;
+            }
+
+            notifyItemChanged(position);
+            return;
+        }
     }
 
     static final class AppViewHolder

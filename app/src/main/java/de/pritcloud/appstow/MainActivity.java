@@ -700,7 +700,8 @@ public class MainActivity extends Activity {
                         : View.GONE);
 
         renderApps(appSearch.getText().toString());
-        appList.post(appAdapter::refreshAppRows);
+        appList.post(
+                appAdapter::refreshVisibleState);
 
         drawerLayout.closeDrawer(GravityCompat.END);
     }
@@ -1291,8 +1292,7 @@ public class MainActivity extends Activity {
         }
 
         appAdapter.submitList(
-                filteredApps,
-                appAdapter::refreshAppRows);
+                filteredApps);
 
         if (filteredApps.isEmpty()) {
             appList.setVisibility(View.GONE);
@@ -1385,6 +1385,9 @@ public class MainActivity extends Activity {
                                         renderApps(
                                                 appSearch.getText()
                                                         .toString());
+
+                                        appAdapter.refreshPackage(
+                                                app.packageName);
                                     }
 
                                     rebuildOverviewSections();
