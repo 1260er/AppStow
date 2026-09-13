@@ -87,8 +87,20 @@ public class WebAppActivity extends Activity {
         try {
             configureWebView();
 
-            webView.loadUrl(
-                    url);
+            boolean restored =
+                    false;
+
+            if (savedInstanceState != null) {
+                restored =
+                        webView.restoreState(
+                                savedInstanceState)
+                                != null;
+            }
+
+            if (!restored) {
+                webView.loadUrl(
+                        url);
+            }
 
         } catch (RuntimeException exception) {
 
@@ -389,6 +401,22 @@ public class WebAppActivity extends Activity {
         }
 
         return result.toString();
+    }
+
+    @Override
+    protected void onSaveInstanceState(
+            Bundle outState) {
+
+        if (webView != null) {
+            try {
+                webView.saveState(
+                        outState);
+            } catch (RuntimeException ignored) {
+            }
+        }
+
+        super.onSaveInstanceState(
+                outState);
     }
 
     @Override

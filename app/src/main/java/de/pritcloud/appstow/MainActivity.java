@@ -589,7 +589,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         appLoader.shutdownNow();
-        backupExecutor.shutdownNow();
+        backupExecutor.shutdown();
         super.onDestroy();
     }
 
