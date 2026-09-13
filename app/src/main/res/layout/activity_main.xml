@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/ui_background"
+        android:background="@drawable/bg_app"
         android:paddingHorizontal="@dimen/screen_padding_horizontal"
         android:paddingVertical="@dimen/screen_padding_vertical">
 
