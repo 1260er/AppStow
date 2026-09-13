@@ -1209,6 +1209,13 @@ public class MainActivity extends Activity {
     private void launchWebAppShortcut(
             String target) {
 
+        if (!NetworkAccess.hasUsableNetwork(
+                this)) {
+
+            showWebAppNetworkDialog();
+            return;
+        }
+
         Intent intent =
                 new Intent(
                         this,
@@ -1220,6 +1227,24 @@ public class MainActivity extends Activity {
 
         startActivity(
                 intent);
+    }
+
+    private void showWebAppNetworkDialog() {
+
+        new AlertDialog.Builder(this)
+                .setTitle(
+                        R.string.webapp_network_title)
+                .setMessage(
+                        R.string.webapp_network_message)
+                .setPositiveButton(
+                        R.string.webapp_network_open_settings,
+                        (dialog, which) ->
+                                NetworkAccess.openAppSettings(
+                                        this))
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
     }
 
     private void launchWebShortcut(

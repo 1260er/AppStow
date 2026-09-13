@@ -57,6 +57,10 @@ final class ShortcutEditorDialog {
                 view.findViewById(
                         R.id.shortcutEditTarget);
 
+        TextView networkWarning =
+                view.findViewById(
+                        R.id.shortcutNetworkWarning);
+
         TextView pickCategories =
                 view.findViewById(
                         R.id.shortcutPickCategories);
@@ -64,6 +68,10 @@ final class ShortcutEditorDialog {
         CheckBox favorite =
                 view.findViewById(
                         R.id.shortcutEditFavorite);
+
+        networkWarning.setOnClickListener(v ->
+                NetworkAccess.openAppSettings(
+                        activity));
 
         String[] typeLabels = {
                 activity.getString(
@@ -136,8 +144,10 @@ final class ShortcutEditorDialog {
         };
 
         updateTypeUi(
+                activity,
                 type.getSelectedItemPosition(),
-                target);
+                target,
+                networkWarning);
 
         type.setOnItemSelectedListener(
                 new android.widget.AdapterView.OnItemSelectedListener() {
@@ -166,7 +176,10 @@ final class ShortcutEditorDialog {
                                 && target.getText()
                                         .toString()
                                         .trim()
-                                        .isEmpty()) {
+                                        .isEmpty()
+                                && !(position == 1
+                                && !NetworkAccess.hasUsableNetwork(
+                                        activity))) {
 
                             target.setText(
                                     "https://");
@@ -179,8 +192,10 @@ final class ShortcutEditorDialog {
                                 position;
 
                         updateTypeUi(
+                                activity,
                                 position,
-                                target);
+                                target,
+                                networkWarning);
                     }
 
                     @Override
@@ -245,6 +260,26 @@ final class ShortcutEditorDialog {
                                         .toString()
                                         .trim();
 
+                        if (ShortcutEntry.TYPE_WEB_APP.equals(
+                                shortcutType)
+                                && !NetworkAccess.hasUsableNetwork(
+                                        activity)) {
+
+                            updateTypeUi(
+                                    activity,
+                                    type.getSelectedItemPosition(),
+                                    target,
+                                    networkWarning);
+
+                            Toast.makeText(
+                                    activity,
+                                    R.string.webapp_network_required,
+                                    Toast.LENGTH_SHORT)
+                                    .show();
+
+                            return;
+                        }
+
                         if (!isValid(
                                 shortcutName,
                                 shortcutType,
@@ -270,20 +305,90 @@ final class ShortcutEditorDialog {
                     });
         });
 
+        android.view.ViewTreeObserver.OnWindowFocusChangeListener
+                networkFocusListener =
+                hasFocus -> {
+
+                    if (hasFocus) {
+                        updateTypeUi(
+                                activity,
+                                type.getSelectedItemPosition(),
+                                target,
+                                networkWarning);
+                    }
+                };
+
+        view.getViewTreeObserver()
+                .addOnWindowFocusChangeListener(
+                        networkFocusListener);
+
+        dialog.setOnDismissListener(ignored -> {
+
+            if (view.getViewTreeObserver()
+                    .isAlive()) {
+
+                view.getViewTreeObserver()
+                        .removeOnWindowFocusChangeListener(
+                                networkFocusListener);
+            }
+        });
+
         dialog.show();
     }
 
     private static void updateTypeUi(
+            Activity activity,
             int typeIndex,
-            EditText target) {
-
-        target.setVisibility(
-                View.VISIBLE);
+            EditText target,
+            TextView networkWarning) {
 
         target.setHint(
                 typeIndex == 2
                         ? R.string.shortcut_target_deep_link_hint
                         : R.string.shortcut_target_url_hint);
+
+        boolean missingNetwork =
+                typeIndex == 1
+                        && !NetworkAccess.hasUsableNetwork(
+                                activity);
+
+        if (missingNetwork) {
+
+            if ("https://".equals(
+                    target.getText()
+                            .toString()
+                            .trim())) {
+
+                target.setText("");
+            }
+
+            target.setVisibility(
+                    View.GONE);
+
+            networkWarning.setVisibility(
+                    View.VISIBLE);
+
+            return;
+        }
+
+        networkWarning.setVisibility(
+                View.GONE);
+
+        target.setVisibility(
+                View.VISIBLE);
+
+        if (isWebType(typeIndex)
+                && target.getText()
+                        .toString()
+                        .trim()
+                        .isEmpty()) {
+
+            target.setText(
+                    "https://");
+
+            target.setSelection(
+                    target.length());
+        }
     }
 
     private static void showCategoryPicker(

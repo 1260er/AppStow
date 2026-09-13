@@ -111,6 +111,11 @@ mailto:max@example.com?subject=Hallo
 market://details?id=com.example.app
 (Öffnet die App-Seite im Play Store.)</string>
     <string name="shortcut_launch_failed">Shortcut konnte nicht gestartet werden.</string>
+    <string name="webapp_network_missing">Kein Netzwerkzugriff. App-Einstellungen öffnen</string>
+    <string name="webapp_network_required">Für Web-Apps wird Netzwerkzugriff benötigt.</string>
+    <string name="webapp_network_title">Kein Netzwerkzugriff</string>
+    <string name="webapp_network_message">Für Web-Apps benötigt ShortcutLauncher Netzwerkzugriff. Prüfe die App-Berechtigungen.</string>
+    <string name="webapp_network_open_settings">App-Einstellungen öffnen</string>
     <string name="webapp_diagnostics">Web-App-Diagnose</string>
     <string name="webapp_diagnostics_url_hint">https://…</string>
     <string name="webapp_diagnostics_analyze">Handler analysieren</string>

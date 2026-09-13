@@ -25,6 +25,22 @@
             android:layout_height="56dp"
             android:layout_marginTop="@dimen/spacing_md" />
 
+        <TextView
+            android:id="@+id/shortcutNetworkWarning"
+            style="@style/UiBodyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:text="@string/webapp_network_missing"
+            android:textColor="@color/ui_danger"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <EditText
             android:id="@+id/shortcutEditTarget"
             style="@style/UiSearchInput"
