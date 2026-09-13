@@ -78,6 +78,9 @@ public class MainActivity extends Activity {
     private final ExecutorService appLoader =
             Executors.newSingleThreadExecutor();
 
+    private final ExecutorService backupExecutor =
+            Executors.newSingleThreadExecutor();
+
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
     private FavoritesStore favoritesStore;
@@ -449,6 +452,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         appLoader.shutdownNow();
+        backupExecutor.shutdownNow();
         super.onDestroy();
     }
 
@@ -1876,28 +1880,44 @@ public class MainActivity extends Activity {
                                 R.string.backup_restore_message)
                         .setPositiveButton(
                                 R.string.backup_restore_confirm,
-                                (currentDialog, which) -> {
-                                    try {
-                                        BackupManager.restoreBackup(
-                                                this,
-                                                backup);
+                                (currentDialog, which) ->
+                                        backupExecutor.execute(() -> {
+                                            boolean success;
 
-                                        Toast.makeText(
-                                                this,
-                                                R.string.backup_restored,
-                                                Toast.LENGTH_LONG)
-                                                .show();
+                                            try {
+                                                BackupManager.restoreBackup(
+                                                        this,
+                                                        backup);
 
-                                        recreate();
+                                                success = true;
 
-                                    } catch (Exception exception) {
-                                        Toast.makeText(
-                                                this,
-                                                R.string.backup_restore_failed,
-                                                Toast.LENGTH_LONG)
-                                                .show();
-                                    }
-                                })
+                                            } catch (Exception exception) {
+                                                success = false;
+                                            }
+
+                                            boolean restoreSucceeded =
+                                                    success;
+
+                                            runOnUiThread(() -> {
+                                                if (isFinishing()
+                                                        || isDestroyed()) {
+
+                                                    return;
+                                                }
+
+                                                Toast.makeText(
+                                                        this,
+                                                        restoreSucceeded
+                                                                ? R.string.backup_restored
+                                                                : R.string.backup_restore_failed,
+                                                        Toast.LENGTH_LONG)
+                                                        .show();
+
+                                                if (restoreSucceeded) {
+                                                    recreate();
+                                                }
+                                            });
+                                        }))
                         .setNegativeButton(
                                 R.string.action_cancel,
                                 null)
@@ -1931,24 +1951,39 @@ public class MainActivity extends Activity {
         if (requestCode
                 == REQUEST_CREATE_BACKUP) {
 
-            try {
-                BackupManager.writeBackup(
-                        this,
-                        uri);
+            backupExecutor.execute(() -> {
+                boolean success;
 
-                Toast.makeText(
-                        this,
-                        R.string.backup_created,
-                        Toast.LENGTH_LONG)
-                        .show();
+                try {
+                    BackupManager.writeBackup(
+                            this,
+                            uri);
 
-            } catch (Exception exception) {
-                Toast.makeText(
-                        this,
-                        R.string.backup_failed,
-                        Toast.LENGTH_LONG)
-                        .show();
-            }
+                    success = true;
+
+                } catch (Exception exception) {
+                    success = false;
+                }
+
+                boolean backupSucceeded =
+                        success;
+
+                runOnUiThread(() -> {
+                    if (isFinishing()
+                            || isDestroyed()) {
+
+                        return;
+                    }
+
+                    Toast.makeText(
+                            this,
+                            backupSucceeded
+                                    ? R.string.backup_created
+                                    : R.string.backup_failed,
+                            Toast.LENGTH_LONG)
+                            .show();
+                });
+            });
 
             return;
         }
@@ -1956,22 +1991,47 @@ public class MainActivity extends Activity {
         if (requestCode
                 == REQUEST_RESTORE_BACKUP) {
 
-            try {
-                JSONObject backup =
-                        BackupManager.readBackup(
+            backupExecutor.execute(() -> {
+                JSONObject backup;
+
+                try {
+                    backup =
+                            BackupManager.readBackup(
+                                    this,
+                                    uri);
+
+                } catch (Exception exception) {
+                    runOnUiThread(() -> {
+                        if (isFinishing()
+                                || isDestroyed()) {
+
+                            return;
+                        }
+
+                        Toast.makeText(
                                 this,
-                                uri);
+                                R.string.backup_restore_failed,
+                                Toast.LENGTH_LONG)
+                                .show();
+                    });
 
-                confirmBackupRestore(
-                        backup);
+                    return;
+                }
 
-            } catch (Exception exception) {
-                Toast.makeText(
-                        this,
-                        R.string.backup_restore_failed,
-                        Toast.LENGTH_LONG)
-                        .show();
-            }
+                JSONObject validatedBackup =
+                        backup;
+
+                runOnUiThread(() -> {
+                    if (isFinishing()
+                            || isDestroyed()) {
+
+                        return;
+                    }
+
+                    confirmBackupRestore(
+                            validatedBackup);
+                });
+            });
         }
     }
 

@@ -15,9 +15,11 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 final class BackupManager {
@@ -26,6 +28,9 @@ final class BackupManager {
             "appstow-backup";
 
     private static final int FORMAT_VERSION = 2;
+
+    private static final int MAX_BACKUP_BYTES =
+            5 * 1024 * 1024;
 
     private BackupManager() {
     }
@@ -79,6 +84,13 @@ final class BackupManager {
             int count;
 
             while ((count = stream.read(buffer)) != -1) {
+                if (output.size()
+                        > MAX_BACKUP_BYTES - count) {
+
+                    throw new IOException(
+                            "Backup-Datei ist zu groß.");
+                }
+
                 output.write(
                         buffer,
                         0,
@@ -138,72 +150,250 @@ final class BackupManager {
                     favoritePackages.getString(i));
         }
 
-        boolean categoriesSaved =
+        SharedPreferences categoryPrefs =
                 context.getSharedPreferences(
-                                "categories",
-                                Context.MODE_PRIVATE)
-                        .edit()
-                        .clear()
-                        .putString(
-                                "category_list",
-                                categories.toString())
-                        .putString(
-                                "category_assignments",
-                                assignments.toString())
-                        .commit();
+                        "categories",
+                        Context.MODE_PRIVATE);
 
-        boolean favoritesSaved =
+        SharedPreferences favoritePrefs =
                 context.getSharedPreferences(
-                                "favorites",
-                                Context.MODE_PRIVATE)
-                        .edit()
-                        .clear()
-                        .putStringSet(
-                                "packages",
-                                favorites)
-                        .commit();
+                        "favorites",
+                        Context.MODE_PRIVATE);
 
-        boolean shortcutsSaved =
+        SharedPreferences shortcutPrefs =
                 context.getSharedPreferences(
-                                "shortcuts",
-                                Context.MODE_PRIVATE)
-                        .edit()
-                        .clear()
-                        .putString(
-                                "shortcut_list",
-                                shortcuts.toString())
-                        .commit();
+                        "shortcuts",
+                        Context.MODE_PRIVATE);
 
-        boolean orderSaved =
+        SharedPreferences orderPrefs =
                 context.getSharedPreferences(
-                                "overview_order",
-                                Context.MODE_PRIVATE)
-                        .edit()
-                        .clear()
-                        .putString(
-                                "section_order",
-                                overviewOrder.toString())
-                        .commit();
+                        "overview_order",
+                        Context.MODE_PRIVATE);
 
-        boolean sectionItemOrderSaved =
+        SharedPreferences sectionItemOrderPrefs =
                 context.getSharedPreferences(
-                                "section_item_order",
-                                Context.MODE_PRIVATE)
-                        .edit()
-                        .clear()
-                        .putString(
-                                "orders",
-                                sectionItemOrder.toString())
-                        .commit();
+                        "section_item_order",
+                        Context.MODE_PRIVATE);
 
-        if (!categoriesSaved
-                || !favoritesSaved
-                || !shortcutsSaved
-                || !orderSaved
-                || !sectionItemOrderSaved) {
+        Map<String, Object> categorySnapshot =
+                snapshotPreferences(
+                        categoryPrefs);
+
+        Map<String, Object> favoriteSnapshot =
+                snapshotPreferences(
+                        favoritePrefs);
+
+        Map<String, Object> shortcutSnapshot =
+                snapshotPreferences(
+                        shortcutPrefs);
+
+        Map<String, Object> orderSnapshot =
+                snapshotPreferences(
+                        orderPrefs);
+
+        Map<String, Object> sectionItemOrderSnapshot =
+                snapshotPreferences(
+                        sectionItemOrderPrefs);
+
+        try {
+            boolean categoriesSaved =
+                    categoryPrefs
+                            .edit()
+                            .clear()
+                            .putString(
+                                    "category_list",
+                                    categories.toString())
+                            .putString(
+                                    "category_assignments",
+                                    assignments.toString())
+                            .commit();
+
+            boolean favoritesSaved =
+                    favoritePrefs
+                            .edit()
+                            .clear()
+                            .putStringSet(
+                                    "packages",
+                                    favorites)
+                            .commit();
+
+            boolean shortcutsSaved =
+                    shortcutPrefs
+                            .edit()
+                            .clear()
+                            .putString(
+                                    "shortcut_list",
+                                    shortcuts.toString())
+                            .commit();
+
+            boolean orderSaved =
+                    orderPrefs
+                            .edit()
+                            .clear()
+                            .putString(
+                                    "section_order",
+                                    overviewOrder.toString())
+                            .commit();
+
+            boolean sectionItemOrderSaved =
+                    sectionItemOrderPrefs
+                            .edit()
+                            .clear()
+                            .putString(
+                                    "orders",
+                                    sectionItemOrder.toString())
+                            .commit();
+
+            if (!categoriesSaved
+                    || !favoritesSaved
+                    || !shortcutsSaved
+                    || !orderSaved
+                    || !sectionItemOrderSaved) {
+
+                throw new IOException(
+                        "Backup konnte nicht vollständig wiederhergestellt werden.");
+            }
+
+        } catch (IOException | RuntimeException exception) {
+            boolean rollbackSaved =
+                    restorePreferences(
+                            categoryPrefs,
+                            categorySnapshot);
+
+            rollbackSaved &=
+                    restorePreferences(
+                            favoritePrefs,
+                            favoriteSnapshot);
+
+            rollbackSaved &=
+                    restorePreferences(
+                            shortcutPrefs,
+                            shortcutSnapshot);
+
+            rollbackSaved &=
+                    restorePreferences(
+                            orderPrefs,
+                            orderSnapshot);
+
+            rollbackSaved &=
+                    restorePreferences(
+                            sectionItemOrderPrefs,
+                            sectionItemOrderSnapshot);
+
+            if (!rollbackSaved) {
+                throw new IOException(
+                        "Wiederherstellung und Rollback sind fehlgeschlagen.",
+                        exception);
+            }
+
+            if (exception instanceof IOException) {
+                throw (IOException) exception;
+            }
 
             throw new IOException(
-                    "Backup konnte nicht vollständig wiederhergestellt werden.");
+                    "Backup konnte nicht vollständig wiederhergestellt werden.",
+                    exception);
+        }
+    }
+
+    private static Map<String, Object> snapshotPreferences(
+            SharedPreferences preferences) {
+
+        Map<String, Object> snapshot =
+                new HashMap<>();
+
+        for (Map.Entry<String, ?> entry :
+                preferences.getAll()
+                        .entrySet()) {
+
+            Object value =
+                    entry.getValue();
+
+            if (value instanceof Set<?>) {
+                value =
+                        new HashSet<>(
+                                (Set<?>) value);
+            }
+
+            snapshot.put(
+                    entry.getKey(),
+                    value);
+        }
+
+        return snapshot;
+    }
+
+    private static boolean restorePreferences(
+            SharedPreferences preferences,
+            Map<String, Object> snapshot) {
+
+        try {
+            SharedPreferences.Editor editor =
+                    preferences.edit()
+                            .clear();
+
+            for (Map.Entry<String, Object> entry :
+                    snapshot.entrySet()) {
+
+                String key =
+                        entry.getKey();
+
+                Object value =
+                        entry.getValue();
+
+                if (value instanceof String) {
+                    editor.putString(
+                            key,
+                            (String) value);
+
+                } else if (value instanceof Set<?>) {
+                    Set<String> strings =
+                            new HashSet<>();
+
+                    for (Object item :
+                            (Set<?>) value) {
+
+                        if (!(item instanceof String)) {
+                            return false;
+                        }
+
+                        strings.add(
+                                (String) item);
+                    }
+
+                    editor.putStringSet(
+                            key,
+                            strings);
+
+                } else if (value instanceof Integer) {
+                    editor.putInt(
+                            key,
+                            (Integer) value);
+
+                } else if (value instanceof Long) {
+                    editor.putLong(
+                            key,
+                            (Long) value);
+
+                } else if (value instanceof Float) {
+                    editor.putFloat(
+                            key,
+                            (Float) value);
+
+                } else if (value instanceof Boolean) {
+                    editor.putBoolean(
+                            key,
+                            (Boolean) value);
+
+                } else {
+                    return false;
+                }
+            }
+
+            return editor.commit();
+
+        } catch (RuntimeException exception) {
+            return false;
         }
     }
 
