@@ -13,13 +13,31 @@
     android:paddingStart="@dimen/spacing_md"
     android:paddingEnd="@dimen/spacing_sm">
 
-    <TextView
-        android:id="@+id/overviewSectionTitle"
-        style="@style/UiBodyText"
+    <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/overviewSectionTitle"
+            style="@style/UiBodyText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/overviewSectionChevron"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="4dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_expand_more" />
+
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/overviewSectionSort"
@@ -29,13 +47,6 @@
         android:contentDescription="@string/action_sort_section_items"
         android:padding="10dp"
         android:src="@drawable/ic_sort_overview" />
-
-    <ImageView
-        android:id="@+id/overviewSectionChevron"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:contentDescription="@null"
-        android:src="@drawable/ic_expand_more" />
 
     <ImageView
         android:id="@+id/overviewSectionDragHandle"
