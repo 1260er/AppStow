@@ -1141,11 +1141,18 @@ public class MainActivity extends Activity {
 
         try {
             if (ShortcutEntry.TYPE_WEBSITE.equals(
-                    shortcut.type)
-                    || ShortcutEntry.TYPE_WEB_APP.equals(
-                            shortcut.type)) {
+                    shortcut.type)) {
 
                 launchWebShortcut(
+                        shortcut.target);
+
+                return;
+            }
+
+            if (ShortcutEntry.TYPE_WEB_APP.equals(
+                    shortcut.type)) {
+
+                launchWebAppShortcut(
                         shortcut.target);
 
                 return;
@@ -1197,6 +1204,22 @@ public class MainActivity extends Activity {
                     R.string.shortcut_launch_failed,
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void launchWebAppShortcut(
+            String target) {
+
+        Intent intent =
+                new Intent(
+                        this,
+                        WebAppActivity.class);
+
+        intent.putExtra(
+                WebAppActivity.EXTRA_URL,
+                target);
+
+        startActivity(
+                intent);
     }
 
     private void launchWebShortcut(
