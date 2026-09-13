@@ -26,6 +26,9 @@ final class WebAppDiagnosticsDialog {
     private static final String GENERIC_URL =
             "https://example.com/";
 
+    private static final String CHROMIUM_MAIN_ACTIVITY =
+            "com.google.android.apps.chrome.Main";
+
     private WebAppDiagnosticsDialog() {
     }
 
@@ -46,17 +49,9 @@ final class WebAppDiagnosticsDialog {
                 view.findViewById(
                         R.id.webappDiagnosticAnalyze);
 
-        TextView openAndroid =
+        TextView openChromium =
                 view.findViewById(
-                        R.id.webappDiagnosticOpenAndroid);
-
-        TextView openBrowser =
-                view.findViewById(
-                        R.id.webappDiagnosticOpenBrowser);
-
-        TextView openSpecific =
-                view.findViewById(
-                        R.id.webappDiagnosticOpenSpecific);
+                        R.id.webappDiagnosticOpenChromium);
 
         TextView result =
                 view.findViewById(
@@ -74,7 +69,7 @@ final class WebAppDiagnosticsDialog {
                         url,
                         result));
 
-        openAndroid.setOnClickListener(v -> {
+        openChromium.setOnClickListener(v -> {
             Uri uri =
                     getUri(
                             activity,
@@ -84,43 +79,7 @@ final class WebAppDiagnosticsDialog {
                 return;
             }
 
-            try {
-                activity.startActivity(
-                        createViewIntent(
-                                uri));
-
-            } catch (Exception exception) {
-                showLaunchError(
-                        activity);
-            }
-        });
-
-        openBrowser.setOnClickListener(v -> {
-            Uri uri =
-                    getUri(
-                            activity,
-                            url);
-
-            if (uri == null) {
-                return;
-            }
-
-            openInDefaultBrowser(
-                    activity,
-                    uri);
-        });
-
-        openSpecific.setOnClickListener(v -> {
-            Uri uri =
-                    getUri(
-                            activity,
-                            url);
-
-            if (uri == null) {
-                return;
-            }
-
-            showSpecificHandlerPicker(
+            openChromiumAppMode(
                     activity,
                     uri);
         });
@@ -308,101 +267,7 @@ final class WebAppDiagnosticsDialog {
         return result;
     }
 
-    private static void showSpecificHandlerPicker(
-            Activity activity,
-            Uri uri) {
-
-        PackageManager packageManager =
-                activity.getPackageManager();
-
-        List<ResolveInfo> handlers =
-                getSpecificHandlers(
-                        packageManager,
-                        uri);
-
-        if (handlers.isEmpty()) {
-            Toast.makeText(
-                    activity,
-                    R.string.webapp_diagnostics_no_specific,
-                    Toast.LENGTH_LONG)
-                    .show();
-
-            return;
-        }
-
-        if (handlers.size() == 1) {
-            startSpecificHandler(
-                    activity,
-                    uri,
-                    handlers.get(0));
-
-            return;
-        }
-
-        CharSequence[] labels =
-                new CharSequence[
-                        handlers.size()];
-
-        for (int i = 0;
-             i < handlers.size();
-             i++) {
-
-            labels[i] =
-                    describe(
-                            packageManager,
-                            handlers.get(i));
-        }
-
-        new AlertDialog.Builder(activity)
-                .setTitle(
-                        R.string.webapp_diagnostics_choose_specific)
-                .setItems(
-                        labels,
-                        (dialog, which) ->
-                                startSpecificHandler(
-                                        activity,
-                                        uri,
-                                        handlers.get(which)))
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
-    }
-
-    private static void startSpecificHandler(
-            Activity activity,
-            Uri uri,
-            ResolveInfo info) {
-
-        if (info == null
-                || info.activityInfo == null) {
-
-            showLaunchError(
-                    activity);
-
-            return;
-        }
-
-        Intent intent =
-                createViewIntent(
-                        uri);
-
-        intent.setComponent(
-                new ComponentName(
-                        info.activityInfo.packageName,
-                        info.activityInfo.name));
-
-        try {
-            activity.startActivity(
-                    intent);
-
-        } catch (Exception exception) {
-            showLaunchError(
-                    activity);
-        }
-    }
-
-    private static void openInDefaultBrowser(
+    private static void openChromiumAppMode(
             Activity activity,
             Uri uri) {
 
@@ -416,27 +281,39 @@ final class WebAppDiagnosticsDialog {
                                 Uri.parse(
                                         GENERIC_URL)));
 
+        if (defaultHandler == null
+                || defaultHandler.activityInfo == null) {
+
+            showLaunchError(
+                    activity);
+
+            return;
+        }
+
+        String packageName =
+                defaultHandler
+                        .activityInfo
+                        .packageName;
+
+        if (packageName == null
+                || packageName.isEmpty()
+                || "android".equals(
+                        packageName)) {
+
+            showLaunchError(
+                    activity);
+
+            return;
+        }
+
         Intent intent =
                 createViewIntent(
                         uri);
 
-        if (defaultHandler != null
-                && defaultHandler.activityInfo != null) {
-
-            String packageName =
-                    defaultHandler
-                            .activityInfo
-                            .packageName;
-
-            if (packageName != null
-                    && !packageName.isEmpty()
-                    && !"android".equals(
-                            packageName)) {
-
-                intent.setPackage(
-                        packageName);
-            }
-        }
+        intent.setComponent(
+                new ComponentName(
+                        packageName,
+                        CHROMIUM_MAIN_ACTIVITY));
 
         try {
             activity.startActivity(

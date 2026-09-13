@@ -37,7 +37,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/webappDiagnosticOpenAndroid"
+            android:id="@+id/webappDiagnosticOpenChromium"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -49,37 +49,7 @@
             android:gravity="center_vertical"
             android:minHeight="56dp"
             android:paddingHorizontal="16dp"
-            android:text="@string/webapp_diagnostics_open_android" />
-
-        <TextView
-            android:id="@+id/webappDiagnosticOpenBrowser"
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/overview_section_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:minHeight="56dp"
-            android:paddingHorizontal="16dp"
-            android:text="@string/webapp_diagnostics_open_browser" />
-
-        <TextView
-            android:id="@+id/webappDiagnosticOpenSpecific"
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/overview_section_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:minHeight="56dp"
-            android:paddingHorizontal="16dp"
-            android:text="@string/webapp_diagnostics_open_specific" />
+            android:text="@string/webapp_diagnostics_open_chromium" />
 
         <TextView
             android:id="@+id/webappDiagnosticResult"

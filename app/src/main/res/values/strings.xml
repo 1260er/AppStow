@@ -114,11 +114,7 @@ market://details?id=com.example.app
     <string name="webapp_diagnostics">Web-App-Diagnose</string>
     <string name="webapp_diagnostics_url_hint">https://…</string>
     <string name="webapp_diagnostics_analyze">Handler analysieren</string>
-    <string name="webapp_diagnostics_open_android">Normalen Android-Aufruf testen</string>
-    <string name="webapp_diagnostics_open_browser">Standardbrowser erzwingen</string>
-    <string name="webapp_diagnostics_open_specific">Spezifischen Handler testen</string>
-    <string name="webapp_diagnostics_choose_specific">Handler auswählen</string>
-    <string name="webapp_diagnostics_no_specific">Für diese URL wurde kein zusätzlicher spezifischer Handler gefunden.</string>
+    <string name="webapp_diagnostics_open_chromium">Chromium-App-Modus testen</string>
     <string name="webapp_diagnostics_invalid_url">Bitte eine vollständige http- oder https-Adresse eingeben.</string>
     <string name="webapp_diagnostics_launch_failed">Dieser Startweg konnte nicht ausgeführt werden.</string>
 </resources>
