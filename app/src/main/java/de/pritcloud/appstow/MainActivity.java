@@ -46,6 +46,21 @@ public class MainActivity extends Activity {
     private static final int REQUEST_CREATE_BACKUP = 1001;
     private static final int REQUEST_RESTORE_BACKUP = 1002;
 
+    private static final String STATE_PAGE = "main_page";
+    private static final String STATE_APP_SEARCH = "app_search";
+    private static final String STATE_APP_FILTER = "app_filter";
+    private static final String STATE_EXPANDED_SECTION = "expanded_section";
+    private static final String STATE_HELP_SCROLL = "help_scroll";
+    private static final String STATE_ABOUT_SCROLL = "about_scroll";
+
+    private static final String PAGE_OVERVIEW = "overview";
+    private static final String PAGE_APPS = "apps";
+    private static final String PAGE_CATEGORIES = "categories";
+    private static final String PAGE_SHORTCUTS = "shortcuts";
+    private static final String PAGE_BACKUP = "backup";
+    private static final String PAGE_HELP = "help";
+    private static final String PAGE_ABOUT = "about";
+
     private DrawerLayout drawerLayout;
     private TextView pageTitle;
     private TextView pageMessage;
@@ -75,6 +90,7 @@ public class MainActivity extends Activity {
     private boolean showOnlyUnassignedApps;
     private boolean appsLoading;
     private boolean appsLoaded;
+    private String currentPage = PAGE_OVERVIEW;
 
     private final ExecutorService appLoader =
             Executors.newSingleThreadExecutor();
@@ -282,6 +298,12 @@ public class MainActivity extends Activity {
 
         rebuildOverviewSections();
 
+        if (savedInstanceState != null) {
+            restoreExpandedSection(
+                    savedInstanceState.getString(
+                            STATE_EXPANDED_SECTION));
+        }
+
         overviewAdapter =
                 new OverviewAdapter(
                         overviewSections,
@@ -445,7 +467,123 @@ public class MainActivity extends Activity {
             }
         });
 
-        showOverview();
+        if (savedInstanceState == null) {
+            showOverview();
+        } else {
+            showOnlyUnassignedApps =
+                    savedInstanceState.getBoolean(
+                            STATE_APP_FILTER,
+                            false);
+
+            appSearch.setText(
+                    savedInstanceState.getString(
+                            STATE_APP_SEARCH,
+                            ""));
+
+            restorePage(
+                    savedInstanceState.getString(
+                            STATE_PAGE,
+                            PAGE_OVERVIEW));
+
+            int helpScroll =
+                    savedInstanceState.getInt(
+                            STATE_HELP_SCROLL,
+                            0);
+
+            int aboutScroll =
+                    savedInstanceState.getInt(
+                            STATE_ABOUT_SCROLL,
+                            0);
+
+            if (PAGE_HELP.equals(currentPage)) {
+                helpManagement.post(() ->
+                        helpManagement.scrollTo(
+                                0,
+                                helpScroll));
+            } else if (PAGE_ABOUT.equals(currentPage)) {
+                aboutManagement.post(() ->
+                        aboutManagement.scrollTo(
+                                0,
+                                aboutScroll));
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(
+            Bundle outState) {
+
+        outState.putString(
+                STATE_PAGE,
+                currentPage);
+
+        outState.putString(
+                STATE_APP_SEARCH,
+                appSearch.getText()
+                        .toString());
+
+        outState.putBoolean(
+                STATE_APP_FILTER,
+                showOnlyUnassignedApps);
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            if (section.expanded) {
+                outState.putString(
+                        STATE_EXPANDED_SECTION,
+                        section.id);
+
+                break;
+            }
+        }
+
+        outState.putInt(
+                STATE_HELP_SCROLL,
+                helpManagement.getScrollY());
+
+        outState.putInt(
+                STATE_ABOUT_SCROLL,
+                aboutManagement.getScrollY());
+
+        super.onSaveInstanceState(
+                outState);
+    }
+
+    private void restorePage(
+            String page) {
+
+        if (PAGE_APPS.equals(page)) {
+            showApps();
+        } else if (PAGE_CATEGORIES.equals(page)) {
+            showCategoryManagement();
+        } else if (PAGE_SHORTCUTS.equals(page)) {
+            showShortcutManagement();
+        } else if (PAGE_BACKUP.equals(page)) {
+            showBackupManagement();
+        } else if (PAGE_HELP.equals(page)) {
+            showHelp(false);
+        } else if (PAGE_ABOUT.equals(page)) {
+            showAbout();
+        } else {
+            showOverview();
+        }
+    }
+
+    private void restoreExpandedSection(
+            String sectionId) {
+
+        if (sectionId == null) {
+            return;
+        }
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            section.expanded =
+                    section.id.equals(
+                            sectionId);
+        }
     }
 
     @Override
@@ -640,6 +778,7 @@ public class MainActivity extends Activity {
     }
 
     private void showOverview() {
+        currentPage = PAGE_OVERVIEW;
         setTopNavigation(true);
 
         shortcutHelpButton.setVisibility(View.GONE);
@@ -673,6 +812,7 @@ public class MainActivity extends Activity {
     }
 
     private void showApps() {
+        currentPage = PAGE_APPS;
         setTopNavigation(false);
 
         shortcutHelpButton.setVisibility(View.GONE);
@@ -707,6 +847,7 @@ public class MainActivity extends Activity {
     }
 
     private void showCategoryManagement() {
+        currentPage = PAGE_CATEGORIES;
         setTopNavigation(false);
 
         shortcutHelpButton.setVisibility(View.GONE);
@@ -780,6 +921,7 @@ public class MainActivity extends Activity {
     }
 
     private void showShortcutManagement() {
+        currentPage = PAGE_SHORTCUTS;
         setTopNavigation(false);
 
         hideOverviewSortMode();
@@ -1680,6 +1822,7 @@ public class MainActivity extends Activity {
     }
 
     private void showAbout() {
+        currentPage = PAGE_ABOUT;
         setTopNavigation(false);
 
         shortcutHelpButton.setVisibility(View.GONE);
@@ -1738,6 +1881,7 @@ public class MainActivity extends Activity {
     private void showHelp(
             boolean jumpToShortcuts) {
 
+        currentPage = PAGE_HELP;
         setTopNavigation(false);
 
         shortcutHelpButton.setVisibility(
@@ -1792,6 +1936,7 @@ public class MainActivity extends Activity {
     }
 
     private void showBackupManagement() {
+        currentPage = PAGE_BACKUP;
         setTopNavigation(false);
 
         shortcutHelpButton.setVisibility(
