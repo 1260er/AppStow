@@ -289,6 +289,7 @@ public class MainActivity extends Activity {
                         sectionItemOrderStore,
                         this::launchApp,
                         this::launchShortcut,
+                        this::showShortcutEditor,
                         this::handleAppLongClick,
                         this::startOverviewDrag);
 
@@ -872,6 +873,9 @@ public class MainActivity extends Activity {
                     }
 
                     refreshShortcuts();
+
+                    rebuildOverviewSections();
+                    overviewAdapter.setApps(apps);
                 });
     }
 

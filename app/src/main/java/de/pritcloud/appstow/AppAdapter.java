@@ -105,8 +105,30 @@ public class AppAdapter
         updateFavoriteButton(holder, app);
 
         holder.favorite.setOnClickListener(v -> {
-            favoritesStore.toggle(app.packageName);
-            updateFavoriteButton(holder, app);
+            if (!favoritesStore.isFavorite(
+                    app.packageName)) {
+
+                favoritesStore.toggle(
+                        app.packageName);
+
+                updateFavoriteButton(
+                        holder,
+                        app);
+
+                return;
+            }
+
+            FavoriteConfirmation.confirmRemoval(
+                    holder.itemView.getContext(),
+                    app.label,
+                    () -> {
+                        favoritesStore.toggle(
+                                app.packageName);
+
+                        updateFavoriteButton(
+                                holder,
+                                app);
+                    });
         });
 
         holder.itemView.setClickable(true);

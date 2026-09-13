@@ -106,8 +106,21 @@ final class ShortcutAdapter
         holder.content.setOnClickListener(v ->
                 listener.onEdit(shortcut));
 
-        holder.favorite.setOnClickListener(v ->
-                listener.onFavorite(shortcut));
+        holder.favorite.setOnClickListener(v -> {
+            if (!shortcut.favorite) {
+                listener.onFavorite(
+                        shortcut);
+
+                return;
+            }
+
+            FavoriteConfirmation.confirmRemoval(
+                    holder.itemView.getContext(),
+                    shortcut.name,
+                    () ->
+                            listener.onFavorite(
+                                    shortcut));
+        });
 
         holder.delete.setOnClickListener(v ->
                 listener.onDelete(shortcut));

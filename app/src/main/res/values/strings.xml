@@ -182,4 +182,8 @@ Keines gefunden</string>
     <string name="backup_restore_confirm">Wiederherstellen</string>
     <string name="backup_restored">Backup wurde wiederhergestellt.</string>
 
+    <string name="favorite_remove_title">Remove from favorites?</string>
+    <string name="favorite_remove_message">Remove “%1$s” from favorites?</string>
+    <string name="favorite_remove_confirm">Remove</string>
+
 </resources>

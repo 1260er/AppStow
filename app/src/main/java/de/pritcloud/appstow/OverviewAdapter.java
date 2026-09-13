@@ -39,6 +39,11 @@ final class OverviewAdapter
                 ShortcutEntry shortcut);
     }
 
+    interface OnShortcutLongClickListener {
+        void onShortcutLongClick(
+                ShortcutEntry shortcut);
+    }
+
     interface OnAppLongClickListener {
         void onAppLongClick(AppEntry app);
     }
@@ -69,6 +74,7 @@ final class OverviewAdapter
 
     private final OnAppClickListener appClickListener;
     private final OnShortcutClickListener shortcutClickListener;
+    private final OnShortcutLongClickListener shortcutLongClickListener;
     private final OnAppLongClickListener appLongClickListener;
     private final OnSectionDragStartListener dragStartListener;
 
@@ -84,6 +90,7 @@ final class OverviewAdapter
             SectionItemOrderStore sectionItemOrderStore,
             OnAppClickListener appClickListener,
             OnShortcutClickListener shortcutClickListener,
+            OnShortcutLongClickListener shortcutLongClickListener,
             OnAppLongClickListener appLongClickListener,
             OnSectionDragStartListener dragStartListener) {
 
@@ -95,6 +102,7 @@ final class OverviewAdapter
         this.sectionItemOrderStore = sectionItemOrderStore;
         this.appClickListener = appClickListener;
         this.shortcutClickListener = shortcutClickListener;
+        this.shortcutLongClickListener = shortcutLongClickListener;
         this.appLongClickListener = appLongClickListener;
         this.dragStartListener = dragStartListener;
 
@@ -614,12 +622,26 @@ final class OverviewAdapter
 
             holder.favorite
                     .setOnClickListener(v -> {
-                        favoritesStore.toggle(
-                                app.packageName);
+                        Runnable toggleFavorite = () -> {
+                            favoritesStore.toggle(
+                                    app.packageName);
 
-                        refreshFavoriteApps();
-                        rebuildRows();
-                        notifyDataSetChanged();
+                            refreshFavoriteApps();
+                            rebuildRows();
+                            notifyDataSetChanged();
+                        };
+
+                        if (!favoritesStore.isFavorite(
+                                app.packageName)) {
+
+                            toggleFavorite.run();
+                            return;
+                        }
+
+                        FavoriteConfirmation.confirmRemoval(
+                                holder.itemView.getContext(),
+                                app.label,
+                                toggleFavorite);
                     });
 
             holder.itemView
@@ -716,12 +738,24 @@ final class OverviewAdapter
 
             holder.favorite
                     .setOnClickListener(v -> {
-                        shortcutStore.toggleFavorite(
-                                shortcut.id);
+                        Runnable toggleFavorite = () -> {
+                            shortcutStore.toggleFavorite(
+                                    shortcut.id);
 
-                        refreshShortcutEntries();
-                        rebuildRows();
-                        notifyDataSetChanged();
+                            refreshShortcutEntries();
+                            rebuildRows();
+                            notifyDataSetChanged();
+                        };
+
+                        if (!shortcut.favorite) {
+                            toggleFavorite.run();
+                            return;
+                        }
+
+                        FavoriteConfirmation.confirmRemoval(
+                                holder.itemView.getContext(),
+                                shortcut.name,
+                                toggleFavorite);
                     });
 
             holder.itemView
@@ -731,10 +765,20 @@ final class OverviewAdapter
                                             shortcut));
         }
 
-        holder.itemView
-                .setOnLongClickListener(null);
+        if (itemSortMode) {
+            holder.itemView.setOnLongClickListener(null);
+            holder.itemView.setLongClickable(false);
+        } else {
+            holder.itemView.setOnLongClickListener(v -> {
+                shortcutLongClickListener
+                        .onShortcutLongClick(
+                                shortcut);
 
-        holder.itemView.setLongClickable(false);
+                return true;
+            });
+
+            holder.itemView.setLongClickable(true);
+        }
     }
 
     private String getShortcutCategoryLabel(
