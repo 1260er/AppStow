@@ -6,7 +6,6 @@
     <color name="ui_text_primary">#FF111111</color>
     <color name="ui_text_secondary">#FF666666</color>
     <color name="ui_accent">#FF696970</color>
-    <color name="ui_input_background">#FFF2F2F5</color>
     <color name="ui_border">#FF696970</color>
     <color name="search_input_background">#FFF2F2F5</color>
     <color name="search_border">#FF696970</color>

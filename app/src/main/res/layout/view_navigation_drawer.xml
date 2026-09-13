@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigationDrawer"
     android:layout_width="@dimen/drawer_width"
     android:layout_height="match_parent"
     android:layout_gravity="end"
     android:background="@color/ui_surface"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    tools:ignore="Overdraw">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        tools:ignore="ScrollViewSize"
         android:paddingHorizontal="@dimen/screen_padding_horizontal"
         android:paddingVertical="@dimen/screen_padding_vertical">
 

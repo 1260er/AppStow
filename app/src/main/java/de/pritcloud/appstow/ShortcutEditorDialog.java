@@ -1,5 +1,6 @@
 package de.pritcloud.appstow;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Paint;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+@SuppressLint("SetTextI18n")
 final class ShortcutEditorDialog {
 
     interface Listener {

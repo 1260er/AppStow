@@ -43,18 +43,17 @@ final class BackupManager {
         JSONObject backup =
                 createBackup(context);
 
-        OutputStream output =
-                context.getContentResolver()
-                        .openOutputStream(
-                                uri,
-                                "w");
+        try (OutputStream stream =
+                     context.getContentResolver()
+                             .openOutputStream(
+                                     uri,
+                                     "w")) {
 
-        if (output == null) {
-            throw new IOException(
-                    "Backup-Datei konnte nicht geöffnet werden.");
-        }
+            if (stream == null) {
+                throw new IOException(
+                        "Backup-Datei konnte nicht geöffnet werden.");
+            }
 
-        try (OutputStream stream = output) {
             stream.write(
                     backup.toString(2)
                             .getBytes(
@@ -67,19 +66,18 @@ final class BackupManager {
             Uri uri)
             throws IOException, JSONException {
 
-        InputStream input =
-                context.getContentResolver()
-                        .openInputStream(uri);
-
-        if (input == null) {
-            throw new IOException(
-                    "Backup-Datei konnte nicht geöffnet werden.");
-        }
-
         ByteArrayOutputStream output =
                 new ByteArrayOutputStream();
 
-        try (InputStream stream = input) {
+        try (InputStream stream =
+                     context.getContentResolver()
+                             .openInputStream(uri)) {
+
+            if (stream == null) {
+                throw new IOException(
+                        "Backup-Datei konnte nicht geöffnet werden.");
+            }
+
             byte[] buffer = new byte[8192];
             int count;
 

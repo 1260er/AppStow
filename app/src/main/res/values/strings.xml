@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">AppStow</string>
     <string name="action_open_menu">Open menu</string>
     <string name="action_back_to_overview">Back to Launch apps</string>
@@ -42,7 +42,6 @@
     <string name="action_cancel">Cancel</string>
     <string name="category_assign_title">Assign categories</string>
     <string name="category_assign_none">No categories yet. First create a category under “Manage categories”.</string>
-    <string name="overview_sort_label">A–Z</string>
     <string name="action_sort_overview">Sort overview</string>
     <string name="action_finish_sorting">Finish sorting</string>
     <string name="action_drag_section">Move section</string>
@@ -58,32 +57,21 @@
     <string name="shortcut_delete_message">Delete shortcut “%1$s”?</string>
     <string name="shortcut_name_hint">Name</string>
     <string name="shortcut_target_hint">URL or deep link</string>
-    <string name="shortcut_pick_app">Select app</string>
     <string name="shortcut_categories">Select categories</string>
     <string name="shortcut_favorite">Favorite</string>
     <string name="shortcut_invalid">Please enter a name and a valid target.</string>
     <string name="shortcut_type_website">Website</string>
     <string name="shortcut_type_webapp">Web app</string>
-    <string name="shortcut_type_app_settings">Action: App settings</string>
     <string name="shortcut_type_deep_link">Action: Deep link (advanced)</string>
     <string name="shortcut_target_url_hint">https://…</string>
     <string name="shortcut_target_deep_link_hint">e.g. spotify:… or intent://…</string>
-    <string name="shortcut_no_apps">No launchable apps found.</string>
-    <string name="shortcut_app_selected">App: %1$s</string>
     <string name="shortcut_categories_selected">Categories: %1$s</string>
-    <string name="shortcut_deep_link_templates">Deep-link templates</string>
-    <string name="shortcut_deep_link_template_title">Select template</string>
-    <string name="shortcut_template_navigation">Navigation / place</string>
-    <string name="shortcut_template_phone">Call phone number</string>
-    <string name="shortcut_template_sms">Write SMS</string>
-    <string name="shortcut_template_email">Write email</string>
-    <string name="shortcut_template_play_store">Open app in Play Store</string>
     <string name="action_shortcut_help">Help for custom shortcuts</string>
     <string name="shortcut_launch_failed">Shortcut could not be launched.</string>
     <string name="webview_start_failed_title">WebView could not be started</string>
     <string name="webapp_load_failed_title">Web app could not be loaded</string>
     <string name="webview_load_error_title">WebView loading error</string>
-    <string name="webview_load_error_details">Error code: %1$d
+    <string name="webview_load_error_details" tools:ignore="PluralsCandidate">Error code: %1$d
 
 Description:
 %2$s

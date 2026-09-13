@@ -80,6 +80,8 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/search_apps_hint"
                 android:inputType="text"
+            android:importantForAutofill="no"
+            android:paddingStart="@dimen/spacing_md"
                 android:paddingEnd="56dp" />
 
             <ImageButton

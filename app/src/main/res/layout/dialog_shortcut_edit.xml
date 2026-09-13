@@ -17,6 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/shortcut_name_hint"
+            android:importantForAutofill="no"
+            android:inputType="textCapSentences"
             android:singleLine="true" />
 
         <Spinner
@@ -57,6 +59,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
             android:hint="@string/shortcut_target_hint"
+            android:importantForAutofill="no"
+            android:inputType="textUri"
             android:singleLine="true" />
 
         <TextView
