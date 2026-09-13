@@ -1355,8 +1355,13 @@ public class MainActivity extends Activity {
                                             app.packageName,
                                             selectedIds);
 
-                                    renderApps(
-                                            appSearch.getText().toString());
+                                    if (appSearchContainer.getVisibility()
+                                            == View.VISIBLE) {
+
+                                        renderApps(
+                                                appSearch.getText()
+                                                        .toString());
+                                    }
 
                                     rebuildOverviewSections();
                                     overviewAdapter.setApps(apps);
