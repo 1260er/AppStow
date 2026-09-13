@@ -115,7 +115,7 @@ final class OverviewAdapter
         refreshShortcutEntries();
 
         rebuildRows();
-        notifyDataSetChanged();
+        notifyStructureChanged();
     }
 
     private void refreshFavoriteApps() {
@@ -496,7 +496,7 @@ final class OverviewAdapter
             }
 
             rebuildRows();
-            notifyDataSetChanged();
+            notifyStructureChanged();
         });
 
         if (sortMode) {
@@ -544,7 +544,7 @@ final class OverviewAdapter
                                 expand;
 
                         rebuildRows();
-                        notifyDataSetChanged();
+                        notifyStructureChanged();
                     });
         }
     }
@@ -633,7 +633,7 @@ final class OverviewAdapter
 
                             refreshFavoriteApps();
                             rebuildRows();
-                            notifyDataSetChanged();
+                            notifyStructureChanged();
                         };
 
                         if (!favoritesStore.isFavorite(
@@ -750,7 +750,7 @@ final class OverviewAdapter
 
                             refreshShortcutEntries();
                             rebuildRows();
-                            notifyDataSetChanged();
+                            notifyStructureChanged();
                         };
 
                         if (!shortcut.favorite) {
@@ -848,7 +848,7 @@ final class OverviewAdapter
         sortMode = enabled;
 
         rebuildRows();
-        notifyDataSetChanged();
+        notifyStructureChanged();
     }
 
     boolean isSortMode() {
@@ -864,7 +864,7 @@ final class OverviewAdapter
         itemSortSectionId = null;
 
         rebuildRows();
-        notifyDataSetChanged();
+        notifyStructureChanged();
     }
 
     boolean isItemSortMode() {
@@ -974,6 +974,13 @@ final class OverviewAdapter
         refreshShortcutEntries();
 
         rebuildRows();
+        notifyStructureChanged();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void notifyStructureChanged() {
+        // rebuildRows() can change row count, type and position across
+        // multiple sections at once. A full refresh is intentional here.
         notifyDataSetChanged();
     }
 
