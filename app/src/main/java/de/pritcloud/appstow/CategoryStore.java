@@ -8,9 +8,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,12 +26,16 @@ final class CategoryStore {
     private final List<CategoryEntry> categories =
             new ArrayList<>();
 
+    private final Map<String, Set<String>> assignments =
+            new HashMap<>();
+
     CategoryStore(Context context) {
         preferences = context.getSharedPreferences(
                 PREFS_NAME,
                 Context.MODE_PRIVATE);
 
         loadCategories();
+        loadAssignments();
     }
 
     List<CategoryEntry> getCategories() {
@@ -93,51 +99,27 @@ final class CategoryStore {
     Set<String> getAssignedCategoryIds(
             String packageName) {
 
-        Set<String> result = new HashSet<>();
+        Set<String> assigned =
+                assignments.get(packageName);
 
-        try {
-            JSONObject assignments =
-                    loadAssignments();
-
-            JSONArray ids =
-                    assignments.optJSONArray(packageName);
-
-            if (ids == null) {
-                return result;
-            }
-
-            for (int i = 0; i < ids.length(); i++) {
-                result.add(ids.getString(i));
-            }
-        } catch (JSONException ignored) {
-        }
-
-        return result;
+        return assigned == null
+                ? new HashSet<>()
+                : new HashSet<>(assigned);
     }
 
     void setAssignedCategoryIds(
             String packageName,
             Set<String> categoryIds) {
 
-        try {
-            JSONObject assignments =
-                    loadAssignments();
-
-            if (categoryIds.isEmpty()) {
-                assignments.remove(packageName);
-            } else {
-                JSONArray ids = new JSONArray();
-
-                for (String id : categoryIds) {
-                    ids.put(id);
-                }
-
-                assignments.put(packageName, ids);
-            }
-
-            saveAssignments(assignments);
-        } catch (JSONException ignored) {
+        if (categoryIds.isEmpty()) {
+            assignments.remove(packageName);
+        } else {
+            assignments.put(
+                    packageName,
+                    new HashSet<>(categoryIds));
         }
+
+        saveAssignments();
     }
 
     String getAssignedCategoryLabel(
@@ -229,74 +211,121 @@ final class CategoryStore {
                 .apply();
     }
 
-    private JSONObject loadAssignments()
-            throws JSONException {
+    private void loadAssignments() {
+        assignments.clear();
 
-        return new JSONObject(
+        String saved =
                 preferences.getString(
                         KEY_ASSIGNMENTS,
-                        "{}"));
+                        "{}");
+
+        try {
+            JSONObject object =
+                    new JSONObject(saved);
+
+            Iterator<String> keys =
+                    object.keys();
+
+            while (keys.hasNext()) {
+                String packageName =
+                        keys.next();
+
+                JSONArray ids =
+                        object.optJSONArray(
+                                packageName);
+
+                if (ids == null) {
+                    continue;
+                }
+
+                Set<String> categoryIds =
+                        new HashSet<>();
+
+                for (int i = 0;
+                     i < ids.length();
+                     i++) {
+
+                    categoryIds.add(
+                            ids.getString(i));
+                }
+
+                if (!categoryIds.isEmpty()) {
+                    assignments.put(
+                            packageName,
+                            categoryIds);
+                }
+            }
+
+        } catch (JSONException ignored) {
+            assignments.clear();
+        }
     }
 
-    private void saveAssignments(
-            JSONObject assignments) {
+    private void saveAssignments() {
+        JSONObject object =
+                new JSONObject();
+
+        try {
+            for (Map.Entry<String, Set<String>> entry :
+                    assignments.entrySet()) {
+
+                JSONArray ids =
+                        new JSONArray();
+
+                for (String id :
+                        entry.getValue()) {
+
+                    ids.put(id);
+                }
+
+                if (ids.length() > 0) {
+                    object.put(
+                            entry.getKey(),
+                            ids);
+                }
+            }
+
+        } catch (JSONException ignored) {
+            return;
+        }
 
         preferences.edit()
                 .putString(
                         KEY_ASSIGNMENTS,
-                        assignments.toString())
+                        object.toString())
                 .apply();
     }
 
     private void removeCategoryFromAssignments(
             String categoryId) {
 
-        try {
-            JSONObject assignments =
-                    loadAssignments();
+        boolean changed = false;
 
-            List<String> packages =
-                    new ArrayList<>();
+        Iterator<Map.Entry<String, Set<String>>> iterator =
+                assignments.entrySet()
+                        .iterator();
 
-            Iterator<String> keys =
-                    assignments.keys();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Set<String>> entry =
+                    iterator.next();
 
-            while (keys.hasNext()) {
-                packages.add(keys.next());
+            Set<String> ids =
+                    entry.getValue();
+
+            if (!ids.remove(categoryId)) {
+                continue;
             }
 
-            for (String packageName : packages) {
-                JSONArray oldIds =
-                        assignments.optJSONArray(
-                                packageName);
+            changed = true;
 
-                if (oldIds == null) {
-                    continue;
-                }
-
-                JSONArray newIds =
-                        new JSONArray();
-
-                for (int i = 0; i < oldIds.length(); i++) {
-                    String id =
-                            oldIds.getString(i);
-
-                    if (!id.equals(categoryId)) {
-                        newIds.put(id);
-                    }
-                }
-
-                if (newIds.length() == 0) {
-                    assignments.remove(packageName);
-                } else {
-                    assignments.put(
-                            packageName,
-                            newIds);
-                }
+            if (ids.isEmpty()) {
+                iterator.remove();
             }
+        }
 
-            saveAssignments(assignments);
-        } catch (JSONException ignored) {
+        if (changed) {
+            saveAssignments();
         }
     }
+
 }

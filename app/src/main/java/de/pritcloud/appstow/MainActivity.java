@@ -1086,7 +1086,9 @@ public class MainActivity extends Activity {
     }
 
     private void loadAppsAsync() {
-        if (appsLoading) {
+        if (appsLoading
+                || appsLoaded) {
+
             return;
         }
 
@@ -1099,35 +1101,47 @@ public class MainActivity extends Activity {
                 getPackageName();
 
         appLoader.execute(() -> {
-            List<AppEntry> loadedApps;
+            List<AppEntry> loadedApps =
+                    new ArrayList<>();
+
+            boolean loadSucceeded;
 
             try {
                 loadedApps =
                         queryLauncherApps(
                                 packageManager,
                                 ownPackageName);
+
+                loadSucceeded = true;
+
             } catch (RuntimeException exception) {
-                loadedApps =
-                        new ArrayList<>();
+                loadSucceeded = false;
             }
 
             List<AppEntry> result =
                     loadedApps;
 
+            boolean success =
+                    loadSucceeded;
+
             runOnUiThread(() -> {
                 if (isFinishing()
                         || isDestroyed()) {
+
                     return;
                 }
 
                 appsLoading = false;
-                appsLoaded = true;
 
-                apps.clear();
-                apps.addAll(result);
+                if (success) {
+                    appsLoaded = true;
 
-                rebuildOverviewSections();
-                overviewAdapter.setApps(apps);
+                    apps.clear();
+                    apps.addAll(result);
+
+                    rebuildOverviewSections();
+                    overviewAdapter.setApps(apps);
+                }
 
                 if (appSearchContainer.getVisibility()
                         == View.VISIBLE) {
