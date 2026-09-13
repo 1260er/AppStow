@@ -2,6 +2,7 @@ package de.pritcloud.shortcutlauncher;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,6 +62,10 @@ final class ShortcutEditorDialog {
                 view.findViewById(
                         R.id.shortcutNetworkWarning);
 
+        TextView networkHelp =
+                view.findViewById(
+                        R.id.shortcutNetworkHelp);
+
         TextView pickCategories =
                 view.findViewById(
                         R.id.shortcutPickCategories);
@@ -69,8 +74,12 @@ final class ShortcutEditorDialog {
                 view.findViewById(
                         R.id.shortcutEditFavorite);
 
-        networkWarning.setOnClickListener(v ->
-                NetworkAccess.openAppSettings(
+        networkHelp.setPaintFlags(
+                networkHelp.getPaintFlags()
+                        | Paint.UNDERLINE_TEXT_FLAG);
+
+        networkHelp.setOnClickListener(v ->
+                NetworkAccess.showNetworkHelp(
                         activity));
 
         String[] typeLabels = {
@@ -147,7 +156,8 @@ final class ShortcutEditorDialog {
                 activity,
                 type.getSelectedItemPosition(),
                 target,
-                networkWarning);
+                networkWarning,
+                networkHelp);
 
         type.setOnItemSelectedListener(
                 new android.widget.AdapterView.OnItemSelectedListener() {
@@ -195,7 +205,8 @@ final class ShortcutEditorDialog {
                                 activity,
                                 position,
                                 target,
-                                networkWarning);
+                                networkWarning,
+                                networkHelp);
                     }
 
                     @Override
@@ -269,7 +280,8 @@ final class ShortcutEditorDialog {
                                     activity,
                                     type.getSelectedItemPosition(),
                                     target,
-                                    networkWarning);
+                                    networkWarning,
+                                    networkHelp);
 
                             Toast.makeText(
                                     activity,
@@ -314,7 +326,8 @@ final class ShortcutEditorDialog {
                                 activity,
                                 type.getSelectedItemPosition(),
                                 target,
-                                networkWarning);
+                                networkWarning,
+                                networkHelp);
                     }
                 };
 
@@ -340,7 +353,8 @@ final class ShortcutEditorDialog {
             Activity activity,
             int typeIndex,
             EditText target,
-            TextView networkWarning) {
+            TextView networkWarning,
+            TextView networkHelp) {
 
         target.setHint(
                 typeIndex == 2
@@ -368,10 +382,16 @@ final class ShortcutEditorDialog {
             networkWarning.setVisibility(
                     View.VISIBLE);
 
+            networkHelp.setVisibility(
+                    View.VISIBLE);
+
             return;
         }
 
         networkWarning.setVisibility(
+                View.GONE);
+
+        networkHelp.setVisibility(
                 View.GONE);
 
         target.setVisibility(

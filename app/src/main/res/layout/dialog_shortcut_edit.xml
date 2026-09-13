@@ -31,14 +31,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
+            android:gravity="center_vertical"
+            android:text="@string/webapp_network_missing"
+            android:textColor="@color/ui_danger"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/shortcutNetworkHelp"
+            style="@style/UiBodyText"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center_vertical"
-            android:minHeight="48dp"
-            android:text="@string/webapp_network_missing"
-            android:textColor="@color/ui_danger"
-            android:textStyle="bold"
+            android:text="@string/webapp_network_check"
+            android:textColor="@color/ui_accent"
             android:visibility="gone" />
 
         <EditText

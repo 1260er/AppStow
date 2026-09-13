@@ -1,5 +1,7 @@
 package de.pritcloud.shortcutlauncher;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -55,6 +57,30 @@ final class NetworkAccess {
                 && networkInfo.isConnected();
     }
 
+    static void showNetworkHelp(
+            Activity activity) {
+
+        new AlertDialog.Builder(activity)
+                .setTitle(
+                        R.string.webapp_network_title)
+                .setMessage(
+                        R.string.webapp_network_message)
+                .setPositiveButton(
+                        R.string.webapp_network_open_network_settings,
+                        (dialog, which) ->
+                                openNetworkSettings(
+                                        activity))
+                .setNeutralButton(
+                        R.string.webapp_network_open_settings,
+                        (dialog, which) ->
+                                openAppSettings(
+                                        activity))
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
     static void openAppSettings(
             Context context) {
 
@@ -67,5 +93,20 @@ final class NetworkAccess {
                                 null));
 
         context.startActivity(intent);
+    }
+
+    private static void openNetworkSettings(
+            Context context) {
+
+        try {
+            context.startActivity(
+                    new Intent(
+                            Settings.ACTION_WIRELESS_SETTINGS));
+
+        } catch (Exception exception) {
+            context.startActivity(
+                    new Intent(
+                            Settings.ACTION_SETTINGS));
+        }
     }
 }

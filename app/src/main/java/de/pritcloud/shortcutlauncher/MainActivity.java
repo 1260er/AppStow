@@ -1231,20 +1231,8 @@ public class MainActivity extends Activity {
 
     private void showWebAppNetworkDialog() {
 
-        new AlertDialog.Builder(this)
-                .setTitle(
-                        R.string.webapp_network_title)
-                .setMessage(
-                        R.string.webapp_network_message)
-                .setPositiveButton(
-                        R.string.webapp_network_open_settings,
-                        (dialog, which) ->
-                                NetworkAccess.openAppSettings(
-                                        this))
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
+        NetworkAccess.showNetworkHelp(
+                this);
     }
 
     private void launchWebShortcut(
