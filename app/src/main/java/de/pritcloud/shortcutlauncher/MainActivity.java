@@ -207,10 +207,6 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         showShortcutEditor(null));
 
-        findViewById(R.id.shortcutDiagnosticsButton)
-                .setOnClickListener(v ->
-                        WebAppDiagnosticsDialog.show(this));
-
         appAdapter = new AppAdapter(
                 getPackageManager(),
                 favoritesStore,

@@ -74,7 +74,7 @@
 Eine normale http- oder https-Adresse. Android öffnet sie mit der dafür zuständigen App oder dem Standardbrowser.
 
 <b>Web-App</b>
-Gib die URL der installierten Web-App ein. ShortcutLauncher übergibt die Adresse an Android bzw. den Standardbrowser. Ist die Seite als Web-App eingerichtet, kann der Browser sie entsprechend öffnen.
+Öffnet eine http- oder https-Adresse direkt in ShortcutLauncher im Vollbild. Die Anmeldung erfolgt unabhängig vom normalen Browser und bleibt normalerweise in den App-Daten gespeichert. Für Web-Apps wird eine nutzbare Netzwerkverbindung benötigt.
 
 <b>Deep Link (erweitert)</b>
 Deep Links öffnen spezielle Funktionen einer App. Nicht jede App unterstützt jeden Aufruf. Hier kannst du bekannte Links oder Android-Intent-URIs direkt eintragen.
@@ -118,10 +118,4 @@ market://details?id=com.example.app
     <string name="webapp_network_message">Es besteht derzeit keine nutzbare Netzwerkverbindung. Prüfe WLAN, mobile Daten oder den Flugmodus. Bei manchen Custom-ROMs kann der Netzwerkzugriff zusätzlich pro App deaktiviert sein.</string>
     <string name="webapp_network_open_settings">App-Einstellungen</string>
     <string name="webapp_network_open_network_settings">Netzwerk-Einstellungen</string>
-    <string name="webapp_diagnostics">Web-App-Diagnose</string>
-    <string name="webapp_diagnostics_url_hint">https://…</string>
-    <string name="webapp_diagnostics_analyze">Handler analysieren</string>
-    <string name="webapp_diagnostics_open_browser_launcher">Browser-Launcher testen</string>
-    <string name="webapp_diagnostics_invalid_url">Bitte eine vollständige http- oder https-Adresse eingeben.</string>
-    <string name="webapp_diagnostics_launch_failed">Dieser Startweg konnte nicht ausgeführt werden.</string>
 </resources>

@@ -164,22 +164,6 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/shortcutDiagnosticsButton"
-                    style="@style/UiBodyText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_sm"
-                    android:background="@drawable/overview_section_background"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:gravity="center_vertical"
-                    android:minHeight="56dp"
-                    android:paddingHorizontal="@dimen/spacing_md"
-                    android:text="@string/webapp_diagnostics"
-                    android:textStyle="bold" />
-
-                <TextView
                     android:id="@+id/shortcutEmptyMessage"
                     style="@style/UiBodyText"
                     android:layout_width="match_parent"
