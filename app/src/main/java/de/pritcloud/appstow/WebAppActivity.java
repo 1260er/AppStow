@@ -46,7 +46,8 @@ public class WebAppActivity extends Activity {
         } catch (RuntimeException exception) {
 
             showFatalWebViewError(
-                    "WebView konnte nicht gestartet werden",
+                    getString(
+                            R.string.webview_start_failed_title),
                     exception.toString());
 
             return;
@@ -73,7 +74,8 @@ public class WebAppActivity extends Activity {
         } catch (RuntimeException exception) {
 
             showFatalWebViewError(
-                    "Web-App konnte nicht geladen werden",
+                    getString(
+                            R.string.webapp_load_failed_title),
                     exception.toString());
         }
     }
@@ -150,13 +152,13 @@ public class WebAppActivity extends Activity {
                         }
 
                         showWebViewError(
-                                "WebView-Ladefehler",
-                                "Fehlercode: "
-                                        + error.getErrorCode()
-                                        + "\n\nBeschreibung:\n"
-                                        + error.getDescription()
-                                        + "\n\nURL:\n"
-                                        + request.getUrl());
+                                getString(
+                                        R.string.webview_load_error_title),
+                                getString(
+                                        R.string.webview_load_error_details,
+                                        error.getErrorCode(),
+                                        error.getDescription(),
+                                        request.getUrl()));
                     }
 
                     @Override
@@ -175,13 +177,13 @@ public class WebAppActivity extends Activity {
                         }
 
                         showWebViewError(
-                                "HTTP-Fehler",
-                                "HTTP "
-                                        + response.getStatusCode()
-                                        + " "
-                                        + response.getReasonPhrase()
-                                        + "\n\nURL:\n"
-                                        + request.getUrl());
+                                getString(
+                                        R.string.webview_http_error_title),
+                                getString(
+                                        R.string.webview_http_error_details,
+                                        response.getStatusCode(),
+                                        response.getReasonPhrase(),
+                                        request.getUrl()));
                     }
 
                     @Override
@@ -193,11 +195,12 @@ public class WebAppActivity extends Activity {
                         handler.cancel();
 
                         showWebViewError(
-                                "SSL-Fehler",
-                                "SSL-Fehlercode: "
-                                        + error.getPrimaryError()
-                                        + "\n\nURL:\n"
-                                        + error.getUrl());
+                                getString(
+                                        R.string.webview_ssl_error_title),
+                                getString(
+                                        R.string.webview_ssl_error_details,
+                                        error.getPrimaryError(),
+                                        error.getUrl()));
                     }
 
                     @Override
@@ -206,10 +209,12 @@ public class WebAppActivity extends Activity {
                             RenderProcessGoneDetail detail) {
 
                         showWebViewError(
-                                "WebView-Prozess beendet",
-                                detail.didCrash()
-                                        ? "Der WebView-Renderer ist abgestürzt."
-                                        : "Der WebView-Renderer wurde vom System beendet.");
+                                getString(
+                                        R.string.webview_process_gone_title),
+                                getString(
+                                        detail.didCrash()
+                                                ? R.string.webview_renderer_crashed
+                                                : R.string.webview_renderer_terminated));
 
                         return true;
                     }
@@ -316,11 +321,11 @@ public class WebAppActivity extends Activity {
         StringBuilder result =
                 new StringBuilder();
 
-        result.append("Android ")
-                .append(Build.VERSION.RELEASE)
-                .append(" (API ")
-                .append(Build.VERSION.SDK_INT)
-                .append(")");
+        result.append(
+                getString(
+                        R.string.webview_android_info,
+                        Build.VERSION.RELEASE,
+                        Build.VERSION.SDK_INT));
 
         if (Build.VERSION.SDK_INT
                 >= Build.VERSION_CODES.O) {
@@ -329,13 +334,17 @@ public class WebAppActivity extends Activity {
                     WebView.getCurrentWebViewPackage();
 
             if (packageInfo != null) {
-                result.append("\n\nWebView-Paket:\n")
-                        .append(packageInfo.packageName)
-                        .append("\nVersion:\n")
-                        .append(packageInfo.versionName);
+                result.append("\n\n")
+                        .append(
+                                getString(
+                                        R.string.webview_package_info,
+                                        packageInfo.packageName,
+                                        packageInfo.versionName));
             } else {
-                result.append(
-                        "\n\nWebView-Paket:\nKeines gefunden");
+                result.append("\n\n")
+                        .append(
+                                getString(
+                                        R.string.webview_package_missing));
             }
         }
 

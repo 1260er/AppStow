@@ -1271,8 +1271,8 @@ public class MainActivity extends Activity {
             } else {
                 pageMessage.setText(
                         normalizedQuery.isEmpty()
-                                ? "Keine startbaren Apps gefunden."
-                                : "Keine passenden Apps gefunden.");
+                                ? R.string.apps_empty
+                                : R.string.apps_search_empty);
             }
         } else {
             pageMessage.setVisibility(View.GONE);
@@ -1535,7 +1535,7 @@ public class MainActivity extends Activity {
         } catch (ActivityNotFoundException exception) {
             Toast.makeText(
                     this,
-                    "App konnte nicht gestartet werden.",
+                    R.string.app_launch_failed,
                     Toast.LENGTH_SHORT).show();
         }
     }
