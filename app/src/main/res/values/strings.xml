@@ -38,4 +38,26 @@
     <string name="action_sort_overview">Übersicht sortieren</string>
     <string name="action_finish_sorting">Sortieren beenden</string>
     <string name="action_drag_section">Bereich verschieben</string>
+    <string name="action_add_shortcut">Shortcut hinzufügen</string>
+    <string name="action_delete_shortcut">Shortcut löschen</string>
+    <string name="shortcut_empty">Noch keine eigenen Shortcuts angelegt.</string>
+    <string name="shortcut_add_title">Shortcut hinzufügen</string>
+    <string name="shortcut_edit_title">Shortcut bearbeiten</string>
+    <string name="shortcut_delete_title">Shortcut löschen</string>
+    <string name="shortcut_delete_message">Shortcut „%1$s“ löschen?</string>
+    <string name="shortcut_name_hint">Name</string>
+    <string name="shortcut_target_hint">URL oder Deep Link</string>
+    <string name="shortcut_pick_app">App auswählen</string>
+    <string name="shortcut_categories">Kategorien auswählen</string>
+    <string name="shortcut_favorite">Favorit</string>
+    <string name="shortcut_invalid">Bitte Name und ein gültiges Ziel angeben.</string>
+    <string name="shortcut_type_website">Webseite</string>
+    <string name="shortcut_type_webapp">Web-App</string>
+    <string name="shortcut_type_app_settings">Aktion: App-Einstellungen</string>
+    <string name="shortcut_type_deep_link">Aktion: Deep Link (erweitert)</string>
+    <string name="shortcut_target_url_hint">https://…</string>
+    <string name="shortcut_target_deep_link_hint">z. B. spotify:… oder intent://…</string>
+    <string name="shortcut_no_apps">Keine startbaren Apps gefunden.</string>
+    <string name="shortcut_app_selected">App: %1$s</string>
+    <string name="shortcut_categories_selected">Kategorien: %1$s</string>
 </resources>

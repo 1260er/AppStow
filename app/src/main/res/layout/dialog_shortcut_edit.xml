@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <EditText
+            android:id="@+id/shortcutEditName"
+            style="@style/UiSearchInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/shortcut_name_hint"
+            android:singleLine="true" />
+
+        <Spinner
+            android:id="@+id/shortcutEditType"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="@dimen/spacing_md" />
+
+        <EditText
+            android:id="@+id/shortcutEditTarget"
+            style="@style/UiSearchInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:hint="@string/shortcut_target_hint"
+            android:singleLine="true" />
+
+        <TextView
+            android:id="@+id/shortcutPickApp"
+            style="@style/UiBodyText"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:background="@drawable/overview_section_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:text="@string/shortcut_pick_app"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/shortcutPickCategories"
+            style="@style/UiBodyText"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:background="@drawable/overview_section_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:text="@string/shortcut_categories" />
+
+        <CheckBox
+            android:id="@+id/shortcutEditFavorite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/shortcut_favorite"
+            android:textColor="@color/ui_text_primary" />
+
+    </LinearLayout>
+
+</ScrollView>

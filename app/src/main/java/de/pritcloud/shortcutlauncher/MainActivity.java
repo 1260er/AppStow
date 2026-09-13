@@ -43,6 +43,10 @@ public class MainActivity extends Activity {
     private RecyclerView categoryList;
     private View categoryManagement;
     private TextView categoryEmptyMessage;
+
+    private RecyclerView shortcutList;
+    private View shortcutManagement;
+    private TextView shortcutEmptyMessage;
     private EditText appSearch;
     private View appSearchContainer;
     private ImageButton appSearchClear;
@@ -53,6 +57,9 @@ public class MainActivity extends Activity {
     private FavoritesStore favoritesStore;
     private CategoryStore categoryStore;
     private CategoryAdapter categoryAdapter;
+
+    private ShortcutStore shortcutStore;
+    private ShortcutAdapter shortcutAdapter;
     private OverviewOrderStore overviewOrderStore;
     private ItemTouchHelper overviewItemTouchHelper;
 
@@ -111,6 +118,14 @@ public class MainActivity extends Activity {
         categoryList = findViewById(R.id.categoryList);
         categoryManagement = findViewById(R.id.categoryManagement);
         categoryEmptyMessage = findViewById(R.id.categoryEmptyMessage);
+
+        shortcutList =
+                findViewById(R.id.shortcutList);
+        shortcutManagement =
+                findViewById(R.id.shortcutManagement);
+        shortcutEmptyMessage =
+                findViewById(R.id.shortcutEmptyMessage);
+
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
         appSearchClear = findViewById(R.id.appSearchClear);
@@ -119,6 +134,8 @@ public class MainActivity extends Activity {
 
         favoritesStore = new FavoritesStore(this);
         categoryStore = new CategoryStore(this);
+        shortcutStore = new ShortcutStore(this);
+
         overviewOrderStore =
                 new OverviewOrderStore(this);
 
@@ -142,6 +159,46 @@ public class MainActivity extends Activity {
         findViewById(R.id.categoryAddButton)
                 .setOnClickListener(v ->
                         showAddCategoryDialog());
+
+        shortcutAdapter =
+                new ShortcutAdapter(
+                        new ShortcutAdapter.Listener() {
+                            @Override
+                            public void onEdit(
+                                    ShortcutEntry shortcut) {
+
+                                showShortcutEditor(
+                                        shortcut);
+                            }
+
+                            @Override
+                            public void onDelete(
+                                    ShortcutEntry shortcut) {
+
+                                showDeleteShortcutDialog(
+                                        shortcut);
+                            }
+
+                            @Override
+                            public void onFavorite(
+                                    ShortcutEntry shortcut) {
+
+                                shortcutStore.toggleFavorite(
+                                        shortcut.id);
+
+                                refreshShortcuts();
+                            }
+                        });
+
+        shortcutList.setLayoutManager(
+                new LinearLayoutManager(this));
+
+        shortcutList.setAdapter(
+                shortcutAdapter);
+
+        findViewById(R.id.shortcutAddButton)
+                .setOnClickListener(v ->
+                        showShortcutEditor(null));
 
         appAdapter = new AppAdapter(
                 getPackageManager(),
@@ -232,10 +289,9 @@ public class MainActivity extends Activity {
         findViewById(R.id.navCategories).setOnClickListener(v ->
                 showCategoryManagement());
 
-        bindMenu(
-                R.id.navShortcuts,
-                "Eigene Shortcuts verwalten",
-                "Hier verwaltest du deine eigenen Shortcuts.");
+        findViewById(R.id.navShortcuts)
+                .setOnClickListener(v ->
+                        showShortcutManagement());
 
         bindMenu(
                 R.id.navHelp,
@@ -455,6 +511,7 @@ public class MainActivity extends Activity {
 
     private void showOverview() {
         categoryManagement.setVisibility(View.GONE);
+        shortcutManagement.setVisibility(View.GONE);
 
         setOverviewSortMode(false);
         overviewSortButton.setVisibility(View.VISIBLE);
@@ -480,6 +537,7 @@ public class MainActivity extends Activity {
     private void showApps() {
         hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);
+        shortcutManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
         loadApps();
 
@@ -499,6 +557,8 @@ public class MainActivity extends Activity {
 
     private void showCategoryManagement() {
         hideOverviewSortMode();
+
+        shortcutManagement.setVisibility(View.GONE);
 
         pageTitle.setText(R.string.nav_categories);
 
@@ -559,6 +619,125 @@ public class MainActivity extends Activity {
         }
 
         return ordered;
+    }
+
+    private void showShortcutManagement() {
+        hideOverviewSortMode();
+
+        categoryManagement.setVisibility(
+                View.GONE);
+
+        overviewList.setVisibility(
+                View.GONE);
+
+        appList.setVisibility(
+                View.GONE);
+
+        pageMessage.setVisibility(
+                View.GONE);
+
+        appSearchContainer.setVisibility(
+                View.GONE);
+
+        appSearchClear.setVisibility(
+                View.GONE);
+
+        appSearch.clearFocus();
+
+        loadApps();
+
+        pageTitle.setText(
+                R.string.nav_shortcuts_manage);
+
+        shortcutManagement.setVisibility(
+                View.VISIBLE);
+
+        refreshShortcuts();
+
+        drawerLayout.closeDrawer(
+                Gravity.END);
+    }
+
+    private void refreshShortcuts() {
+        List<ShortcutEntry> shortcuts =
+                shortcutStore.getShortcuts();
+
+        shortcutAdapter.setShortcuts(
+                shortcuts);
+
+        shortcutEmptyMessage.setVisibility(
+                shortcuts.isEmpty()
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        shortcutList.setVisibility(
+                shortcuts.isEmpty()
+                        ? View.GONE
+                        : View.VISIBLE);
+    }
+
+    private void showShortcutEditor(
+            ShortcutEntry shortcut) {
+
+        ShortcutEditorDialog.show(
+                this,
+                categoryStore,
+                apps,
+                shortcut,
+                (name,
+                 type,
+                 target,
+                 categoryIds,
+                 favorite) -> {
+
+                    if (shortcut == null) {
+                        shortcutStore.add(
+                                name,
+                                type,
+                                target,
+                                categoryIds,
+                                favorite);
+                    } else {
+                        shortcutStore.update(
+                                shortcut.id,
+                                name,
+                                type,
+                                target,
+                                categoryIds,
+                                favorite);
+                    }
+
+                    refreshShortcuts();
+                });
+    }
+
+    private void showDeleteShortcutDialog(
+            ShortcutEntry shortcut) {
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.shortcut_delete_title)
+                        .setMessage(
+                                getString(
+                                        R.string.shortcut_delete_message,
+                                        shortcut.name))
+                        .setPositiveButton(
+                                R.string.action_delete_shortcut,
+                                (currentDialog, which) -> {
+                                    shortcutStore.delete(
+                                            shortcut.id);
+
+                                    refreshShortcuts();
+                                })
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .show();
+
+        styleCategoryDialog(
+                dialog,
+                true);
     }
 
     private void refreshCategories() {
@@ -654,6 +833,9 @@ public class MainActivity extends Activity {
                                 R.string.action_delete_category,
                                 (currentDialog, which) -> {
                                     categoryStore.deleteCategory(
+                                            category.id);
+
+                                    shortcutStore.removeCategory(
                                             category.id);
 
                                     refreshCategories();
@@ -946,6 +1128,7 @@ public class MainActivity extends Activity {
     private void showMessage(String message) {
         hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);
+        shortcutManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
         appSearchContainer.setVisibility(View.GONE);
         appSearchClear.setVisibility(View.GONE);
