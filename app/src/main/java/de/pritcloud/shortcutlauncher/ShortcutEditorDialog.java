@@ -36,7 +36,6 @@ final class ShortcutEditorDialog {
     static void show(
             Activity activity,
             CategoryStore categoryStore,
-            List<AppEntry> apps,
             ShortcutEntry existing,
             Listener listener) {
 
@@ -58,10 +57,6 @@ final class ShortcutEditorDialog {
                 view.findViewById(
                         R.id.shortcutEditTarget);
 
-        TextView pickApp =
-                view.findViewById(
-                        R.id.shortcutPickApp);
-
         TextView pickCategories =
                 view.findViewById(
                         R.id.shortcutPickCategories);
@@ -75,8 +70,6 @@ final class ShortcutEditorDialog {
                         R.string.shortcut_type_website),
                 activity.getString(
                         R.string.shortcut_type_webapp),
-                activity.getString(
-                        R.string.shortcut_type_app_settings),
                 activity.getString(
                         R.string.shortcut_type_deep_link)
         };
@@ -95,34 +88,42 @@ final class ShortcutEditorDialog {
         Set<String> selectedCategories =
                 new HashSet<>();
 
-        String[] selectedPackage = {""};
-
         if (existing != null) {
-            name.setText(existing.name);
-            favorite.setChecked(existing.favorite);
+            name.setText(
+                    existing.name);
+
+            favorite.setChecked(
+                    existing.favorite);
 
             selectedCategories.addAll(
                     existing.categoryIds);
 
             int typeIndex =
-                    getTypeIndex(existing.type);
+                    getTypeIndex(
+                            existing.type);
 
-            type.setSelection(typeIndex);
+            type.setSelection(
+                    typeIndex);
 
-            if (isAppTargetType(typeIndex)) {
-                selectedPackage[0] =
-                        existing.target;
+            if (ShortcutEntry.TYPE_APP_SETTINGS.equals(
+                    existing.type)) {
+
+                target.setText(
+                        "package:"
+                                + existing.target);
+
             } else {
                 target.setText(
                         existing.target);
             }
-        }
 
-        updateSelectedAppLabel(
-                activity,
-                pickApp,
-                selectedPackage[0],
-                apps);
+        } else {
+            target.setText(
+                    "https://");
+
+            target.setSelection(
+                    target.length());
+        }
 
         updateCategoryLabel(
                 activity,
@@ -136,8 +137,7 @@ final class ShortcutEditorDialog {
 
         updateTypeUi(
                 type.getSelectedItemPosition(),
-                target,
-                pickApp);
+                target);
 
         type.setOnItemSelectedListener(
                 new android.widget.AdapterView.OnItemSelectedListener() {
@@ -153,15 +153,16 @@ final class ShortcutEditorDialog {
                                         .toString()
                                         .trim();
 
-                        if (previousType[0] == 1
-                                && position != 1
+                        if (isWebType(
+                                previousType[0])
+                                && !isWebType(position)
                                 && "https://".equals(
                                         currentTarget)) {
 
                             target.setText("");
                         }
 
-                        if (position == 1
+                        if (isWebType(position)
                                 && target.getText()
                                         .toString()
                                         .trim()
@@ -179,8 +180,7 @@ final class ShortcutEditorDialog {
 
                         updateTypeUi(
                                 position,
-                                target,
-                                pickApp);
+                                target);
                     }
 
                     @Override
@@ -188,13 +188,6 @@ final class ShortcutEditorDialog {
                             android.widget.AdapterView<?> parent) {
                     }
                 });
-
-        pickApp.setOnClickListener(v ->
-                showAppPicker(
-                        activity,
-                        apps,
-                        selectedPackage,
-                        pickApp));
 
         pickCategories.setOnClickListener(v ->
                 showCategoryPicker(
@@ -243,18 +236,14 @@ final class ShortcutEditorDialog {
                                         .toString()
                                         .trim();
 
-                        int typeIndex =
-                                type.getSelectedItemPosition();
-
                         String shortcutType =
-                                getType(typeIndex);
+                                getType(
+                                        type.getSelectedItemPosition());
 
                         String shortcutTarget =
-                                isAppTargetType(typeIndex)
-                                        ? selectedPackage[0]
-                                        : target.getText()
-                                                .toString()
-                                                .trim();
+                                target.getText()
+                                        .toString()
+                                        .trim();
 
                         if (!isValid(
                                 shortcutName,
@@ -286,84 +275,15 @@ final class ShortcutEditorDialog {
 
     private static void updateTypeUi(
             int typeIndex,
-            EditText target,
-            TextView pickApp) {
-
-        boolean appTarget =
-                isAppTargetType(typeIndex);
+            EditText target) {
 
         target.setVisibility(
-                appTarget
-                        ? View.GONE
-                        : View.VISIBLE);
+                View.VISIBLE);
 
-        pickApp.setVisibility(
-                appTarget
-                        ? View.VISIBLE
-                        : View.GONE);
-
-        if (!appTarget) {
-            target.setHint(
-                    typeIndex == 3
-                            ? R.string.shortcut_target_deep_link_hint
-                            : R.string.shortcut_target_url_hint);
-        }
-    }
-
-    private static void showAppPicker(
-            Activity activity,
-            List<AppEntry> apps,
-            String[] selectedPackage,
-            TextView pickApp) {
-
-        if (apps.isEmpty()) {
-            Toast.makeText(
-                    activity,
-                    R.string.shortcut_no_apps,
-                    Toast.LENGTH_SHORT).show();
-
-            return;
-        }
-
-        CharSequence[] names =
-                new CharSequence[
-                        apps.size()];
-
-        for (int i = 0;
-             i < apps.size();
-             i++) {
-
-            AppEntry app =
-                    apps.get(i);
-
-            names[i] =
-                    app.label
-                            + " · "
-                            + app.packageName;
-        }
-
-        new AlertDialog.Builder(activity)
-                .setTitle(
-                        R.string.shortcut_pick_app)
-                .setItems(
-                        names,
-                        (dialog, which) -> {
-                            AppEntry app =
-                                    apps.get(which);
-
-                            selectedPackage[0] =
-                                    app.packageName;
-
-                            updateSelectedAppLabel(
-                                    activity,
-                                    pickApp,
-                                    selectedPackage[0],
-                                    apps);
-                        })
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
+        target.setHint(
+                typeIndex == 2
+                        ? R.string.shortcut_target_deep_link_hint
+                        : R.string.shortcut_target_url_hint);
     }
 
     private static void showCategoryPicker(
@@ -436,6 +356,7 @@ final class ShortcutEditorDialog {
                         R.string.action_save,
                         (dialog, which) -> {
                             selectedCategories.clear();
+
                             selectedCategories.addAll(
                                     temporary);
 
@@ -449,41 +370,6 @@ final class ShortcutEditorDialog {
                         R.string.action_cancel,
                         null)
                 .show();
-    }
-
-    private static void updateSelectedAppLabel(
-            Activity activity,
-            TextView view,
-            String packageName,
-            List<AppEntry> apps) {
-
-        if (packageName == null
-                || packageName.isEmpty()) {
-
-            view.setText(
-                    R.string.shortcut_pick_app);
-
-            return;
-        }
-
-        String label =
-                packageName;
-
-        for (AppEntry app : apps) {
-            if (app.packageName.equals(
-                    packageName)) {
-
-                label =
-                        app.label;
-
-                break;
-            }
-        }
-
-        view.setText(
-                activity.getString(
-                        R.string.shortcut_app_selected,
-                        label));
     }
 
     private static void updateCategoryLabel(
@@ -557,18 +443,15 @@ final class ShortcutEditorDialog {
                     || "https".equals(scheme);
         }
 
-        if (ShortcutEntry.TYPE_DEEP_LINK.equals(type)) {
-            return Uri.parse(target)
-                    .getScheme() != null;
-        }
-
-        return true;
+        return Uri.parse(target)
+                .getScheme() != null;
     }
 
-    private static boolean isAppTargetType(
+    private static boolean isWebType(
             int typeIndex) {
 
-        return typeIndex == 2;
+        return typeIndex == 0
+                || typeIndex == 1;
     }
 
     private static int getTypeIndex(
@@ -578,12 +461,10 @@ final class ShortcutEditorDialog {
             return 1;
         }
 
-        if (ShortcutEntry.TYPE_APP_SETTINGS.equals(type)) {
-            return 2;
-        }
+        if (ShortcutEntry.TYPE_DEEP_LINK.equals(type)
+                || ShortcutEntry.TYPE_APP_SETTINGS.equals(type)) {
 
-        if (ShortcutEntry.TYPE_DEEP_LINK.equals(type)) {
-            return 3;
+            return 2;
         }
 
         return 0;
@@ -597,9 +478,6 @@ final class ShortcutEditorDialog {
                 return ShortcutEntry.TYPE_WEB_APP;
 
             case 2:
-                return ShortcutEntry.TYPE_APP_SETTINGS;
-
-            case 3:
                 return ShortcutEntry.TYPE_DEEP_LINK;
 
             default:

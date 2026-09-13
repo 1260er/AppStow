@@ -661,8 +661,6 @@ public class MainActivity extends Activity {
 
         appSearch.clearFocus();
 
-        loadApps();
-
         pageTitle.setText(
                 R.string.nav_shortcuts_manage);
 
@@ -721,7 +719,6 @@ public class MainActivity extends Activity {
         ShortcutEditorDialog.show(
                 this,
                 categoryStore,
-                apps,
                 shortcut,
                 (name,
                  type,

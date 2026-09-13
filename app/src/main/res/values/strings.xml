@@ -76,11 +76,12 @@ Eine normale http- oder https-Adresse. Android öffnet sie mit der dafür zustä
 <b>Web-App</b>
 Gib die URL der installierten Web-App ein. ShortcutLauncher übergibt die Adresse an Android bzw. den Standardbrowser. Ist die Seite als Web-App eingerichtet, kann der Browser sie entsprechend öffnen.
 
-<b>App-Einstellungen</b>
-Wähle eine installierte App aus. Der Shortcut öffnet später direkt deren Android-App-Informationen.
-
 <b>Deep Link (erweitert)</b>
 Deep Links öffnen spezielle Funktionen einer App. Nicht jede App unterstützt jeden Aufruf. Hier kannst du bekannte Links oder Android-Intent-URIs direkt eintragen.
+
+<b>App-Einstellungen:</b>
+package:com.example.app
+(Öffnet die Android-App-Informationen für die angegebene App.)
 
 <b>Google Maps:</b>
 https://www.google.com/maps/dir/?api=1&amp;destination=Berlin
