@@ -1121,7 +1121,9 @@ public class MainActivity extends Activity {
             filteredApps.add(app);
         }
 
-        appAdapter.submitList(filteredApps);
+        appAdapter.submitList(
+                filteredApps,
+                appAdapter::refreshAppRows);
 
         if (filteredApps.isEmpty()) {
             appList.setVisibility(View.GONE);
@@ -1202,7 +1204,9 @@ public class MainActivity extends Activity {
 
                                     renderApps(
                                             appSearch.getText().toString());
-                                    overviewAdapter.refreshAppRows();
+
+                                    rebuildOverviewSections();
+                                    overviewAdapter.setApps(apps);
                                 })
                         .setNegativeButton(
                                 R.string.action_cancel,
