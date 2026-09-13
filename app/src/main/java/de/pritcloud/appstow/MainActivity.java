@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
@@ -270,7 +271,6 @@ public class MainActivity extends Activity {
                         selectBackupForRestore());
 
         appAdapter = new AppAdapter(
-                getPackageManager(),
                 favoritesStore,
                 categoryStore,
                 this::launchApp,
@@ -285,7 +285,6 @@ public class MainActivity extends Activity {
         overviewAdapter =
                 new OverviewAdapter(
                         overviewSections,
-                        getPackageManager(),
                         favoritesStore,
                         categoryStore,
                         shortcutStore,
@@ -1213,11 +1212,32 @@ public class MainActivity extends Activity {
                             ? labelSequence.toString()
                             : packageName;
 
+            Drawable icon;
+
+            try {
+                icon = resolveInfo.loadIcon(
+                        packageManager);
+
+            } catch (RuntimeException exception) {
+                icon = null;
+            }
+
+            if (icon == null) {
+                icon = packageManager
+                        .getDefaultActivityIcon();
+            }
+
+            Drawable.ConstantState iconState =
+                    icon != null
+                            ? icon.getConstantState()
+                            : null;
+
             loadedApps.add(
                     new AppEntry(
                             label,
                             packageName,
-                            resolveInfo));
+                            resolveInfo,
+                            iconState));
         }
 
         loadedApps.sort(

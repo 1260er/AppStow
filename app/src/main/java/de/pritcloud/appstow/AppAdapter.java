@@ -1,6 +1,5 @@
 package de.pritcloud.appstow;
 
-import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,14 +23,12 @@ public class AppAdapter
         void onAppLongClick(AppEntry app);
     }
 
-    private final PackageManager packageManager;
     private final FavoritesStore favoritesStore;
     private final CategoryStore categoryStore;
     private final OnAppClickListener clickListener;
     private final OnAppLongClickListener longClickListener;
 
     AppAdapter(
-            PackageManager packageManager,
             FavoritesStore favoritesStore,
             CategoryStore categoryStore,
             OnAppClickListener clickListener,
@@ -39,7 +36,6 @@ public class AppAdapter
 
         super(DIFF_CALLBACK);
 
-        this.packageManager = packageManager;
         this.favoritesStore = favoritesStore;
         this.categoryStore = categoryStore;
         this.clickListener = clickListener;
@@ -88,7 +84,14 @@ public class AppAdapter
         AppEntry app = getItem(position);
 
         holder.icon.setImageDrawable(
-                app.resolveInfo.loadIcon(packageManager));
+                app.iconState != null
+                        ? app.iconState.newDrawable(
+                                holder.itemView
+                                        .getResources())
+                        : holder.itemView
+                                .getContext()
+                                .getPackageManager()
+                                .getDefaultActivityIcon());
 
         holder.name.setText(app.label);
 

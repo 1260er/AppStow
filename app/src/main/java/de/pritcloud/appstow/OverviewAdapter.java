@@ -1,7 +1,6 @@
 package de.pritcloud.appstow;
 
 import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -67,7 +66,6 @@ final class OverviewAdapter
     private final List<ShortcutEntry> allShortcuts =
             new ArrayList<>();
 
-    private final PackageManager packageManager;
     private final FavoritesStore favoritesStore;
     private final CategoryStore categoryStore;
     private final ShortcutStore shortcutStore;
@@ -84,7 +82,6 @@ final class OverviewAdapter
 
     OverviewAdapter(
             List<OverviewSection> sections,
-            PackageManager packageManager,
             FavoritesStore favoritesStore,
             CategoryStore categoryStore,
             ShortcutStore shortcutStore,
@@ -96,7 +93,6 @@ final class OverviewAdapter
             OnSectionDragStartListener dragStartListener) {
 
         this.sections = sections;
-        this.packageManager = packageManager;
         this.favoritesStore = favoritesStore;
         this.categoryStore = categoryStore;
         this.shortcutStore = shortcutStore;
@@ -564,8 +560,14 @@ final class OverviewAdapter
                         itemSortSectionId);
 
         holder.icon.setImageDrawable(
-                app.resolveInfo.loadIcon(
-                        packageManager));
+                app.iconState != null
+                        ? app.iconState.newDrawable(
+                                holder.itemView
+                                        .getResources())
+                        : holder.itemView
+                                .getContext()
+                                .getPackageManager()
+                                .getDefaultActivityIcon());
 
         holder.name.setText(
                 app.label);
