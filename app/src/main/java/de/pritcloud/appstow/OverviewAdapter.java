@@ -424,6 +424,16 @@ final class OverviewAdapter
                 row.section.emptyMessage);
     }
 
+    private void collapseOtherSections(
+            OverviewSection activeSection) {
+
+        for (OverviewSection section : sections) {
+            if (section != activeSection) {
+                section.expanded = false;
+            }
+        }
+    }
+
     private void bindSection(
             SectionViewHolder holder,
             OverviewSection section) {
@@ -471,6 +481,8 @@ final class OverviewAdapter
                 saveItemOrder();
                 itemSortSectionId = null;
             } else {
+                collapseOtherSections(section);
+
                 itemSortSectionId =
                         section.id;
 
@@ -514,8 +526,16 @@ final class OverviewAdapter
         } else {
             holder.itemView
                     .setOnClickListener(v -> {
-                        section.expanded =
+                        boolean expand =
                                 !section.expanded;
+
+                        if (expand) {
+                            collapseOtherSections(
+                                    section);
+                        }
+
+                        section.expanded =
+                                expand;
 
                         rebuildRows();
                         notifyDataSetChanged();
