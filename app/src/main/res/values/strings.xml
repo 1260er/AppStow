@@ -20,6 +20,9 @@
 
     <string name="search_apps_hint">Apps durchsuchen</string>
     <string name="action_clear_search">Suche löschen</string>
+    <string name="action_filter_unassigned_apps">Nur nicht zugewiesene Apps anzeigen</string>
+    <string name="action_show_all_apps">Alle Apps anzeigen</string>
+    <string name="apps_unassigned_empty">Keine nicht zugewiesenen Apps gefunden.</string>
     <string name="action_add_favorite">Zu Favoriten hinzufügen</string>
     <string name="action_remove_favorite">Aus Favoriten entfernen</string>
     <string name="action_add_category">Kategorie hinzufügen</string>

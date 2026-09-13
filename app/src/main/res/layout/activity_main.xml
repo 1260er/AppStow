@@ -27,6 +27,16 @@
                 android:textStyle="bold" />
 
             <ImageButton
+                android:id="@+id/buttonFilterApps"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_filter_unassigned_apps"
+                android:padding="10dp"
+                android:src="@drawable/ic_filter_apps"
+                android:visibility="gone" />
+
+            <ImageButton
                 android:id="@+id/buttonSortOverview"
                 android:layout_width="@dimen/icon_button_size"
                 android:layout_height="@dimen/icon_button_size"

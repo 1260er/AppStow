@@ -59,9 +59,11 @@ public class MainActivity extends Activity {
     private View appSearchContainer;
     private ImageButton appSearchClear;
     private ImageButton overviewSortButton;
+    private ImageButton appFilterButton;
     private ImageButton shortcutHelpButton;
     private ImageButton topNavigationButton;
     private boolean showingOverview;
+    private boolean showOnlyUnassignedApps;
 
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
@@ -145,6 +147,9 @@ public class MainActivity extends Activity {
         appSearchClear = findViewById(R.id.appSearchClear);
         overviewSortButton =
                 findViewById(R.id.buttonSortOverview);
+
+        appFilterButton =
+                findViewById(R.id.buttonFilterApps);
 
         shortcutHelpButton =
                 findViewById(R.id.buttonShortcutHelp);
@@ -307,6 +312,15 @@ public class MainActivity extends Activity {
         overviewSortButton.setOnClickListener(v ->
                 setOverviewSortMode(
                         !overviewAdapter.isSortMode()));
+
+        appFilterButton.setOnClickListener(v -> {
+            showOnlyUnassignedApps =
+                    !showOnlyUnassignedApps;
+
+            updateAppFilterButton();
+            renderApps(
+                    appSearch.getText().toString());
+        });
 
         shortcutHelpButton.setOnClickListener(v ->
                 showShortcutHelpDialog());
@@ -536,15 +550,30 @@ public class MainActivity extends Activity {
                                 : R.string.action_sort_overview));
     }
 
+    private void updateAppFilterButton() {
+        appFilterButton.setImageResource(
+                showOnlyUnassignedApps
+                        ? R.drawable.ic_filter_apps_active
+                        : R.drawable.ic_filter_apps);
+
+        appFilterButton.setContentDescription(
+                getString(
+                        showOnlyUnassignedApps
+                                ? R.string.action_show_all_apps
+                                : R.string.action_filter_unassigned_apps));
+    }
+
     private void hideOverviewSortMode() {
         setOverviewSortMode(false);
         overviewSortButton.setVisibility(View.GONE);
+        appFilterButton.setVisibility(View.GONE);
     }
 
     private void showOverview() {
         setTopNavigation(true);
 
         shortcutHelpButton.setVisibility(View.GONE);
+        appFilterButton.setVisibility(View.GONE);
 
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
@@ -577,6 +606,10 @@ public class MainActivity extends Activity {
         shortcutHelpButton.setVisibility(View.GONE);
 
         hideOverviewSortMode();
+
+        appFilterButton.setVisibility(View.VISIBLE);
+        updateAppFilterButton();
+
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
@@ -1079,6 +1112,12 @@ public class MainActivity extends Activity {
                 continue;
             }
 
+            if (showOnlyUnassignedApps
+                    && !categoryStore.getAssignedCategoryIds(
+                            app.packageName).isEmpty()) {
+                continue;
+            }
+
             filteredApps.add(app);
         }
 
@@ -1088,10 +1127,16 @@ public class MainActivity extends Activity {
             appList.setVisibility(View.GONE);
             pageMessage.setVisibility(View.VISIBLE);
 
-            pageMessage.setText(
-                    normalizedQuery.isEmpty()
-                            ? "Keine startbaren Apps gefunden."
-                            : "Keine passenden Apps gefunden.");
+            if (showOnlyUnassignedApps
+                    && normalizedQuery.isEmpty()) {
+                pageMessage.setText(
+                        R.string.apps_unassigned_empty);
+            } else {
+                pageMessage.setText(
+                        normalizedQuery.isEmpty()
+                                ? "Keine startbaren Apps gefunden."
+                                : "Keine passenden Apps gefunden.");
+            }
         } else {
             pageMessage.setVisibility(View.GONE);
             appList.setVisibility(View.VISIBLE);
@@ -1155,7 +1200,8 @@ public class MainActivity extends Activity {
                                             app.packageName,
                                             selectedIds);
 
-                                    appAdapter.refreshAppRows();
+                                    renderApps(
+                                            appSearch.getText().toString());
                                     overviewAdapter.refreshAppRows();
                                 })
                         .setNegativeButton(
