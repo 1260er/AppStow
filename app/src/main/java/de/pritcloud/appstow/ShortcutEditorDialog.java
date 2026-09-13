@@ -1,4 +1,4 @@
-package de.pritcloud.shortcutlauncher;
+package de.pritcloud.appstow;
 
 import android.app.Activity;
 import android.app.AlertDialog;

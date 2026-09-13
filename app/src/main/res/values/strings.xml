@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ShortcutLauncher</string>
+    <string name="app_name">AppStow</string>
     <string name="action_open_menu">Menü öffnen</string>
     <string name="action_back_to_overview">Zurück zu App starten</string>
 
@@ -75,7 +75,7 @@
 Eine normale http- oder https-Adresse. Android öffnet sie mit der dafür zuständigen App oder dem Standardbrowser.
 
 <b>Web-App</b>
-Öffnet eine http- oder https-Adresse direkt in ShortcutLauncher im Vollbild. Die Anmeldung erfolgt unabhängig vom normalen Browser und bleibt normalerweise in den App-Daten gespeichert. Für Web-Apps wird eine nutzbare Netzwerkverbindung benötigt.
+Öffnet eine http- oder https-Adresse direkt in AppStow im Vollbild. Die Anmeldung erfolgt unabhängig vom normalen Browser und bleibt normalerweise in den App-Daten gespeichert. Für Web-Apps wird eine nutzbare Netzwerkverbindung benötigt.
 
 <b>Deep Link (erweitert)</b>
 Deep Links öffnen spezielle Funktionen einer App. Nicht jede App unterstützt jeden Aufruf. Hier kannst du bekannte Links oder Android-Intent-URIs direkt eintragen.

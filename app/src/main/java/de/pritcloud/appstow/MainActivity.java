@@ -1,4 +1,4 @@
-package de.pritcloud.shortcutlauncher;
+package de.pritcloud.appstow;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -333,7 +333,7 @@ public class MainActivity extends Activity {
         bindMenu(
                 R.id.navAbout,
                 "Über",
-                "ShortcutLauncher 0.1.0");
+                "AppStow 0.1.0");
 
         appSearchClear.setOnClickListener(v -> {
             appSearch.setText("");

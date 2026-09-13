@@ -1,4 +1,4 @@
-package de.pritcloud.shortcutlauncher;
+package de.pritcloud.appstow;
 
 import android.content.Context;
 import android.content.SharedPreferences;

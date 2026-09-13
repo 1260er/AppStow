@@ -1,13 +1,13 @@
 plugins { id("com.android.application") }
 
 val releaseStoreFile =
-    providers.environmentVariable("SHORTCUTLAUNCHER_KEYSTORE_PATH").orNull
+    providers.environmentVariable("APPSTOW_KEYSTORE_PATH").orNull
 val releaseStorePassword =
-    providers.environmentVariable("SHORTCUTLAUNCHER_KEYSTORE_PASSWORD").orNull
+    providers.environmentVariable("APPSTOW_KEYSTORE_PASSWORD").orNull
 val releaseKeyAlias =
-    providers.environmentVariable("SHORTCUTLAUNCHER_KEY_ALIAS").orNull
+    providers.environmentVariable("APPSTOW_KEY_ALIAS").orNull
 val releaseKeyPassword =
-    providers.environmentVariable("SHORTCUTLAUNCHER_KEY_PASSWORD").orNull
+    providers.environmentVariable("APPSTOW_KEY_PASSWORD").orNull
 
 val releaseSigningConfigured = listOf(
     releaseStoreFile,
@@ -17,7 +17,7 @@ val releaseSigningConfigured = listOf(
 ).all { !it.isNullOrBlank() }
 
 android {
-    namespace = "de.pritcloud.shortcutlauncher"
+    namespace = "de.pritcloud.appstow"
     compileSdk = 35
 
     compileOptions {
@@ -26,11 +26,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "de.pritcloud.shortcutlauncher"
+        applicationId = "de.pritcloud.appstow"
         minSdk = 26
         targetSdk = 35
         versionCode =
-            providers.environmentVariable("SHORTCUTLAUNCHER_VERSION_CODE")
+            providers.environmentVariable("APPSTOW_VERSION_CODE")
                 .orNull?.toIntOrNull() ?: 1
         versionName = "0.1.0"
     }

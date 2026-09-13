@@ -13,10 +13,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      KEYSTORE_PATH: /tmp/shortcutlauncher-release.p12
-      SHORTCUTLAUNCHER_KEYSTORE_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEYSTORE_PASSWORD }}
-      SHORTCUTLAUNCHER_KEY_ALIAS: ${{ secrets.SHORTCUTLAUNCHER_KEY_ALIAS }}
-      SHORTCUTLAUNCHER_KEY_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEY_PASSWORD }}
+      KEYSTORE_PATH: /tmp/appstow-release.p12
+      APPSTOW_KEYSTORE_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEYSTORE_PASSWORD }}
+      APPSTOW_KEY_ALIAS: ${{ secrets.SHORTCUTLAUNCHER_KEY_ALIAS }}
+      APPSTOW_KEY_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEY_PASSWORD }}
 
     steps:
       - name: Check out source
@@ -28,10 +28,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$KEYSTORE_BASE64" || { echo "SHORTCUTLAUNCHER_KEYSTORE_BASE64 fehlt"; exit 1; }
-          test -n "$SHORTCUTLAUNCHER_KEYSTORE_PASSWORD" || { echo "SHORTCUTLAUNCHER_KEYSTORE_PASSWORD fehlt"; exit 1; }
-          test -n "$SHORTCUTLAUNCHER_KEY_ALIAS" || { echo "SHORTCUTLAUNCHER_KEY_ALIAS fehlt"; exit 1; }
-          test -n "$SHORTCUTLAUNCHER_KEY_PASSWORD" || { echo "SHORTCUTLAUNCHER_KEY_PASSWORD fehlt"; exit 1; }
+          test -n "$KEYSTORE_BASE64" || { echo "APPSTOW_KEYSTORE_BASE64 fehlt"; exit 1; }
+          test -n "$APPSTOW_KEYSTORE_PASSWORD" || { echo "APPSTOW_KEYSTORE_PASSWORD fehlt"; exit 1; }
+          test -n "$APPSTOW_KEY_ALIAS" || { echo "APPSTOW_KEY_ALIAS fehlt"; exit 1; }
+          test -n "$APPSTOW_KEY_PASSWORD" || { echo "APPSTOW_KEY_PASSWORD fehlt"; exit 1; }
 
       - name: Restore release keystore
         env:
@@ -66,8 +66,8 @@ jobs:
 
       - name: Build signed release APK
         env:
-          SHORTCUTLAUNCHER_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
-          SHORTCUTLAUNCHER_REQUIRE_RELEASE_SIGNING: "true"
+          APPSTOW_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
+          APPSTOW_REQUIRE_RELEASE_SIGNING: "true"
         run: ./gradlew --no-daemon clean testDebugUnitTest assembleRelease
 
       - name: Verify APK signature
@@ -85,7 +85,7 @@ jobs:
           set -euo pipefail
           VERSION_NAME=$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' app/build.gradle.kts | head -n1)
           test -n "$VERSION_NAME"
-          APK_NAME="ShortcutLauncher-${VERSION_NAME}.apk"
+          APK_NAME="AppStow-${VERSION_NAME}.apk"
           cp app/build/outputs/apk/release/app-release.apk "$APK_NAME"
           sha256sum "$APK_NAME" > "$APK_NAME.sha256"
           echo "version=$VERSION_NAME" >> "$GITHUB_OUTPUT"
@@ -94,7 +94,7 @@ jobs:
       - name: Upload signed APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ShortcutLauncher-${{ steps.prepare.outputs.version }}-signed
+          name: AppStow-${{ steps.prepare.outputs.version }}-signed
           path: |
             ${{ steps.prepare.outputs.apk }}
             ${{ steps.prepare.outputs.apk }}.sha256
@@ -116,7 +116,7 @@ jobs:
           }
           gh release create "$GITHUB_REF_NAME" \
             "$APK_FILE" "$APK_FILE.sha256" \
-            --title "ShortcutLauncher $VERSION" \
+            --title "AppStow $VERSION" \
             --generate-notes
 
       - name: Remove restored keystore

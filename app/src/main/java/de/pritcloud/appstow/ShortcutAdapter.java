@@ -1,4 +1,4 @@
-package de.pritcloud.shortcutlauncher;
+package de.pritcloud.appstow;
 
 import android.view.LayoutInflater;
 import android.view.View;

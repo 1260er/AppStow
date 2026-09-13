@@ -1,4 +1,4 @@
-package de.pritcloud.shortcutlauncher;
+package de.pritcloud.appstow;
 
 import java.util.HashSet;
 import java.util.Set;

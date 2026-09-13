@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: shortcutlauncher-dev-release
+  group: appstow-dev-release
   cancel-in-progress: true
 
 jobs:
@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      KEYSTORE_PATH: /tmp/shortcutlauncher-release.p12
-      SHORTCUTLAUNCHER_KEYSTORE_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEYSTORE_PASSWORD }}
-      SHORTCUTLAUNCHER_KEY_ALIAS: ${{ secrets.SHORTCUTLAUNCHER_KEY_ALIAS }}
-      SHORTCUTLAUNCHER_KEY_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEY_PASSWORD }}
+      KEYSTORE_PATH: /tmp/appstow-release.p12
+      APPSTOW_KEYSTORE_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEYSTORE_PASSWORD }}
+      APPSTOW_KEY_ALIAS: ${{ secrets.SHORTCUTLAUNCHER_KEY_ALIAS }}
+      APPSTOW_KEY_PASSWORD: ${{ secrets.SHORTCUTLAUNCHER_KEY_PASSWORD }}
 
     steps:
       - name: Check out source
@@ -34,9 +34,9 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$KEYSTORE_BASE64"
-          test -n "$SHORTCUTLAUNCHER_KEYSTORE_PASSWORD"
-          test -n "$SHORTCUTLAUNCHER_KEY_ALIAS"
-          test -n "$SHORTCUTLAUNCHER_KEY_PASSWORD"
+          test -n "$APPSTOW_KEYSTORE_PASSWORD"
+          test -n "$APPSTOW_KEY_ALIAS"
+          test -n "$APPSTOW_KEY_PASSWORD"
 
       - name: Restore release keystore
         env:
@@ -71,8 +71,8 @@ jobs:
 
       - name: Build signed dev APK
         env:
-          SHORTCUTLAUNCHER_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
-          SHORTCUTLAUNCHER_VERSION_CODE: ${{ github.run_number }}
+          APPSTOW_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
+          APPSTOW_VERSION_CODE: ${{ github.run_number }}
         run: ./gradlew --no-daemon clean assembleDebug
 
       - name: Verify APK signature
@@ -87,7 +87,7 @@ jobs:
         run: |
           set -euo pipefail
           TAG="dev-${GITHUB_RUN_NUMBER}"
-          APK_NAME="ShortcutLauncher-dev-${GITHUB_RUN_NUMBER}.apk"
+          APK_NAME="AppStow-dev-${GITHUB_RUN_NUMBER}.apk"
 
           cp app/build/outputs/apk/debug/app-debug.apk "$APK_NAME"
           sha256sum "$APK_NAME" > "$APK_NAME.sha256"
@@ -103,7 +103,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh release create "$TAG"             "$APK_FILE" "$APK_FILE.sha256"             --target "$GITHUB_SHA"             --title "ShortcutLauncher Dev ${GITHUB_RUN_NUMBER}"             --notes "Automatischer Test-Build aus dem Branch ui-v0.1.0."             --prerelease             --latest=false
+          gh release create "$TAG"             "$APK_FILE" "$APK_FILE.sha256"             --target "$GITHUB_SHA"             --title "AppStow Dev ${GITHUB_RUN_NUMBER}"             --notes "Automatischer Test-Build aus dem Branch ui-v0.1.0."             --prerelease             --latest=false
 
       - name: Remove restored keystore
         if: always()
