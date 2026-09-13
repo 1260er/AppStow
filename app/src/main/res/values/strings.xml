@@ -60,4 +60,11 @@
     <string name="shortcut_no_apps">Keine startbaren Apps gefunden.</string>
     <string name="shortcut_app_selected">App: %1$s</string>
     <string name="shortcut_categories_selected">Kategorien: %1$s</string>
+    <string name="shortcut_deep_link_templates">Deep-Link-Vorlagen</string>
+    <string name="shortcut_deep_link_template_title">Vorlage auswählen</string>
+    <string name="shortcut_template_navigation">Navigation / Ort</string>
+    <string name="shortcut_template_phone">Telefonnummer anrufen</string>
+    <string name="shortcut_template_sms">SMS schreiben</string>
+    <string name="shortcut_template_email">E-Mail schreiben</string>
+    <string name="shortcut_template_play_store">App im Play Store öffnen</string>
 </resources>

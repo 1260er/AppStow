@@ -162,6 +162,7 @@ public class MainActivity extends Activity {
 
         shortcutAdapter =
                 new ShortcutAdapter(
+                        categoryStore,
                         new ShortcutAdapter.Listener() {
                             @Override
                             public void onEdit(

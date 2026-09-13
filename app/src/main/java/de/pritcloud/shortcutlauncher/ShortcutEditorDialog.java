@@ -58,6 +58,10 @@ final class ShortcutEditorDialog {
                 view.findViewById(
                         R.id.shortcutEditTarget);
 
+        TextView deepLinkTemplates =
+                view.findViewById(
+                        R.id.shortcutDeepLinkTemplates);
+
         TextView pickApp =
                 view.findViewById(
                         R.id.shortcutPickApp);
@@ -133,6 +137,7 @@ final class ShortcutEditorDialog {
                 activity,
                 type.getSelectedItemPosition(),
                 target,
+                deepLinkTemplates,
                 pickApp);
 
         type.setOnItemSelectedListener(
@@ -148,6 +153,7 @@ final class ShortcutEditorDialog {
                                 activity,
                                 position,
                                 target,
+                                deepLinkTemplates,
                                 pickApp);
                     }
 
@@ -156,6 +162,11 @@ final class ShortcutEditorDialog {
                             android.widget.AdapterView<?> parent) {
                     }
                 });
+
+        deepLinkTemplates.setOnClickListener(v ->
+                showDeepLinkTemplates(
+                        activity,
+                        target));
 
         pickApp.setOnClickListener(v ->
                 showAppPicker(
@@ -254,6 +265,7 @@ final class ShortcutEditorDialog {
             Activity activity,
             int typeIndex,
             EditText target,
+            TextView deepLinkTemplates,
             TextView pickApp) {
 
         boolean appTarget =
@@ -269,12 +281,62 @@ final class ShortcutEditorDialog {
                         ? View.VISIBLE
                         : View.GONE);
 
+        deepLinkTemplates.setVisibility(
+                typeIndex == 3
+                        ? View.VISIBLE
+                        : View.GONE);
+
         if (!appTarget) {
             target.setHint(
-                    typeIndex == 0
-                            ? R.string.shortcut_target_url_hint
-                            : R.string.shortcut_target_deep_link_hint);
+                    typeIndex == 3
+                            ? R.string.shortcut_target_deep_link_hint
+                            : R.string.shortcut_target_url_hint);
         }
+    }
+
+    private static void showDeepLinkTemplates(
+            Activity activity,
+            EditText target) {
+
+        CharSequence[] labels = {
+                activity.getString(
+                        R.string.shortcut_template_navigation),
+                activity.getString(
+                        R.string.shortcut_template_phone),
+                activity.getString(
+                        R.string.shortcut_template_sms),
+                activity.getString(
+                        R.string.shortcut_template_email),
+                activity.getString(
+                        R.string.shortcut_template_play_store)
+        };
+
+        String[] templates = {
+                "geo:0,0?q=",
+                "tel:",
+                "sms:",
+                "mailto:",
+                "market://details?id="
+        };
+
+        new AlertDialog.Builder(activity)
+                .setTitle(
+                        R.string.shortcut_deep_link_template_title)
+                .setItems(
+                        labels,
+                        (dialog, which) -> {
+                            target.setText(
+                                    templates[which]);
+
+                            target.setSelection(
+                                    target.length());
+
+                            target.requestFocus();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
     }
 
     private static void showAppPicker(
@@ -472,7 +534,8 @@ final class ShortcutEditorDialog {
             return false;
         }
 
-        if (ShortcutEntry.TYPE_WEBSITE.equals(type)) {
+        if (ShortcutEntry.TYPE_WEBSITE.equals(type)
+                || ShortcutEntry.TYPE_WEB_APP.equals(type)) {
             Uri uri = Uri.parse(target);
 
             String scheme = uri.getScheme();
@@ -500,8 +563,7 @@ final class ShortcutEditorDialog {
     private static boolean isAppTargetType(
             int typeIndex) {
 
-        return typeIndex == 1
-                || typeIndex == 2;
+        return typeIndex == 2;
     }
 
     private static int getTypeIndex(

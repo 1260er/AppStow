@@ -22,10 +22,17 @@ final class ShortcutAdapter
         void onFavorite(ShortcutEntry shortcut);
     }
 
-    private final List<ShortcutEntry> shortcuts = new ArrayList<>();
+    private final List<ShortcutEntry> shortcuts =
+            new ArrayList<>();
+
+    private final CategoryStore categoryStore;
     private final Listener listener;
 
-    ShortcutAdapter(Listener listener) {
+    ShortcutAdapter(
+            CategoryStore categoryStore,
+            Listener listener) {
+
+        this.categoryStore = categoryStore;
         this.listener = listener;
     }
 
@@ -41,8 +48,12 @@ final class ShortcutAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_shortcut_management, parent, false);
+        View view = LayoutInflater.from(
+                        parent.getContext())
+                .inflate(
+                        R.layout.item_shortcut_management,
+                        parent,
+                        false);
 
         return new ViewHolder(view);
     }
@@ -52,17 +63,39 @@ final class ShortcutAdapter
             @NonNull ViewHolder holder,
             int position) {
 
-        ShortcutEntry shortcut = shortcuts.get(position);
+        ShortcutEntry shortcut =
+                shortcuts.get(position);
 
-        holder.name.setText(shortcut.name);
-        holder.subtitle.setText(getTypeLabel(shortcut) + " · " + shortcut.target);
+        holder.name.setText(
+                shortcut.name);
 
-        if (ShortcutEntry.TYPE_WEBSITE.equals(shortcut.type)) {
-            holder.icon.setImageResource(R.drawable.ic_shortcut_web);
-        } else if (ShortcutEntry.TYPE_WEB_APP.equals(shortcut.type)) {
-            holder.icon.setImageResource(R.drawable.ic_shortcut_webapp);
+        String categories =
+                getCategoryLabel(shortcut);
+
+        holder.subtitle.setText(
+                categories);
+
+        holder.subtitle.setVisibility(
+                categories.isEmpty()
+                        ? View.INVISIBLE
+                        : View.VISIBLE);
+
+        if (ShortcutEntry.TYPE_WEBSITE.equals(
+                shortcut.type)) {
+
+            holder.icon.setImageResource(
+                    R.drawable.ic_shortcut_web);
+
+        } else if (ShortcutEntry.TYPE_WEB_APP.equals(
+                shortcut.type)) {
+
+            holder.icon.setImageResource(
+                    R.drawable.ic_shortcut_webapp);
+
         } else {
-            holder.icon.setImageResource(R.drawable.ic_shortcut_action);
+
+            holder.icon.setImageResource(
+                    R.drawable.ic_shortcut_action);
         }
 
         holder.favorite.setImageResource(
@@ -70,16 +103,39 @@ final class ShortcutAdapter
                         ? R.drawable.ic_star_filled
                         : R.drawable.ic_star_outline);
 
-        holder.content.setOnClickListener(v -> listener.onEdit(shortcut));
-        holder.favorite.setOnClickListener(v -> listener.onFavorite(shortcut));
-        holder.delete.setOnClickListener(v -> listener.onDelete(shortcut));
+        holder.content.setOnClickListener(v ->
+                listener.onEdit(shortcut));
+
+        holder.favorite.setOnClickListener(v ->
+                listener.onFavorite(shortcut));
+
+        holder.delete.setOnClickListener(v ->
+                listener.onDelete(shortcut));
     }
 
-    private String getTypeLabel(ShortcutEntry shortcut) {
-        if (ShortcutEntry.TYPE_WEBSITE.equals(shortcut.type)) return "Webseite";
-        if (ShortcutEntry.TYPE_WEB_APP.equals(shortcut.type)) return "Web-App";
-        if (ShortcutEntry.TYPE_APP_SETTINGS.equals(shortcut.type)) return "App-Einstellungen";
-        return "Deep Link";
+    private String getCategoryLabel(
+            ShortcutEntry shortcut) {
+
+        StringBuilder result =
+                new StringBuilder();
+
+        for (CategoryEntry category :
+                categoryStore.getCategories()) {
+
+            if (!shortcut.categoryIds.contains(
+                    category.id)) {
+                continue;
+            }
+
+            if (result.length() > 0) {
+                result.append(" · ");
+            }
+
+            result.append(
+                    category.name);
+        }
+
+        return result.toString();
     }
 
     @Override
@@ -87,7 +143,9 @@ final class ShortcutAdapter
         return shortcuts.size();
     }
 
-    static final class ViewHolder extends RecyclerView.ViewHolder {
+    static final class ViewHolder
+            extends RecyclerView.ViewHolder {
+
         final ImageView icon;
         final View content;
         final TextView name;
@@ -95,14 +153,28 @@ final class ShortcutAdapter
         final ImageButton favorite;
         final ImageButton delete;
 
-        ViewHolder(@NonNull View itemView) {
+        ViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
-            icon = itemView.findViewById(R.id.shortcutIcon);
-            content = itemView.findViewById(R.id.shortcutContent);
-            name = itemView.findViewById(R.id.shortcutName);
-            subtitle = itemView.findViewById(R.id.shortcutSubtitle);
-            favorite = itemView.findViewById(R.id.shortcutFavorite);
-            delete = itemView.findViewById(R.id.shortcutDelete);
+
+            icon = itemView.findViewById(
+                    R.id.shortcutIcon);
+
+            content = itemView.findViewById(
+                    R.id.shortcutContent);
+
+            name = itemView.findViewById(
+                    R.id.shortcutName);
+
+            subtitle = itemView.findViewById(
+                    R.id.shortcutSubtitle);
+
+            favorite = itemView.findViewById(
+                    R.id.shortcutFavorite);
+
+            delete = itemView.findViewById(
+                    R.id.shortcutDelete);
         }
     }
 }
