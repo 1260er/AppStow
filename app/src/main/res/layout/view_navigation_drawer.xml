@@ -23,13 +23,6 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/navOverview"
-            style="@style/UiDrawerItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/nav_overview" />
-
-        <TextView
             android:id="@+id/navApps"
             style="@style/UiDrawerItem"
             android:layout_width="match_parent"

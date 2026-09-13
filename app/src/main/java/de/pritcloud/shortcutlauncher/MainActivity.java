@@ -294,9 +294,6 @@ public class MainActivity extends Activity {
         shortcutHelpButton.setOnClickListener(v ->
                 showShortcutHelpDialog());
 
-        findViewById(R.id.navOverview).setOnClickListener(v ->
-                showOverview());
-
         findViewById(R.id.navApps).setOnClickListener(v ->
                 showApps());
 

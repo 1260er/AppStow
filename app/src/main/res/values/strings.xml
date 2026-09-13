@@ -1,16 +1,16 @@
 <resources>
     <string name="app_name">ShortcutLauncher</string>
     <string name="action_open_menu">Menü öffnen</string>
-    <string name="action_back_to_overview">Zurück zur Übersicht</string>
+    <string name="action_back_to_overview">Zurück zu App starten</string>
 
-    <string name="nav_overview">Übersicht</string>
+    <string name="nav_overview">App starten</string>
     <string name="nav_apps">Apps zuweisen</string>
     <string name="nav_categories">Kategorien verwalten</string>
     <string name="nav_shortcuts_manage">Eigene Shortcuts verwalten</string>
     <string name="nav_help">Hilfe</string>
     <string name="nav_about">Über</string>
 
-    <string name="home_title">Übersicht</string>
+    <string name="home_title">App starten</string>
 
     <string name="overview_favorites">Favoriten</string>
     <string name="overview_shortcuts">Eigene Shortcuts</string>
