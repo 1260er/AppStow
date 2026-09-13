@@ -103,6 +103,12 @@ final class ShortcutAdapter
                         ? R.drawable.ic_star_filled
                         : R.drawable.ic_star_outline);
 
+        holder.favorite.setContentDescription(
+                holder.itemView.getContext().getString(
+                        shortcut.favorite
+                                ? R.string.action_remove_favorite
+                                : R.string.action_add_favorite));
+
         holder.content.setOnClickListener(v ->
                 listener.onEdit(shortcut));
 

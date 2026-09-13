@@ -1,5 +1,6 @@
 package de.pritcloud.appstow;
 
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -442,6 +443,7 @@ final class OverviewAdapter
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void bindSection(
             SectionViewHolder holder,
             OverviewSection section) {
@@ -551,6 +553,7 @@ final class OverviewAdapter
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void bindApp(
             EntryViewHolder holder,
             OverviewSection section,
@@ -661,6 +664,7 @@ final class OverviewAdapter
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void bindShortcut(
             EntryViewHolder holder,
             OverviewSection section,
