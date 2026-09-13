@@ -1631,6 +1631,10 @@ public class MainActivity extends Activity {
                 WebAppActivity.EXTRA_URL,
                 target);
 
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
         startActivity(
                 intent);
     }
@@ -1717,6 +1721,10 @@ public class MainActivity extends Activity {
         launchIntent.addCategory(
                 Intent.CATEGORY_LAUNCHER);
 
+        launchIntent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
         launchIntent.setClassName(
                 app.packageName,
                 app.resolveInfo.activityInfo.name);
@@ -1741,6 +1749,10 @@ public class MainActivity extends Activity {
         }
 
         if (fallbackIntent != null) {
+            fallbackIntent.addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
             try {
                 startActivity(
                         fallbackIntent);

@@ -22,7 +22,9 @@
 
         <activity
             android:name=".WebAppActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:process=":webapp"
+            android:taskAffinity="${applicationId}.webapp" />
 
         <activity
             android:name=".MainActivity"
