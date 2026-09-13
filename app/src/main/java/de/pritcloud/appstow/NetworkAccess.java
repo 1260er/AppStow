@@ -92,21 +92,38 @@ final class NetworkAccess {
                                 context.getPackageName(),
                                 null));
 
-        context.startActivity(intent);
+        tryStartActivity(
+                context,
+                intent);
     }
 
     private static void openNetworkSettings(
             Context context) {
 
-        try {
-            context.startActivity(
-                    new Intent(
-                            Settings.ACTION_WIRELESS_SETTINGS));
+        if (tryStartActivity(
+                context,
+                new Intent(
+                        Settings.ACTION_WIRELESS_SETTINGS))) {
 
-        } catch (Exception exception) {
-            context.startActivity(
-                    new Intent(
-                            Settings.ACTION_SETTINGS));
+            return;
+        }
+
+        tryStartActivity(
+                context,
+                new Intent(
+                        Settings.ACTION_SETTINGS));
+    }
+
+    private static boolean tryStartActivity(
+            Context context,
+            Intent intent) {
+
+        try {
+            context.startActivity(intent);
+            return true;
+
+        } catch (RuntimeException exception) {
+            return false;
         }
     }
 }

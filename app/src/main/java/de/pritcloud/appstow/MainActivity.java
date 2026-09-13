@@ -2,7 +2,6 @@ package de.pritcloud.appstow;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.pm.PackageManager;
@@ -1688,7 +1687,7 @@ public class MainActivity extends Activity {
         try {
             startActivity(intent);
 
-        } catch (ActivityNotFoundException exception) {
+        } catch (RuntimeException exception) {
             intent.setPackage(null);
             startActivity(intent);
         }
@@ -1724,12 +1723,38 @@ public class MainActivity extends Activity {
 
         try {
             startActivity(launchIntent);
-        } catch (ActivityNotFoundException exception) {
-            Toast.makeText(
-                    this,
-                    R.string.app_launch_failed,
-                    Toast.LENGTH_SHORT).show();
+            return;
+
+        } catch (RuntimeException ignored) {
         }
+
+        Intent fallbackIntent;
+
+        try {
+            fallbackIntent =
+                    getPackageManager()
+                            .getLaunchIntentForPackage(
+                                    app.packageName);
+
+        } catch (RuntimeException exception) {
+            fallbackIntent = null;
+        }
+
+        if (fallbackIntent != null) {
+            try {
+                startActivity(
+                        fallbackIntent);
+
+                return;
+
+            } catch (RuntimeException ignored) {
+            }
+        }
+
+        Toast.makeText(
+                this,
+                R.string.app_launch_failed,
+                Toast.LENGTH_SHORT).show();
     }
 
     private void setTopNavigation(
@@ -1869,7 +1894,7 @@ public class MainActivity extends Activity {
 
         try {
             startActivity(intent);
-        } catch (ActivityNotFoundException exception) {
+        } catch (RuntimeException exception) {
             Toast.makeText(
                     this,
                     R.string.about_github_failed,
@@ -2003,7 +2028,7 @@ public class MainActivity extends Activity {
                     intent,
                     REQUEST_CREATE_BACKUP);
 
-        } catch (ActivityNotFoundException exception) {
+        } catch (RuntimeException exception) {
             Toast.makeText(
                     this,
                     R.string.backup_failed,
@@ -2028,7 +2053,7 @@ public class MainActivity extends Activity {
                     intent,
                     REQUEST_RESTORE_BACKUP);
 
-        } catch (ActivityNotFoundException exception) {
+        } catch (RuntimeException exception) {
             Toast.makeText(
                     this,
                     R.string.backup_restore_failed,
