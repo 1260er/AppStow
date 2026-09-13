@@ -1,186 +1,186 @@
 <resources>
     <string name="app_name">AppStow</string>
-    <string name="action_open_menu">Menü öffnen</string>
-    <string name="action_back_to_overview">Zurück zu App starten</string>
+    <string name="action_open_menu">Open menu</string>
+    <string name="action_back_to_overview">Back to Launch apps</string>
 
-    <string name="nav_overview">App starten</string>
-    <string name="nav_apps">Apps zuweisen</string>
-    <string name="nav_categories">Kategorien verwalten</string>
-    <string name="nav_shortcuts_manage">Eigene Shortcuts verwalten</string>
-    <string name="nav_help">Hilfe</string>
-    <string name="nav_about">Über</string>
+    <string name="nav_overview">Launch apps</string>
+    <string name="nav_apps">Assign apps</string>
+    <string name="nav_categories">Manage categories</string>
+    <string name="nav_shortcuts_manage">Manage custom shortcuts</string>
+    <string name="nav_help">Help</string>
+    <string name="nav_about">About</string>
 
-    <string name="home_title">App starten</string>
+    <string name="home_title">Launch apps</string>
 
-    <string name="overview_favorites">Favoriten</string>
-    <string name="overview_shortcuts">Eigene Shortcuts</string>
-    <string name="overview_favorites_empty">Noch keine Favoriten.</string>
-    <string name="overview_shortcuts_empty">Noch keine eigenen Shortcuts.</string>
-    <string name="overview_category_empty">Noch keine Apps zugewiesen.</string>
+    <string name="overview_favorites">Favorites</string>
+    <string name="overview_shortcuts">Custom shortcuts</string>
+    <string name="overview_favorites_empty">No favorites yet.</string>
+    <string name="overview_shortcuts_empty">No custom shortcuts yet.</string>
+    <string name="overview_category_empty">No apps assigned yet.</string>
 
-    <string name="search_apps_hint">Apps durchsuchen</string>
-    <string name="apps_loading">Apps werden geladen …</string>
-    <string name="action_clear_search">Suche löschen</string>
-    <string name="action_filter_unassigned_apps">Nur nicht zugewiesene Apps anzeigen</string>
-    <string name="action_show_all_apps">Alle Apps anzeigen</string>
-    <string name="apps_unassigned_empty">Keine nicht zugewiesenen Apps gefunden.</string>
-    <string name="apps_empty">Keine startbaren Apps gefunden.</string>
-    <string name="apps_search_empty">Keine passenden Apps gefunden.</string>
-    <string name="app_launch_failed">App konnte nicht gestartet werden.</string>
-    <string name="action_add_favorite">Zu Favoriten hinzufügen</string>
-    <string name="action_remove_favorite">Aus Favoriten entfernen</string>
-    <string name="action_add_category">Kategorie hinzufügen</string>
-    <string name="action_delete_category">Kategorie löschen</string>
-    <string name="category_empty">Noch keine Kategorien angelegt.</string>
-    <string name="category_name_hint">Kategoriename</string>
-    <string name="category_add_title">Kategorie hinzufügen</string>
-    <string name="category_rename_title">Kategorie umbenennen</string>
-    <string name="category_delete_title">Kategorie löschen</string>
-    <string name="category_delete_message">Kategorie „%1$s“ löschen? Zugehörige App-Zuweisungen werden ebenfalls entfernt.</string>
-    <string name="category_invalid_name">Bitte einen eindeutigen Kategorienamen eingeben.</string>
-    <string name="action_save">Speichern</string>
-    <string name="action_cancel">Abbrechen</string>
-    <string name="category_assign_title">Kategorien zuweisen</string>
-    <string name="category_assign_none">Noch keine Kategorien vorhanden. Lege zuerst unter „Kategorien verwalten“ eine Kategorie an.</string>
+    <string name="search_apps_hint">Search apps</string>
+    <string name="apps_loading">Loading apps …</string>
+    <string name="action_clear_search">Clear search</string>
+    <string name="action_filter_unassigned_apps">Show only unassigned apps</string>
+    <string name="action_show_all_apps">Show all apps</string>
+    <string name="apps_unassigned_empty">No unassigned apps found.</string>
+    <string name="apps_empty">No launchable apps found.</string>
+    <string name="apps_search_empty">No matching apps found.</string>
+    <string name="app_launch_failed">App could not be launched.</string>
+    <string name="action_add_favorite">Add to favorites</string>
+    <string name="action_remove_favorite">Remove from favorites</string>
+    <string name="action_add_category">Add category</string>
+    <string name="action_delete_category">Delete category</string>
+    <string name="category_empty">No categories created yet.</string>
+    <string name="category_name_hint">Category name</string>
+    <string name="category_add_title">Add category</string>
+    <string name="category_rename_title">Rename category</string>
+    <string name="category_delete_title">Delete category</string>
+    <string name="category_delete_message">Delete category “%1$s”? Its app assignments will also be removed.</string>
+    <string name="category_invalid_name">Please enter a unique category name.</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="category_assign_title">Assign categories</string>
+    <string name="category_assign_none">No categories yet. First create a category under “Manage categories”.</string>
     <string name="overview_sort_label">A–Z</string>
-    <string name="action_sort_overview">Übersicht sortieren</string>
-    <string name="action_finish_sorting">Sortieren beenden</string>
-    <string name="action_drag_section">Bereich verschieben</string>
-    <string name="action_drag_item">Eintrag verschieben</string>
-    <string name="action_sort_section_items">Inhalt sortieren</string>
-    <string name="action_finish_section_item_sorting">Inhaltssortierung beenden</string>
-    <string name="action_add_shortcut">Shortcut hinzufügen</string>
-    <string name="action_delete_shortcut">Shortcut löschen</string>
-    <string name="shortcut_empty">Noch keine eigenen Shortcuts angelegt.</string>
-    <string name="shortcut_add_title">Shortcut hinzufügen</string>
-    <string name="shortcut_edit_title">Shortcut bearbeiten</string>
-    <string name="shortcut_delete_title">Shortcut löschen</string>
-    <string name="shortcut_delete_message">Shortcut „%1$s“ löschen?</string>
+    <string name="action_sort_overview">Sort overview</string>
+    <string name="action_finish_sorting">Finish sorting</string>
+    <string name="action_drag_section">Move section</string>
+    <string name="action_drag_item">Move item</string>
+    <string name="action_sort_section_items">Sort contents</string>
+    <string name="action_finish_section_item_sorting">Finish sorting contents</string>
+    <string name="action_add_shortcut">Add shortcut</string>
+    <string name="action_delete_shortcut">Delete shortcut</string>
+    <string name="shortcut_empty">No custom shortcuts created yet.</string>
+    <string name="shortcut_add_title">Add shortcut</string>
+    <string name="shortcut_edit_title">Edit shortcut</string>
+    <string name="shortcut_delete_title">Delete shortcut</string>
+    <string name="shortcut_delete_message">Delete shortcut “%1$s”?</string>
     <string name="shortcut_name_hint">Name</string>
-    <string name="shortcut_target_hint">URL oder Deep Link</string>
-    <string name="shortcut_pick_app">App auswählen</string>
-    <string name="shortcut_categories">Kategorien auswählen</string>
-    <string name="shortcut_favorite">Favorit</string>
-    <string name="shortcut_invalid">Bitte Name und ein gültiges Ziel angeben.</string>
-    <string name="shortcut_type_website">Webseite</string>
-    <string name="shortcut_type_webapp">Web-App</string>
-    <string name="shortcut_type_app_settings">Aktion: App-Einstellungen</string>
-    <string name="shortcut_type_deep_link">Aktion: Deep Link (erweitert)</string>
+    <string name="shortcut_target_hint">URL or deep link</string>
+    <string name="shortcut_pick_app">Select app</string>
+    <string name="shortcut_categories">Select categories</string>
+    <string name="shortcut_favorite">Favorite</string>
+    <string name="shortcut_invalid">Please enter a name and a valid target.</string>
+    <string name="shortcut_type_website">Website</string>
+    <string name="shortcut_type_webapp">Web app</string>
+    <string name="shortcut_type_app_settings">Action: App settings</string>
+    <string name="shortcut_type_deep_link">Action: Deep link (advanced)</string>
     <string name="shortcut_target_url_hint">https://…</string>
-    <string name="shortcut_target_deep_link_hint">z. B. spotify:… oder intent://…</string>
-    <string name="shortcut_no_apps">Keine startbaren Apps gefunden.</string>
+    <string name="shortcut_target_deep_link_hint">e.g. spotify:… or intent://…</string>
+    <string name="shortcut_no_apps">No launchable apps found.</string>
     <string name="shortcut_app_selected">App: %1$s</string>
-    <string name="shortcut_categories_selected">Kategorien: %1$s</string>
-    <string name="shortcut_deep_link_templates">Deep-Link-Vorlagen</string>
-    <string name="shortcut_deep_link_template_title">Vorlage auswählen</string>
-    <string name="shortcut_template_navigation">Navigation / Ort</string>
-    <string name="shortcut_template_phone">Telefonnummer anrufen</string>
-    <string name="shortcut_template_sms">SMS schreiben</string>
-    <string name="shortcut_template_email">E-Mail schreiben</string>
-    <string name="shortcut_template_play_store">App im Play Store öffnen</string>
-    <string name="action_shortcut_help">Hilfe zu eigenen Shortcuts</string>
-    <string name="shortcut_launch_failed">Shortcut konnte nicht gestartet werden.</string>
-    <string name="webview_start_failed_title">WebView konnte nicht gestartet werden</string>
-    <string name="webapp_load_failed_title">Web-App konnte nicht geladen werden</string>
-    <string name="webview_load_error_title">WebView-Ladefehler</string>
-    <string name="webview_load_error_details">Fehlercode: %1$d
+    <string name="shortcut_categories_selected">Categories: %1$s</string>
+    <string name="shortcut_deep_link_templates">Deep-link templates</string>
+    <string name="shortcut_deep_link_template_title">Select template</string>
+    <string name="shortcut_template_navigation">Navigation / place</string>
+    <string name="shortcut_template_phone">Call phone number</string>
+    <string name="shortcut_template_sms">Write SMS</string>
+    <string name="shortcut_template_email">Write email</string>
+    <string name="shortcut_template_play_store">Open app in Play Store</string>
+    <string name="action_shortcut_help">Help for custom shortcuts</string>
+    <string name="shortcut_launch_failed">Shortcut could not be launched.</string>
+    <string name="webview_start_failed_title">WebView could not be started</string>
+    <string name="webapp_load_failed_title">Web app could not be loaded</string>
+    <string name="webview_load_error_title">WebView loading error</string>
+    <string name="webview_load_error_details">Error code: %1$d
 
-Beschreibung:
+Description:
 %2$s
 
 URL:
 %3$s</string>
-    <string name="webview_http_error_title">HTTP-Fehler</string>
+    <string name="webview_http_error_title">HTTP error</string>
     <string name="webview_http_error_details">HTTP %1$d %2$s
 
 URL:
 %3$s</string>
-    <string name="webview_ssl_error_title">SSL-Fehler</string>
-    <string name="webview_ssl_error_details">SSL-Fehlercode: %1$d
+    <string name="webview_ssl_error_title">SSL error</string>
+    <string name="webview_ssl_error_details">SSL error code: %1$d
 
 URL:
 %2$s</string>
-    <string name="webview_process_gone_title">WebView-Prozess beendet</string>
-    <string name="webview_renderer_crashed">Der WebView-Renderer ist abgestürzt.</string>
-    <string name="webview_renderer_terminated">Der WebView-Renderer wurde vom System beendet.</string>
+    <string name="webview_process_gone_title">WebView process ended</string>
+    <string name="webview_renderer_crashed">The WebView renderer crashed.</string>
+    <string name="webview_renderer_terminated">The WebView renderer was terminated by the system.</string>
     <string name="webview_android_info">Android %1$s (API %2$d)</string>
-    <string name="webview_package_info">WebView-Paket:
+    <string name="webview_package_info">WebView package:
 %1$s
 Version:
 %2$s</string>
-    <string name="webview_package_missing">WebView-Paket:
-Keines gefunden</string>
+    <string name="webview_package_missing">WebView package:
+None found</string>
 
-    <string name="webapp_network_missing">Kein Netzwerkzugriff</string>
-    <string name="webapp_network_check">Netzwerk prüfen</string>
-    <string name="webapp_network_required">Für Web-Apps wird eine nutzbare Netzwerkverbindung benötigt.</string>
-    <string name="webapp_network_title">Kein Netzwerkzugriff</string>
-    <string name="webapp_network_message">Es besteht derzeit keine nutzbare Netzwerkverbindung. Prüfe WLAN, mobile Daten oder den Flugmodus. Bei manchen Custom-ROMs kann der Netzwerkzugriff zusätzlich pro App deaktiviert sein.</string>
-    <string name="webapp_network_open_settings">App-Einstellungen</string>
-    <string name="webapp_network_open_network_settings">Netzwerk-Einstellungen</string>
+    <string name="webapp_network_missing">No network access</string>
+    <string name="webapp_network_check">Check network</string>
+    <string name="webapp_network_required">Web apps require a usable network connection.</string>
+    <string name="webapp_network_title">No network access</string>
+    <string name="webapp_network_message">There is currently no usable network connection. Check Wi-Fi, mobile data, or airplane mode. On some custom ROMs, network access can also be disabled per app.</string>
+    <string name="webapp_network_open_settings">App settings</string>
+    <string name="webapp_network_open_network_settings">Network settings</string>
 
-    <string name="help_overview_title">App starten</string>
-    <string name="help_overview_text">Hier findest du Favoriten, deine Kategorien und eigene Shortcuts. Tippe auf eine Überschrift, um den Bereich auf- oder zuzuklappen. Apps und Shortcuts werden durch Antippen gestartet.</string>
+    <string name="help_overview_title">Launch apps</string>
+    <string name="help_overview_text">Here you can find favorites, your categories, and custom shortcuts. Tap a heading to expand or collapse the section. Tap apps and shortcuts to launch them.</string>
 
-    <string name="help_categories_title">Favoriten &amp; Kategorien</string>
-    <string name="help_categories_text">Favoriten erscheinen im Bereich „Favoriten“. Kategorien kannst du unter „Kategorien verwalten“ anlegen, umbenennen oder löschen.</string>
+    <string name="help_categories_title">Favorites &amp; Categories</string>
+    <string name="help_categories_text">Favorites appear in the “Favorites” section. You can create, rename, or delete categories under “Manage categories”.</string>
 
-    <string name="help_apps_title">Apps zuweisen</string>
-    <string name="help_apps_text">Halte eine App länger gedrückt, um sie einer oder mehreren Kategorien zuzuweisen. Über das Filtersymbol kannst du nur Apps anzeigen, die noch keiner Kategorie zugewiesen sind.</string>
+    <string name="help_apps_title">Assign apps</string>
+    <string name="help_apps_text">Press and hold an app to assign it to one or more categories. Use the filter icon to show only apps that have not yet been assigned to a category.</string>
 
-    <string name="help_shortcuts_title">Eigene Shortcuts</string>
+    <string name="help_shortcuts_title">Custom shortcuts</string>
 
-    <string name="help_shortcut_website_title">Webseite</string>
-    <string name="help_shortcut_website_text">Öffnet eine normale http- oder https-Adresse mit der zuständigen App oder dem Standardbrowser.</string>
+    <string name="help_shortcut_website_title">Website</string>
+    <string name="help_shortcut_website_text">Opens a normal http or https address with the appropriate app or the default browser.</string>
 
-    <string name="help_shortcut_webapp_title">Web-App</string>
-    <string name="help_shortcut_webapp_text">Öffnet eine Webseite direkt in AppStow im Vollbild. Anmeldung und Cookies werden unabhängig vom normalen Browser in den App-Daten gespeichert. Eine Netzwerkverbindung wird benötigt.</string>
+    <string name="help_shortcut_webapp_title">Web app</string>
+    <string name="help_shortcut_webapp_text">Opens a website directly inside AppStow in full screen. Logins and cookies are stored in the app data independently of the normal browser. A network connection is required.</string>
 
-    <string name="help_shortcut_deeplink_title">Deep Link (erweitert)</string>
-    <string name="help_shortcut_deeplink_text">Öffnet eine bestimmte Funktion einer App. Welche Links funktionieren, hängt von der jeweiligen App ab. Auch Android-Intent-URIs können verwendet werden.</string>
+    <string name="help_shortcut_deeplink_title">Deep link (advanced)</string>
+    <string name="help_shortcut_deeplink_text">Opens a specific function of an app. Which links work depends on the app. Android intent URIs can also be used.</string>
 
     <string name="help_example_maps_title">Google Maps – Navigation</string>
     <string name="help_example_maps">https://www.google.com/maps/dir/?api=1&amp;destination=Berlin</string>
 
-    <string name="help_example_whatsapp_title">WhatsApp – Nachricht</string>
-    <string name="help_example_whatsapp">whatsapp://send?phone=+491701234567&amp;text=Hallo</string>
+    <string name="help_example_whatsapp_title">WhatsApp – Message</string>
+    <string name="help_example_whatsapp">whatsapp://send?phone=+491701234567&amp;text=Hello</string>
 
-    <string name="help_example_camera_title">Kamera</string>
+    <string name="help_example_camera_title">Camera</string>
     <string name="help_example_camera">intent:#Intent;action=android.media.action.IMAGE_CAPTURE;end</string>
 
-    <string name="help_example_phone_title">Telefon</string>
+    <string name="help_example_phone_title">Phone</string>
     <string name="help_example_phone">tel:+491701234567</string>
 
-    <string name="help_shortcut_settings_title">App-Einstellungen</string>
-    <string name="help_shortcut_settings_text">Öffnet direkt die Android-App-Informationen der angegebenen App.</string>
+    <string name="help_shortcut_settings_title">App settings</string>
+    <string name="help_shortcut_settings_text">Opens the Android app information for the specified app directly.</string>
     <string name="help_example_settings">package:com.example.app</string>
 
-    <string name="help_sort_title">Sortieren</string>
-    <string name="help_sort_text">Mit dem Sortiersymbol oben kannst du die Bereiche verschieben. Das Sortiersymbol innerhalb eines Bereichs sortiert dessen Apps und Shortcuts. Ziehe die eingeblendeten Griffe an die gewünschte Position.</string>
+    <string name="help_sort_title">Sorting</string>
+    <string name="help_sort_text">Use the sort icon at the top to move sections. The sort icon inside a section sorts its apps and shortcuts. Drag the displayed handles to the desired position.</string>
 
-    <string name="help_backup_title">Backup &amp; Wiederherstellen</string>
-    <string name="help_backup_text">Ein Backup enthält Kategorien, Zuweisungen, Favoriten, eigene Shortcuts und alle Sortierungen. Web-App-Anmeldungen, Cookies und Android-Berechtigungen werden nicht gesichert.</string>
+    <string name="help_backup_title">Backup &amp; Restore</string>
+    <string name="help_backup_text">A backup contains categories, assignments, favorites, custom shortcuts, and all sorting orders. Web app logins, cookies, and Android permissions are not backed up.</string>
 
     <string name="about_app_name">AppStow</string>
-    <string name="about_description">Ein kompakter App-Launcher für Favoriten, Kategorien, eigene Shortcuts und Web-Apps.</string>
-    <string name="about_details_title">App-Informationen</string>
+    <string name="about_description">A compact app launcher for favorites, categories, custom shortcuts, and web apps.</string>
+    <string name="about_details_title">App information</string>
     <string name="about_version">Version: %1$s</string>
-    <string name="about_package">Paket: %1$s</string>
-    <string name="about_github">GitHub öffnen</string>
+    <string name="about_package">Package: %1$s</string>
+    <string name="about_github">Open GitHub</string>
     <string name="about_github_url">https://github.com/1260er/AppStow</string>
-    <string name="about_github_failed">GitHub konnte nicht geöffnet werden.</string>
+    <string name="about_github_failed">GitHub could not be opened.</string>
 
-    <string name="nav_backup">Backup &amp; Wiederherstellen</string>
-    <string name="backup_create">Backup erstellen</string>
-    <string name="backup_restore">Backup wiederherstellen</string>
-    <string name="backup_description">Sichert Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts und alle Sortierungen. Web-App-Anmeldungen und Android-Berechtigungen sind nicht enthalten.</string>
-    <string name="backup_created">Backup wurde erstellt.</string>
-    <string name="backup_failed">Backup konnte nicht erstellt werden.</string>
-    <string name="backup_restore_failed">Backup konnte nicht gelesen oder wiederhergestellt werden.</string>
-    <string name="backup_restore_title">Backup wiederherstellen?</string>
-    <string name="backup_restore_message">Die vorhandenen Kategorien, App-Zuweisungen, Favoriten, eigenen Shortcuts und die Sortierung werden vollständig durch das Backup ersetzt.</string>
-    <string name="backup_restore_confirm">Wiederherstellen</string>
-    <string name="backup_restored">Backup wurde wiederhergestellt.</string>
+    <string name="nav_backup">Backup &amp; Restore</string>
+    <string name="backup_create">Create backup</string>
+    <string name="backup_restore">Restore backup</string>
+    <string name="backup_description">Backs up categories, app assignments, favorites, custom shortcuts, and all sorting orders. Web app logins and Android permissions are not included.</string>
+    <string name="backup_created">Backup created.</string>
+    <string name="backup_failed">Backup could not be created.</string>
+    <string name="backup_restore_failed">Backup could not be read or restored.</string>
+    <string name="backup_restore_title">Restore backup?</string>
+    <string name="backup_restore_message">Existing categories, app assignments, favorites, custom shortcuts, and sorting orders will be completely replaced by the backup.</string>
+    <string name="backup_restore_confirm">Restore</string>
+    <string name="backup_restored">Backup restored.</string>
 
     <string name="favorite_remove_title">Remove from favorites?</string>
     <string name="favorite_remove_message">Remove “%1$s” from favorites?</string>

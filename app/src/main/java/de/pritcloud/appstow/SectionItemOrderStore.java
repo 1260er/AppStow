@@ -87,10 +87,6 @@ final class SectionItemOrderStore {
             }
         }
 
-        saveOrder(
-                sectionId,
-                result);
-
         return result;
     }
 

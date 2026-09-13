@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.DisplayCutout;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -23,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -664,7 +664,7 @@ public class MainActivity extends Activity {
         pageMessage.setVisibility(View.GONE);
         overviewList.setVisibility(View.VISIBLE);
 
-        drawerLayout.closeDrawer(Gravity.END);
+        drawerLayout.closeDrawer(GravityCompat.END);
 
         loadAppsAsync();
     }
@@ -699,7 +699,7 @@ public class MainActivity extends Activity {
         renderApps(appSearch.getText().toString());
         appList.post(appAdapter::refreshAppRows);
 
-        drawerLayout.closeDrawer(Gravity.END);
+        drawerLayout.closeDrawer(GravityCompat.END);
     }
 
     private void showCategoryManagement() {
@@ -728,7 +728,7 @@ public class MainActivity extends Activity {
 
         refreshCategories();
 
-        drawerLayout.closeDrawer(Gravity.END);
+        drawerLayout.closeDrawer(GravityCompat.END);
     }
 
     private List<CategoryEntry> getCategoriesInOverviewOrder() {
@@ -821,7 +821,7 @@ public class MainActivity extends Activity {
         refreshShortcuts();
 
         drawerLayout.closeDrawer(
-                Gravity.END);
+                GravityCompat.END);
     }
 
     private void refreshShortcuts() {
@@ -1552,7 +1552,7 @@ public class MainActivity extends Activity {
         if (overview) {
             drawerLayout.setDrawerLockMode(
                     DrawerLayout.LOCK_MODE_UNLOCKED,
-                    Gravity.END);
+                    GravityCompat.END);
 
             topNavigationButton.setImageResource(
                     R.drawable.ic_menu);
@@ -1563,17 +1563,17 @@ public class MainActivity extends Activity {
 
             topNavigationButton.setOnClickListener(v ->
                     drawerLayout.openDrawer(
-                            Gravity.END));
+                            GravityCompat.END));
 
             return;
         }
 
         drawerLayout.closeDrawer(
-                Gravity.END);
+                GravityCompat.END);
 
         drawerLayout.setDrawerLockMode(
                 DrawerLayout.LOCK_MODE_LOCKED_CLOSED,
-                Gravity.END);
+                GravityCompat.END);
 
         topNavigationButton.setImageResource(
                 R.drawable.ic_arrow_back);
@@ -1590,10 +1590,10 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
 
         if (drawerLayout.isDrawerOpen(
-                Gravity.END)) {
+                GravityCompat.END)) {
 
             drawerLayout.closeDrawer(
-                    Gravity.END);
+                    GravityCompat.END);
 
             return;
         }
@@ -1667,7 +1667,7 @@ public class MainActivity extends Activity {
         aboutManagement.setVisibility(View.VISIBLE);
         aboutManagement.scrollTo(0, 0);
 
-        drawerLayout.closeDrawer(Gravity.END);
+        drawerLayout.closeDrawer(GravityCompat.END);
     }
 
     private void openGithub() {
@@ -1732,7 +1732,7 @@ public class MainActivity extends Activity {
                 View.VISIBLE);
 
         drawerLayout.closeDrawer(
-                Gravity.END);
+                GravityCompat.END);
 
         helpManagement.post(() -> {
             if (jumpToShortcuts) {
@@ -1789,7 +1789,7 @@ public class MainActivity extends Activity {
                 View.VISIBLE);
 
         drawerLayout.closeDrawer(
-                Gravity.END);
+                GravityCompat.END);
     }
 
     private void createBackup() {
