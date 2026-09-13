@@ -73,7 +73,7 @@ jobs:
         env:
           APPSTOW_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
           APPSTOW_VERSION_CODE: ${{ github.run_number }}
-        run: ./gradlew --no-daemon clean assembleDebug
+        run: ./gradlew --no-daemon clean testDebugUnitTest lintDebug assembleDebug
 
       - name: Verify APK signature
         shell: bash

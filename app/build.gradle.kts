@@ -16,6 +16,17 @@ val releaseSigningConfigured = listOf(
     releaseKeyPassword
 ).all { !it.isNullOrBlank() }
 
+val releaseSigningRequired =
+    providers.environmentVariable("APPSTOW_REQUIRE_RELEASE_SIGNING")
+        .orNull
+        ?.equals("true", ignoreCase = true) == true
+
+if (releaseSigningRequired && !releaseSigningConfigured) {
+    throw GradleException(
+        "Release signing is required but not fully configured."
+    )
+}
+
 android {
     namespace = "de.pritcloud.appstow"
     compileSdk = 35

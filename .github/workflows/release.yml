@@ -17,6 +17,7 @@ jobs:
       APPSTOW_KEYSTORE_PASSWORD: ${{ secrets.APPSTOW_KEYSTORE_PASSWORD }}
       APPSTOW_KEY_ALIAS: ${{ secrets.APPSTOW_KEY_ALIAS }}
       APPSTOW_KEY_PASSWORD: ${{ secrets.APPSTOW_KEY_PASSWORD }}
+      APPSTOW_VERSION_CODE: ${{ github.run_number }}
 
     steps:
       - name: Check out source
@@ -68,7 +69,7 @@ jobs:
         env:
           APPSTOW_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
           APPSTOW_REQUIRE_RELEASE_SIGNING: "true"
-        run: ./gradlew --no-daemon clean testDebugUnitTest assembleRelease
+        run: ./gradlew --no-daemon clean testDebugUnitTest lintRelease assembleRelease
 
       - name: Verify APK signature
         shell: bash
