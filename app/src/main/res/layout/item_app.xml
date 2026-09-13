@@ -46,4 +46,13 @@
         android:padding="12dp"
         android:src="@drawable/ic_star_outline" />
 
+    <ImageView
+        android:id="@+id/overviewItemDragHandle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@string/action_drag_item"
+        android:padding="12dp"
+        android:src="@drawable/ic_drag_handle"
+        android:visibility="gone" />
+
 </LinearLayout>

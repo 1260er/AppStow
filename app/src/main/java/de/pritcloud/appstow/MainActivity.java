@@ -74,6 +74,7 @@ public class MainActivity extends Activity {
     private ShortcutStore shortcutStore;
     private ShortcutAdapter shortcutAdapter;
     private OverviewOrderStore overviewOrderStore;
+    private SectionItemOrderStore sectionItemOrderStore;
     private ItemTouchHelper overviewItemTouchHelper;
 
     private final List<AppEntry> apps = new ArrayList<>();
@@ -163,6 +164,9 @@ public class MainActivity extends Activity {
 
         overviewOrderStore =
                 new OverviewOrderStore(this);
+
+        sectionItemOrderStore =
+                new SectionItemOrderStore(this);
 
         categoryAdapter = new CategoryAdapter(
                 new CategoryAdapter.Listener() {
@@ -254,6 +258,7 @@ public class MainActivity extends Activity {
                         favoritesStore,
                         categoryStore,
                         shortcutStore,
+                        sectionItemOrderStore,
                         this::launchApp,
                         this::launchShortcut,
                         this::handleAppLongClick,
@@ -281,9 +286,25 @@ public class MainActivity extends Activity {
                                     RecyclerView.ViewHolder source,
                                     RecyclerView.ViewHolder target) {
 
-                                return overviewAdapter.moveSection(
-                                        source.getBindingAdapterPosition(),
-                                        target.getBindingAdapterPosition());
+                                int fromPosition =
+                                        source.getBindingAdapterPosition();
+
+                                int toPosition =
+                                        target.getBindingAdapterPosition();
+
+                                if (overviewAdapter.isSortMode()) {
+                                    return overviewAdapter.moveSection(
+                                            fromPosition,
+                                            toPosition);
+                                }
+
+                                if (overviewAdapter.isItemSortMode()) {
+                                    return overviewAdapter.moveItem(
+                                            fromPosition,
+                                            toPosition);
+                                }
+
+                                return false;
                             }
 
                             @Override
@@ -301,8 +322,14 @@ public class MainActivity extends Activity {
                                         recyclerView,
                                         viewHolder);
 
-                                overviewOrderStore.saveOrder(
-                                        overviewSections);
+                                if (overviewAdapter.isSortMode()) {
+                                    overviewOrderStore.saveOrder(
+                                            overviewSections);
+                                } else if (
+                                        overviewAdapter.isItemSortMode()) {
+
+                                    overviewAdapter.saveItemOrder();
+                                }
                             }
                         });
 
@@ -524,7 +551,8 @@ public class MainActivity extends Activity {
             RecyclerView.ViewHolder holder) {
 
         if (overviewItemTouchHelper != null
-                && overviewAdapter.isSortMode()) {
+                && (overviewAdapter.isSortMode()
+                || overviewAdapter.isItemSortMode())) {
 
             overviewItemTouchHelper.startDrag(
                     holder);
@@ -564,7 +592,9 @@ public class MainActivity extends Activity {
     }
 
     private void hideOverviewSortMode() {
+        overviewAdapter.finishItemSortMode();
         setOverviewSortMode(false);
+
         overviewSortButton.setVisibility(View.GONE);
         appFilterButton.setVisibility(View.GONE);
     }
@@ -944,6 +974,9 @@ public class MainActivity extends Activity {
 
                                     shortcutStore.removeCategory(
                                             category.id);
+
+                                    sectionItemOrderStore.removeOrder(
+                                            "category:" + category.id);
 
                                     refreshCategories();
                                 })

@@ -25,7 +25,7 @@ final class BackupManager {
     private static final String FORMAT_ID =
             "appstow-backup";
 
-    private static final int FORMAT_VERSION = 1;
+    private static final int FORMAT_VERSION = 2;
 
     private BackupManager() {
     }
@@ -123,6 +123,10 @@ final class BackupManager {
                 backup.getJSONArray(
                         "overviewOrder");
 
+        JSONObject sectionItemOrder =
+                backup.getJSONObject(
+                        "sectionItemOrder");
+
         Set<String> favorites =
                 new HashSet<>();
 
@@ -181,10 +185,22 @@ final class BackupManager {
                                 overviewOrder.toString())
                         .commit();
 
+        boolean sectionItemOrderSaved =
+                context.getSharedPreferences(
+                                "section_item_order",
+                                Context.MODE_PRIVATE)
+                        .edit()
+                        .clear()
+                        .putString(
+                                "orders",
+                                sectionItemOrder.toString())
+                        .commit();
+
         if (!categoriesSaved
                 || !favoritesSaved
                 || !shortcutsSaved
-                || !orderSaved) {
+                || !orderSaved
+                || !sectionItemOrderSaved) {
 
             throw new IOException(
                     "Backup konnte nicht vollständig wiederhergestellt werden.");
@@ -213,6 +229,11 @@ final class BackupManager {
         SharedPreferences orderPrefs =
                 context.getSharedPreferences(
                         "overview_order",
+                        Context.MODE_PRIVATE);
+
+        SharedPreferences sectionItemOrderPrefs =
+                context.getSharedPreferences(
+                        "section_item_order",
                         Context.MODE_PRIVATE);
 
         JSONArray categories =
@@ -257,6 +278,12 @@ final class BackupManager {
                                 "section_order",
                                 "[]"));
 
+        JSONObject sectionItemOrder =
+                new JSONObject(
+                        sectionItemOrderPrefs.getString(
+                                "orders",
+                                "{}"));
+
         JSONObject backup =
                 new JSONObject();
 
@@ -291,6 +318,10 @@ final class BackupManager {
         backup.put(
                 "overviewOrder",
                 overviewOrder);
+
+        backup.put(
+                "sectionItemOrder",
+                sectionItemOrder);
 
         validateBackup(backup);
 
@@ -337,6 +368,10 @@ final class BackupManager {
         JSONArray overviewOrder =
                 backup.getJSONArray(
                         "overviewOrder");
+
+        JSONObject sectionItemOrder =
+                backup.getJSONObject(
+                        "sectionItemOrder");
 
         Set<String> categoryIds =
                 new HashSet<>();
@@ -482,6 +517,42 @@ final class BackupManager {
 
                 throw new JSONException(
                         "Ungültige Sortierung im Backup.");
+            }
+        }
+
+        Iterator<String> orderKeys =
+                sectionItemOrder.keys();
+
+        while (orderKeys.hasNext()) {
+            String sectionId =
+                    orderKeys.next();
+
+            if (sectionId.trim().isEmpty()) {
+                throw new JSONException(
+                        "Ungültige Bereichssortierung im Backup.");
+            }
+
+            JSONArray itemIds =
+                    sectionItemOrder.getJSONArray(
+                            sectionId);
+
+            Set<String> seenIds =
+                    new HashSet<>();
+
+            for (int i = 0;
+                 i < itemIds.length();
+                 i++) {
+
+                String itemId =
+                        itemIds.getString(i)
+                                .trim();
+
+                if (itemId.isEmpty()
+                        || !seenIds.add(itemId)) {
+
+                    throw new JSONException(
+                            "Ungültige Bereichssortierung im Backup.");
+                }
             }
         }
     }

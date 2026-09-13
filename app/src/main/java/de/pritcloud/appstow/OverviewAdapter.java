@@ -14,7 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 final class OverviewAdapter
@@ -63,6 +65,7 @@ final class OverviewAdapter
     private final FavoritesStore favoritesStore;
     private final CategoryStore categoryStore;
     private final ShortcutStore shortcutStore;
+    private final SectionItemOrderStore sectionItemOrderStore;
 
     private final OnAppClickListener appClickListener;
     private final OnShortcutClickListener shortcutClickListener;
@@ -70,6 +73,7 @@ final class OverviewAdapter
     private final OnSectionDragStartListener dragStartListener;
 
     private boolean sortMode;
+    private String itemSortSectionId;
 
     OverviewAdapter(
             List<OverviewSection> sections,
@@ -77,6 +81,7 @@ final class OverviewAdapter
             FavoritesStore favoritesStore,
             CategoryStore categoryStore,
             ShortcutStore shortcutStore,
+            SectionItemOrderStore sectionItemOrderStore,
             OnAppClickListener appClickListener,
             OnShortcutClickListener shortcutClickListener,
             OnAppLongClickListener appLongClickListener,
@@ -87,6 +92,7 @@ final class OverviewAdapter
         this.favoritesStore = favoritesStore;
         this.categoryStore = categoryStore;
         this.shortcutStore = shortcutStore;
+        this.sectionItemOrderStore = sectionItemOrderStore;
         this.appClickListener = appClickListener;
         this.shortcutClickListener = shortcutClickListener;
         this.appLongClickListener = appLongClickListener;
@@ -170,23 +176,10 @@ final class OverviewAdapter
                             Row.message(section));
 
                 } else {
-                    for (AppEntry app :
-                            favoriteApps) {
-
-                        rows.add(
-                                Row.app(
-                                        section,
-                                        app));
-                    }
-
-                    for (ShortcutEntry shortcut :
-                            favoriteShortcuts) {
-
-                        rows.add(
-                                Row.shortcut(
-                                        section,
-                                        shortcut));
-                    }
+                    addOrderedEntries(
+                            section,
+                            favoriteApps,
+                            favoriteShortcuts);
                 }
 
                 continue;
@@ -214,23 +207,10 @@ final class OverviewAdapter
                             Row.message(section));
 
                 } else {
-                    for (AppEntry app :
-                            categoryApps) {
-
-                        rows.add(
-                                Row.app(
-                                        section,
-                                        app));
-                    }
-
-                    for (ShortcutEntry shortcut :
-                            categoryShortcuts) {
-
-                        rows.add(
-                                Row.shortcut(
-                                        section,
-                                        shortcut));
-                    }
+                    addOrderedEntries(
+                            section,
+                            categoryApps,
+                            categoryShortcuts);
                 }
 
                 continue;
@@ -243,14 +223,10 @@ final class OverviewAdapter
                     rows.add(
                             Row.message(section));
                 } else {
-                    for (ShortcutEntry shortcut :
-                            allShortcuts) {
-
-                        rows.add(
-                                Row.shortcut(
-                                        section,
-                                        shortcut));
-                    }
+                    addOrderedEntries(
+                            section,
+                            Collections.emptyList(),
+                            allShortcuts);
                 }
 
                 continue;
@@ -258,6 +234,62 @@ final class OverviewAdapter
 
             rows.add(
                     Row.message(section));
+        }
+    }
+
+    private void addOrderedEntries(
+            OverviewSection section,
+            List<AppEntry> sectionApps,
+            List<ShortcutEntry> sectionShortcuts) {
+
+        List<String> currentIds =
+                new ArrayList<>();
+
+        Map<String, Row> rowsById =
+                new HashMap<>();
+
+        for (AppEntry app : sectionApps) {
+            String id =
+                    SectionItemOrderStore.appItemId(
+                            app.packageName);
+
+            currentIds.add(id);
+
+            rowsById.put(
+                    id,
+                    Row.app(
+                            section,
+                            app));
+        }
+
+        for (ShortcutEntry shortcut :
+                sectionShortcuts) {
+
+            String id =
+                    SectionItemOrderStore.shortcutItemId(
+                            shortcut.id);
+
+            currentIds.add(id);
+
+            rowsById.put(
+                    id,
+                    Row.shortcut(
+                            section,
+                            shortcut));
+        }
+
+        List<String> orderedIds =
+                sectionItemOrderStore.getOrderedIds(
+                        section.id,
+                        currentIds);
+
+        for (String id : orderedIds) {
+            Row row =
+                    rowsById.get(id);
+
+            if (row != null) {
+                rows.add(row);
+            }
         }
     }
 
@@ -373,10 +405,12 @@ final class OverviewAdapter
             if (row.type == TYPE_APP) {
                 bindApp(
                         (EntryViewHolder) holder,
+                        row.section,
                         row.app);
             } else {
                 bindShortcut(
                         (EntryViewHolder) holder,
+                        row.section,
                         row.shortcut);
             }
 
@@ -397,8 +431,28 @@ final class OverviewAdapter
         holder.title.setText(
                 section.title);
 
-        holder.chevron.setVisibility(
+        boolean itemSortMode =
+                section.id.equals(
+                        itemSortSectionId);
+
+        holder.sortButton.setVisibility(
                 sortMode
+                        ? View.GONE
+                        : View.VISIBLE);
+
+        holder.sortButton.setImageResource(
+                itemSortMode
+                        ? R.drawable.ic_done
+                        : R.drawable.ic_sort_overview);
+
+        holder.sortButton.setContentDescription(
+                holder.itemView.getContext().getString(
+                        itemSortMode
+                                ? R.string.action_finish_section_item_sorting
+                                : R.string.action_sort_section_items));
+
+        holder.chevron.setVisibility(
+                sortMode || itemSortMode
                         ? View.GONE
                         : View.VISIBLE);
 
@@ -411,6 +465,21 @@ final class OverviewAdapter
                 section.expanded
                         ? 180f
                         : 0f);
+
+        holder.sortButton.setOnClickListener(v -> {
+            if (itemSortMode) {
+                saveItemOrder();
+                itemSortSectionId = null;
+            } else {
+                itemSortSectionId =
+                        section.id;
+
+                section.expanded = true;
+            }
+
+            rebuildRows();
+            notifyDataSetChanged();
+        });
 
         if (sortMode) {
             holder.itemView
@@ -438,19 +507,30 @@ final class OverviewAdapter
                 .setOnTouchListener(
                         null);
 
-        holder.itemView
-                .setOnClickListener(v -> {
-                    section.expanded =
-                            !section.expanded;
+        if (itemSortMode) {
+            holder.itemView
+                    .setOnClickListener(
+                            null);
+        } else {
+            holder.itemView
+                    .setOnClickListener(v -> {
+                        section.expanded =
+                                !section.expanded;
 
-                    rebuildRows();
-                    notifyDataSetChanged();
-                });
+                        rebuildRows();
+                        notifyDataSetChanged();
+                    });
+        }
     }
 
     private void bindApp(
             EntryViewHolder holder,
+            OverviewSection section,
             AppEntry app) {
+
+        boolean itemSortMode =
+                section.id.equals(
+                        itemSortSectionId);
 
         holder.icon.setImageDrawable(
                 app.resolveInfo.loadIcon(
@@ -480,33 +560,73 @@ final class OverviewAdapter
                 holder,
                 favorite);
 
-        holder.favorite
-                .setOnClickListener(v -> {
-                    favoritesStore.toggle(
-                            app.packageName);
+        holder.favorite.setVisibility(
+                itemSortMode
+                        ? View.GONE
+                        : View.VISIBLE);
 
-                    refreshFavoriteApps();
-                    rebuildRows();
-                    notifyDataSetChanged();
-                });
+        holder.itemDragHandle.setVisibility(
+                itemSortMode
+                        ? View.VISIBLE
+                        : View.GONE);
 
-        holder.itemView
-                .setOnClickListener(v ->
-                        appClickListener
-                                .onAppClick(app));
+        if (itemSortMode) {
+            holder.favorite.setOnClickListener(null);
 
-        holder.itemView
-                .setOnLongClickListener(v -> {
-                    appLongClickListener
-                            .onAppLongClick(app);
+            holder.itemView.setOnClickListener(null);
+            holder.itemView.setOnLongClickListener(null);
+            holder.itemView.setLongClickable(false);
 
-                    return true;
-                });
+            holder.itemDragHandle.setOnTouchListener(
+                    (view, event) -> {
+                        if (event.getActionMasked()
+                                == MotionEvent.ACTION_DOWN) {
+
+                            dragStartListener.onDragStart(
+                                    holder);
+                        }
+
+                        return false;
+                    });
+
+        } else {
+            holder.itemDragHandle.setOnTouchListener(null);
+
+            holder.favorite
+                    .setOnClickListener(v -> {
+                        favoritesStore.toggle(
+                                app.packageName);
+
+                        refreshFavoriteApps();
+                        rebuildRows();
+                        notifyDataSetChanged();
+                    });
+
+            holder.itemView
+                    .setOnClickListener(v ->
+                            appClickListener
+                                    .onAppClick(app));
+
+            holder.itemView
+                    .setOnLongClickListener(v -> {
+                        appLongClickListener
+                                .onAppLongClick(app);
+
+                        return true;
+                    });
+
+            holder.itemView.setLongClickable(true);
+        }
     }
 
     private void bindShortcut(
             EntryViewHolder holder,
+            OverviewSection section,
             ShortcutEntry shortcut) {
+
+        boolean itemSortMode =
+                section.id.equals(
+                        itemSortSectionId);
 
         if (ShortcutEntry.TYPE_WEBSITE.equals(
                 shortcut.type)) {
@@ -545,28 +665,56 @@ final class OverviewAdapter
                 holder,
                 shortcut.favorite);
 
-        holder.favorite
-                .setOnClickListener(v -> {
-                    shortcutStore.toggleFavorite(
-                            shortcut.id);
+        holder.favorite.setVisibility(
+                itemSortMode
+                        ? View.GONE
+                        : View.VISIBLE);
 
-                    refreshShortcutEntries();
-                    rebuildRows();
-                    notifyDataSetChanged();
-                });
+        holder.itemDragHandle.setVisibility(
+                itemSortMode
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        if (itemSortMode) {
+            holder.favorite.setOnClickListener(null);
+            holder.itemView.setOnClickListener(null);
+
+            holder.itemDragHandle.setOnTouchListener(
+                    (view, event) -> {
+                        if (event.getActionMasked()
+                                == MotionEvent.ACTION_DOWN) {
+
+                            dragStartListener.onDragStart(
+                                    holder);
+                        }
+
+                        return false;
+                    });
+
+        } else {
+            holder.itemDragHandle.setOnTouchListener(null);
+
+            holder.favorite
+                    .setOnClickListener(v -> {
+                        shortcutStore.toggleFavorite(
+                                shortcut.id);
+
+                        refreshShortcutEntries();
+                        rebuildRows();
+                        notifyDataSetChanged();
+                    });
+
+            holder.itemView
+                    .setOnClickListener(v ->
+                            shortcutClickListener
+                                    .onShortcutClick(
+                                            shortcut));
+        }
 
         holder.itemView
-                .setOnClickListener(v ->
-                        shortcutClickListener
-                                .onShortcutClick(
-                                        shortcut));
+                .setOnLongClickListener(null);
 
-        holder.itemView
-                .setOnLongClickListener(
-                        null);
-
-        holder.itemView.setLongClickable(
-                false);
+        holder.itemView.setLongClickable(false);
     }
 
     private String getShortcutCategoryLabel(
@@ -620,6 +768,13 @@ final class OverviewAdapter
             return;
         }
 
+        if (enabled
+                && itemSortSectionId != null) {
+
+            saveItemOrder();
+            itemSortSectionId = null;
+        }
+
         sortMode = enabled;
 
         rebuildRows();
@@ -628,6 +783,90 @@ final class OverviewAdapter
 
     boolean isSortMode() {
         return sortMode;
+    }
+
+    void finishItemSortMode() {
+        if (itemSortSectionId == null) {
+            return;
+        }
+
+        saveItemOrder();
+        itemSortSectionId = null;
+
+        rebuildRows();
+        notifyDataSetChanged();
+    }
+
+    boolean isItemSortMode() {
+        return itemSortSectionId != null;
+    }
+
+    String getItemSortSectionId() {
+        return itemSortSectionId;
+    }
+
+    boolean moveItem(
+            int fromPosition,
+            int toPosition) {
+
+        if (itemSortSectionId == null
+                || fromPosition < 0
+                || toPosition < 0
+                || fromPosition >= rows.size()
+                || toPosition >= rows.size()) {
+
+            return false;
+        }
+
+        Row source =
+                rows.get(fromPosition);
+
+        Row target =
+                rows.get(toPosition);
+
+        if (!source.isEntry()
+                || !target.isEntry()
+                || !itemSortSectionId.equals(
+                        source.section.id)
+                || !itemSortSectionId.equals(
+                        target.section.id)) {
+
+            return false;
+        }
+
+        Collections.swap(
+                rows,
+                fromPosition,
+                toPosition);
+
+        notifyItemMoved(
+                fromPosition,
+                toPosition);
+
+        return true;
+    }
+
+    void saveItemOrder() {
+        if (itemSortSectionId == null) {
+            return;
+        }
+
+        List<String> itemIds =
+                new ArrayList<>();
+
+        for (Row row : rows) {
+            if (row.isEntry()
+                    && itemSortSectionId.equals(
+                            row.section.id)) {
+
+                itemIds.add(
+                        row.itemId());
+            }
+        }
+
+        sectionItemOrderStore.saveOrder(
+                itemSortSectionId,
+                itemIds);
     }
 
     boolean moveSection(
@@ -733,12 +972,28 @@ final class OverviewAdapter
                     null,
                     shortcut);
         }
+
+        boolean isEntry() {
+            return type == TYPE_APP
+                    || type == TYPE_SHORTCUT;
+        }
+
+        String itemId() {
+            if (type == TYPE_APP) {
+                return SectionItemOrderStore.appItemId(
+                        app.packageName);
+            }
+
+            return SectionItemOrderStore.shortcutItemId(
+                    shortcut.id);
+        }
     }
 
     static final class SectionViewHolder
             extends RecyclerView.ViewHolder {
 
         final TextView title;
+        final ImageButton sortButton;
         final ImageView chevron;
         final ImageView dragHandle;
 
@@ -750,6 +1005,10 @@ final class OverviewAdapter
             title =
                     itemView.findViewById(
                             R.id.overviewSectionTitle);
+
+            sortButton =
+                    itemView.findViewById(
+                            R.id.overviewSectionSort);
 
             chevron =
                     itemView.findViewById(
@@ -784,6 +1043,7 @@ final class OverviewAdapter
         final TextView name;
         final TextView categories;
         final ImageButton favorite;
+        final ImageView itemDragHandle;
 
         EntryViewHolder(
                 @NonNull View itemView) {
@@ -805,6 +1065,10 @@ final class OverviewAdapter
             favorite =
                     itemView.findViewById(
                             R.id.appFavorite);
+
+            itemDragHandle =
+                    itemView.findViewById(
+                            R.id.overviewItemDragHandle);
         }
     }
 }

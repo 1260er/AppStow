@@ -21,6 +21,15 @@
         android:layout_weight="1"
         android:textStyle="bold" />
 
+    <ImageButton
+        android:id="@+id/overviewSectionSort"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_sort_section_items"
+        android:padding="10dp"
+        android:src="@drawable/ic_sort_overview" />
+
     <ImageView
         android:id="@+id/overviewSectionChevron"
         android:layout_width="24dp"
