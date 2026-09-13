@@ -54,6 +54,8 @@ public class MainActivity extends Activity {
     private ImageButton appSearchClear;
     private ImageButton overviewSortButton;
     private ImageButton shortcutHelpButton;
+    private ImageButton topNavigationButton;
+    private boolean showingOverview;
 
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
@@ -137,6 +139,9 @@ public class MainActivity extends Activity {
 
         shortcutHelpButton =
                 findViewById(R.id.buttonShortcutHelp);
+
+        topNavigationButton =
+                findViewById(R.id.buttonOpenMenu);
 
         favoritesStore = new FavoritesStore(this);
         categoryStore = new CategoryStore(this);
@@ -288,9 +293,6 @@ public class MainActivity extends Activity {
 
         shortcutHelpButton.setOnClickListener(v ->
                 showShortcutHelpDialog());
-
-        findViewById(R.id.buttonOpenMenu).setOnClickListener(v ->
-                drawerLayout.openDrawer(Gravity.END));
 
         findViewById(R.id.navOverview).setOnClickListener(v ->
                 showOverview());
@@ -522,6 +524,8 @@ public class MainActivity extends Activity {
     }
 
     private void showOverview() {
+        setTopNavigation(true);
+
         shortcutHelpButton.setVisibility(View.GONE);
 
         categoryManagement.setVisibility(View.GONE);
@@ -549,6 +553,8 @@ public class MainActivity extends Activity {
     }
 
     private void showApps() {
+        setTopNavigation(false);
+
         shortcutHelpButton.setVisibility(View.GONE);
 
         hideOverviewSortMode();
@@ -572,6 +578,8 @@ public class MainActivity extends Activity {
     }
 
     private void showCategoryManagement() {
+        setTopNavigation(false);
+
         shortcutHelpButton.setVisibility(View.GONE);
 
         hideOverviewSortMode();
@@ -640,6 +648,8 @@ public class MainActivity extends Activity {
     }
 
     private void showShortcutManagement() {
+        setTopNavigation(false);
+
         hideOverviewSortMode();
 
         shortcutHelpButton.setVisibility(
@@ -1321,6 +1331,68 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void setTopNavigation(
+            boolean overview) {
+
+        showingOverview = overview;
+
+        if (overview) {
+            drawerLayout.setDrawerLockMode(
+                    DrawerLayout.LOCK_MODE_UNLOCKED,
+                    Gravity.END);
+
+            topNavigationButton.setImageResource(
+                    R.drawable.ic_menu);
+
+            topNavigationButton.setContentDescription(
+                    getString(
+                            R.string.action_open_menu));
+
+            topNavigationButton.setOnClickListener(v ->
+                    drawerLayout.openDrawer(
+                            Gravity.END));
+
+            return;
+        }
+
+        drawerLayout.closeDrawer(
+                Gravity.END);
+
+        drawerLayout.setDrawerLockMode(
+                DrawerLayout.LOCK_MODE_LOCKED_CLOSED,
+                Gravity.END);
+
+        topNavigationButton.setImageResource(
+                R.drawable.ic_arrow_back);
+
+        topNavigationButton.setContentDescription(
+                getString(
+                        R.string.action_back_to_overview));
+
+        topNavigationButton.setOnClickListener(v ->
+                showOverview());
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if (drawerLayout.isDrawerOpen(
+                Gravity.END)) {
+
+            drawerLayout.closeDrawer(
+                    Gravity.END);
+
+            return;
+        }
+
+        if (!showingOverview) {
+            showOverview();
+            return;
+        }
+
+        super.onBackPressed();
+    }
+
     private void bindMenu(
             int viewId,
             String title,
@@ -1334,6 +1406,8 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
+        setTopNavigation(false);
+
         shortcutHelpButton.setVisibility(View.GONE);
         hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);

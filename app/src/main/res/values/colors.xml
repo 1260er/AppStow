@@ -1,6 +1,8 @@
 <resources>
     <color name="ui_background">#FFFFFFFF</color>
     <color name="ui_surface">#FFF5F5F7</color>
+    <color name="ui_card_surface">#E6F5F5F7</color>
+    <color name="ui_card_border">#26111111</color>
     <color name="ui_text_primary">#FF111111</color>
     <color name="ui_text_secondary">#FF666666</color>
     <color name="ui_accent">#FF696970</color>

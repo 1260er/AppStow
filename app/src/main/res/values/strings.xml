@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">ShortcutLauncher</string>
     <string name="action_open_menu">Menü öffnen</string>
+    <string name="action_back_to_overview">Zurück zur Übersicht</string>
 
     <string name="nav_overview">Übersicht</string>
     <string name="nav_apps">Apps zuweisen</string>
