@@ -27,6 +27,8 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +38,9 @@ import java.util.Locale;
 import java.util.Set;
 
 public class MainActivity extends Activity {
+
+    private static final int REQUEST_CREATE_BACKUP = 1001;
+    private static final int REQUEST_RESTORE_BACKUP = 1002;
 
     private DrawerLayout drawerLayout;
     private TextView pageTitle;
@@ -49,6 +54,7 @@ public class MainActivity extends Activity {
     private RecyclerView shortcutList;
     private View shortcutManagement;
     private TextView shortcutEmptyMessage;
+    private View backupManagement;
     private EditText appSearch;
     private View appSearchContainer;
     private ImageButton appSearchClear;
@@ -131,6 +137,9 @@ public class MainActivity extends Activity {
         shortcutEmptyMessage =
                 findViewById(R.id.shortcutEmptyMessage);
 
+        backupManagement =
+                findViewById(R.id.backupManagement);
+
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
         appSearchClear = findViewById(R.id.appSearchClear);
@@ -211,6 +220,14 @@ public class MainActivity extends Activity {
         findViewById(R.id.shortcutAddButton)
                 .setOnClickListener(v ->
                         showShortcutEditor(null));
+
+        findViewById(R.id.backupCreateButton)
+                .setOnClickListener(v ->
+                        createBackup());
+
+        findViewById(R.id.backupRestoreButton)
+                .setOnClickListener(v ->
+                        selectBackupForRestore());
 
         appAdapter = new AppAdapter(
                 getPackageManager(),
@@ -303,6 +320,10 @@ public class MainActivity extends Activity {
         findViewById(R.id.navShortcuts)
                 .setOnClickListener(v ->
                         showShortcutManagement());
+
+        findViewById(R.id.navBackup)
+                .setOnClickListener(v ->
+                        showBackupManagement());
 
         bindMenu(
                 R.id.navHelp,
@@ -527,6 +548,7 @@ public class MainActivity extends Activity {
 
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
+        backupManagement.setVisibility(View.GONE);
 
         setOverviewSortMode(false);
         overviewSortButton.setVisibility(View.VISIBLE);
@@ -557,6 +579,7 @@ public class MainActivity extends Activity {
         hideOverviewSortMode();
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
+        backupManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
         loadApps();
 
@@ -582,6 +605,7 @@ public class MainActivity extends Activity {
         hideOverviewSortMode();
 
         shortcutManagement.setVisibility(View.GONE);
+        backupManagement.setVisibility(View.GONE);
 
         pageTitle.setText(R.string.nav_categories);
 
@@ -653,6 +677,9 @@ public class MainActivity extends Activity {
                 View.VISIBLE);
 
         categoryManagement.setVisibility(
+                View.GONE);
+
+        backupManagement.setVisibility(
                 View.GONE);
 
         overviewList.setVisibility(
@@ -1388,6 +1415,211 @@ public class MainActivity extends Activity {
         }
 
         super.onBackPressed();
+    }
+
+    private void showBackupManagement() {
+        setTopNavigation(false);
+
+        shortcutHelpButton.setVisibility(
+                View.GONE);
+
+        hideOverviewSortMode();
+
+        categoryManagement.setVisibility(
+                View.GONE);
+
+        shortcutManagement.setVisibility(
+                View.GONE);
+
+        overviewList.setVisibility(
+                View.GONE);
+
+        appList.setVisibility(
+                View.GONE);
+
+        pageMessage.setVisibility(
+                View.GONE);
+
+        appSearchContainer.setVisibility(
+                View.GONE);
+
+        appSearchClear.setVisibility(
+                View.GONE);
+
+        appSearch.clearFocus();
+
+        pageTitle.setText(
+                R.string.nav_backup);
+
+        backupManagement.setVisibility(
+                View.VISIBLE);
+
+        drawerLayout.closeDrawer(
+                Gravity.END);
+    }
+
+    private void createBackup() {
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_CREATE_DOCUMENT);
+
+        intent.addCategory(
+                Intent.CATEGORY_OPENABLE);
+
+        intent.setType(
+                "application/json");
+
+        intent.putExtra(
+                Intent.EXTRA_TITLE,
+                "AppStow-backup.json");
+
+        try {
+            startActivityForResult(
+                    intent,
+                    REQUEST_CREATE_BACKUP);
+
+        } catch (ActivityNotFoundException exception) {
+            Toast.makeText(
+                    this,
+                    R.string.backup_failed,
+                    Toast.LENGTH_LONG)
+                    .show();
+        }
+    }
+
+    private void selectBackupForRestore() {
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_OPEN_DOCUMENT);
+
+        intent.addCategory(
+                Intent.CATEGORY_OPENABLE);
+
+        intent.setType(
+                "application/json");
+
+        try {
+            startActivityForResult(
+                    intent,
+                    REQUEST_RESTORE_BACKUP);
+
+        } catch (ActivityNotFoundException exception) {
+            Toast.makeText(
+                    this,
+                    R.string.backup_restore_failed,
+                    Toast.LENGTH_LONG)
+                    .show();
+        }
+    }
+
+    private void confirmBackupRestore(
+            JSONObject backup) {
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.backup_restore_title)
+                        .setMessage(
+                                R.string.backup_restore_message)
+                        .setPositiveButton(
+                                R.string.backup_restore_confirm,
+                                (currentDialog, which) -> {
+                                    try {
+                                        BackupManager.restoreBackup(
+                                                this,
+                                                backup);
+
+                                        Toast.makeText(
+                                                this,
+                                                R.string.backup_restored,
+                                                Toast.LENGTH_LONG)
+                                                .show();
+
+                                        recreate();
+
+                                    } catch (Exception exception) {
+                                        Toast.makeText(
+                                                this,
+                                                R.string.backup_restore_failed,
+                                                Toast.LENGTH_LONG)
+                                                .show();
+                                    }
+                                })
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .show();
+
+        styleCategoryDialog(
+                dialog,
+                true);
+    }
+
+    @Override
+    protected void onActivityResult(
+            int requestCode,
+            int resultCode,
+            Intent data) {
+
+        super.onActivityResult(
+                requestCode,
+                resultCode,
+                data);
+
+        if (resultCode != RESULT_OK
+                || data == null
+                || data.getData() == null) {
+            return;
+        }
+
+        Uri uri =
+                data.getData();
+
+        if (requestCode
+                == REQUEST_CREATE_BACKUP) {
+
+            try {
+                BackupManager.writeBackup(
+                        this,
+                        uri);
+
+                Toast.makeText(
+                        this,
+                        R.string.backup_created,
+                        Toast.LENGTH_LONG)
+                        .show();
+
+            } catch (Exception exception) {
+                Toast.makeText(
+                        this,
+                        R.string.backup_failed,
+                        Toast.LENGTH_LONG)
+                        .show();
+            }
+
+            return;
+        }
+
+        if (requestCode
+                == REQUEST_RESTORE_BACKUP) {
+
+            try {
+                JSONObject backup =
+                        BackupManager.readBackup(
+                                this,
+                                uri);
+
+                confirmBackupRestore(
+                        backup);
+
+            } catch (Exception exception) {
+                Toast.makeText(
+                        this,
+                        R.string.backup_restore_failed,
+                        Toast.LENGTH_LONG)
+                        .show();
+            }
+        }
     }
 
     private void bindMenu(

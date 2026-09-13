@@ -119,4 +119,17 @@ market://details?id=com.example.app
     <string name="webapp_network_message">Es besteht derzeit keine nutzbare Netzwerkverbindung. Prüfe WLAN, mobile Daten oder den Flugmodus. Bei manchen Custom-ROMs kann der Netzwerkzugriff zusätzlich pro App deaktiviert sein.</string>
     <string name="webapp_network_open_settings">App-Einstellungen</string>
     <string name="webapp_network_open_network_settings">Netzwerk-Einstellungen</string>
+
+    <string name="nav_backup">Backup &amp; Wiederherstellen</string>
+    <string name="backup_create">Backup erstellen</string>
+    <string name="backup_restore">Backup wiederherstellen</string>
+    <string name="backup_description">Sichert Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts und deren Sortierung. Web-App-Anmeldungen und Android-Berechtigungen sind nicht enthalten.</string>
+    <string name="backup_created">Backup wurde erstellt.</string>
+    <string name="backup_failed">Backup konnte nicht erstellt werden.</string>
+    <string name="backup_restore_failed">Backup konnte nicht gelesen oder wiederhergestellt werden.</string>
+    <string name="backup_restore_title">Backup wiederherstellen?</string>
+    <string name="backup_restore_message">Die vorhandenen Kategorien, App-Zuweisungen, Favoriten, eigenen Shortcuts und die Sortierung werden vollständig durch das Backup ersetzt.</string>
+    <string name="backup_restore_confirm">Wiederherstellen</string>
+    <string name="backup_restored">Backup wurde wiederhergestellt.</string>
+
 </resources>

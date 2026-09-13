@@ -183,6 +183,54 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/backupManagement"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_lg"
+                    android:text="@string/backup_description"
+                    android:textColor="@color/ui_text_secondary" />
+
+                <TextView
+                    android:id="@+id/backupCreateButton"
+                    style="@style/UiBodyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/overview_section_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:paddingHorizontal="@dimen/spacing_md"
+                    android:text="@string/backup_create"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/backupRestoreButton"
+                    style="@style/UiBodyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:background="@drawable/overview_section_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:paddingHorizontal="@dimen/spacing_md"
+                    android:text="@string/backup_restore"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/pageMessage"
                 style="@style/UiBodyText"
