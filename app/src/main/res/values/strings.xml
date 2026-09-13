@@ -127,6 +127,15 @@
     <string name="help_backup_title">Backup &amp; Wiederherstellen</string>
     <string name="help_backup_text">Ein Backup enthält Kategorien, Zuweisungen, Favoriten, eigene Shortcuts und alle Sortierungen. Web-App-Anmeldungen, Cookies und Android-Berechtigungen werden nicht gesichert.</string>
 
+    <string name="about_app_name">AppStow</string>
+    <string name="about_description">Ein kompakter App-Launcher für Favoriten, Kategorien, eigene Shortcuts und Web-Apps.</string>
+    <string name="about_details_title">App-Informationen</string>
+    <string name="about_version">Version: %1$s</string>
+    <string name="about_package">Paket: %1$s</string>
+    <string name="about_github">GitHub öffnen</string>
+    <string name="about_github_url">https://github.com/1260er/AppStow</string>
+    <string name="about_github_failed">GitHub konnte nicht geöffnet werden.</string>
+
     <string name="nav_backup">Backup &amp; Wiederherstellen</string>
     <string name="backup_create">Backup erstellen</string>
     <string name="backup_restore">Backup wiederherstellen</string>

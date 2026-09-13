@@ -60,6 +60,9 @@ public class MainActivity extends Activity {
     private View backupManagement;
     private ScrollView helpManagement;
     private View helpShortcutSection;
+    private ScrollView aboutManagement;
+    private TextView aboutVersion;
+    private TextView aboutPackage;
     private EditText appSearch;
     private View appSearchContainer;
     private ImageButton appSearchClear;
@@ -158,6 +161,15 @@ public class MainActivity extends Activity {
 
         helpShortcutSection =
                 findViewById(R.id.helpShortcutSection);
+
+        aboutManagement =
+                findViewById(R.id.aboutManagement);
+
+        aboutVersion =
+                findViewById(R.id.aboutVersion);
+
+        aboutPackage =
+                findViewById(R.id.aboutPackage);
 
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
@@ -386,10 +398,13 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         showHelp(false));
 
-        bindMenu(
-                R.id.navAbout,
-                "Über",
-                "AppStow 0.1.0");
+        findViewById(R.id.navAbout)
+                .setOnClickListener(v ->
+                        showAbout());
+
+        findViewById(R.id.aboutGithubButton)
+                .setOnClickListener(v ->
+                        openGithub());
 
         appSearchClear.setOnClickListener(v -> {
             appSearch.setText("");
@@ -630,6 +645,7 @@ public class MainActivity extends Activity {
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
         helpManagement.setVisibility(View.GONE);
+        aboutManagement.setVisibility(View.GONE);
 
         setOverviewSortMode(false);
         overviewSortButton.setVisibility(View.VISIBLE);
@@ -666,6 +682,7 @@ public class MainActivity extends Activity {
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
         helpManagement.setVisibility(View.GONE);
+        aboutManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
 
         loadAppsAsync();
@@ -694,6 +711,7 @@ public class MainActivity extends Activity {
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
         helpManagement.setVisibility(View.GONE);
+        aboutManagement.setVisibility(View.GONE);
 
         pageTitle.setText(R.string.nav_categories);
 
@@ -771,6 +789,9 @@ public class MainActivity extends Activity {
                 View.GONE);
 
         helpManagement.setVisibility(
+                View.GONE);
+
+        aboutManagement.setVisibility(
                 View.GONE);
 
         overviewList.setVisibility(
@@ -1581,6 +1602,89 @@ public class MainActivity extends Activity {
         super.onBackPressed();
     }
 
+    private String getAppVersionName() {
+        try {
+            android.content.pm.PackageInfo packageInfo;
+
+            if (Build.VERSION.SDK_INT
+                    >= Build.VERSION_CODES.TIRAMISU) {
+
+                packageInfo =
+                        getPackageManager().getPackageInfo(
+                                getPackageName(),
+                                PackageManager.PackageInfoFlags.of(0));
+            } else {
+                packageInfo =
+                        getPackageManager().getPackageInfo(
+                                getPackageName(),
+                                0);
+            }
+
+            return packageInfo.versionName != null
+                    ? packageInfo.versionName
+                    : "–";
+
+        } catch (PackageManager.NameNotFoundException exception) {
+            return "–";
+        }
+    }
+
+    private void showAbout() {
+        setTopNavigation(false);
+
+        shortcutHelpButton.setVisibility(View.GONE);
+        hideOverviewSortMode();
+
+        categoryManagement.setVisibility(View.GONE);
+        shortcutManagement.setVisibility(View.GONE);
+        backupManagement.setVisibility(View.GONE);
+        helpManagement.setVisibility(View.GONE);
+
+        overviewList.setVisibility(View.GONE);
+        appList.setVisibility(View.GONE);
+        pageMessage.setVisibility(View.GONE);
+
+        appSearchContainer.setVisibility(View.GONE);
+        appSearchClear.setVisibility(View.GONE);
+        appSearch.clearFocus();
+
+        pageTitle.setText(R.string.nav_about);
+
+        aboutVersion.setText(
+                getString(
+                        R.string.about_version,
+                        getAppVersionName()));
+
+        aboutPackage.setText(
+                getString(
+                        R.string.about_package,
+                        getPackageName()));
+
+        aboutManagement.setVisibility(View.VISIBLE);
+        aboutManagement.scrollTo(0, 0);
+
+        drawerLayout.closeDrawer(Gravity.END);
+    }
+
+    private void openGithub() {
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(
+                                getString(
+                                        R.string.about_github_url)));
+
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException exception) {
+            Toast.makeText(
+                    this,
+                    R.string.about_github_failed,
+                    Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
+
     private void showHelp(
             boolean jumpToShortcuts) {
 
@@ -1652,6 +1756,9 @@ public class MainActivity extends Activity {
                 View.GONE);
 
         helpManagement.setVisibility(
+                View.GONE);
+
+        aboutManagement.setVisibility(
                 View.GONE);
 
         overviewList.setVisibility(
@@ -1845,35 +1952,4 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void bindMenu(
-            int viewId,
-            String title,
-            String content) {
-
-        findViewById(viewId).setOnClickListener(v -> {
-            pageTitle.setText(title);
-            showMessage(content);
-            drawerLayout.closeDrawer(Gravity.END);
-        });
-    }
-
-    private void showMessage(String message) {
-        setTopNavigation(false);
-
-        shortcutHelpButton.setVisibility(View.GONE);
-        hideOverviewSortMode();
-        categoryManagement.setVisibility(View.GONE);
-        shortcutManagement.setVisibility(View.GONE);
-        backupManagement.setVisibility(View.GONE);
-        helpManagement.setVisibility(View.GONE);
-        overviewList.setVisibility(View.GONE);
-        appSearchContainer.setVisibility(View.GONE);
-        appSearchClear.setVisibility(View.GONE);
-        appSearch.clearFocus();
-
-        appList.setVisibility(View.GONE);
-
-        pageMessage.setText(message);
-        pageMessage.setVisibility(View.VISIBLE);
-    }
 }

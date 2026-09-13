@@ -242,6 +242,7 @@
             </LinearLayout>
 
             <include layout="@layout/view_help" />
+            <include layout="@layout/view_about" />
 
             <TextView
                 android:id="@+id/pageMessage"
