@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SslErrorHandler;
@@ -65,6 +66,24 @@ public class WebAppActivity extends Activity {
             return;
         }
 
+        Uri initialUri =
+                Uri.parse(
+                        url.trim());
+
+        if (!isHttpsUri(initialUri)) {
+            Toast.makeText(
+                    this,
+                    R.string.shortcut_launch_failed,
+                    Toast.LENGTH_SHORT)
+                    .show();
+
+            finish();
+            return;
+        }
+
+        url =
+                initialUri.toString();
+
         try {
             configureWebView();
 
@@ -89,6 +108,11 @@ public class WebAppActivity extends Activity {
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
+
+        settings.setAllowFileAccess(false);
+        settings.setAllowContentAccess(false);
+        settings.setMixedContentMode(
+                WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
         CookieManager cookieManager =
                 CookieManager.getInstance();
@@ -208,7 +232,10 @@ public class WebAppActivity extends Activity {
                             WebView view,
                             RenderProcessGoneDetail detail) {
 
-                        showWebViewError(
+                        disposeWebView(
+                                view);
+
+                        showFatalWebViewError(
                                 getString(
                                         R.string.webview_process_gone_title),
                                 getString(
@@ -221,15 +248,22 @@ public class WebAppActivity extends Activity {
                 });
     }
 
+    private static boolean isHttpsUri(
+            Uri uri) {
+
+        return "https".equalsIgnoreCase(
+                uri.getScheme())
+                && uri.getHost() != null
+                && !uri.getHost().isEmpty();
+    }
+
     private boolean handleUri(
             Uri uri) {
 
         String scheme =
                 uri.getScheme();
 
-        if ("http".equalsIgnoreCase(scheme)
-                || "https".equalsIgnoreCase(scheme)) {
-
+        if (isHttpsUri(uri)) {
             return false;
         }
 
@@ -300,6 +334,12 @@ public class WebAppActivity extends Activity {
             String title,
             String details) {
 
+        if (isFinishing()
+                || isDestroyed()) {
+
+            return;
+        }
+
         new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(
@@ -354,8 +394,14 @@ public class WebAppActivity extends Activity {
     @Override
     protected void onPause() {
 
-        CookieManager.getInstance()
-                .flush();
+        if (webView != null) {
+            try {
+                CookieManager.getInstance()
+                        .flush();
+
+            } catch (RuntimeException ignored) {
+            }
+        }
 
         super.onPause();
     }
@@ -373,16 +419,49 @@ public class WebAppActivity extends Activity {
         super.onBackPressed();
     }
 
+    private void disposeWebView(
+            WebView target) {
+
+        if (target == null) {
+            return;
+        }
+
+        if (webView == target) {
+            webView = null;
+        }
+
+        try {
+            target.stopLoading();
+        } catch (RuntimeException ignored) {
+        }
+
+        try {
+            target.setWebChromeClient(null);
+            target.setWebViewClient(null);
+        } catch (RuntimeException ignored) {
+        }
+
+        try {
+            if (target.getParent()
+                    instanceof ViewGroup) {
+
+                ((ViewGroup) target.getParent())
+                        .removeView(target);
+            }
+        } catch (RuntimeException ignored) {
+        }
+
+        try {
+            target.destroy();
+        } catch (RuntimeException ignored) {
+        }
+    }
+
     @Override
     protected void onDestroy() {
 
-        if (webView != null) {
-            webView.stopLoading();
-            webView.setWebChromeClient(null);
-            webView.setWebViewClient(null);
-            webView.destroy();
-            webView = null;
-        }
+        disposeWebView(
+                webView);
 
         super.onDestroy();
     }

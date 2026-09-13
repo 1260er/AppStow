@@ -134,7 +134,7 @@ Keines gefunden</string>
     <string name="help_shortcut_website_text">Öffnet eine normale http- oder https-Adresse mit der zuständigen App oder dem Standardbrowser.</string>
 
     <string name="help_shortcut_webapp_title">Web-App</string>
-    <string name="help_shortcut_webapp_text">Öffnet eine Webseite direkt in AppStow im Vollbild. Anmeldung und Cookies werden unabhängig vom normalen Browser in den App-Daten gespeichert. Eine Netzwerkverbindung wird benötigt.</string>
+    <string name="help_shortcut_webapp_text">Öffnet eine HTTPS-Website direkt in AppStow im Vollbild. Anmeldungen und Cookies werden unabhängig vom normalen Browser in den App-Daten gespeichert. Eine Netzwerkverbindung ist erforderlich.</string>
 
     <string name="help_shortcut_deeplink_title">Deep Link (erweitert)</string>
     <string name="help_shortcut_deeplink_text">Öffnet eine bestimmte Funktion einer App. Welche Links funktionieren, hängt von der jeweiligen App ab. Auch Android-Intent-URIs können verwendet werden.</string>

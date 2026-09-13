@@ -556,13 +556,26 @@ final class ShortcutEditorDialog {
             String scheme =
                     uri.getScheme();
 
-            if (scheme == null) {
+            String host =
+                    uri.getHost();
+
+            if (scheme == null
+                    || host == null
+                    || host.isEmpty()) {
+
                 return false;
             }
 
             scheme =
                     scheme.toLowerCase(
                             Locale.ROOT);
+
+            if (ShortcutEntry.TYPE_WEB_APP.equals(
+                    type)) {
+
+                return "https".equals(
+                        scheme);
+            }
 
             return "http".equals(scheme)
                     || "https".equals(scheme);
