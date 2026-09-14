@@ -1618,7 +1618,187 @@ public class MainActivity extends Activity {
                 .append(
                         body.getChildCount());
 
+        appendEmojiCellDiagnostics(
+                result,
+                body);
+
         return result.toString();
+    }
+
+    private void appendEmojiCellDiagnostics(
+            StringBuilder result,
+            RecyclerView body) {
+
+        View emojiView =
+                null;
+
+        for (int i = 0;
+             i < body.getChildCount();
+             i++) {
+
+            emojiView =
+                    findInternalEmojiView(
+                            body.getChildAt(i));
+
+            if (emojiView != null) {
+                break;
+            }
+        }
+
+        result.append(
+                System.lineSeparator());
+
+        if (emojiView == null) {
+            result.append(
+                    "cell=NOT_FOUND");
+
+            return;
+        }
+
+        CharSequence description =
+                emojiView.getContentDescription();
+
+        result.append(
+                "cell=")
+                .append(
+                        emojiView.getClass()
+                                .getSimpleName())
+                .append(" ")
+                .append(
+                        emojiView.getWidth())
+                .append("x")
+                .append(
+                        emojiView.getHeight())
+                .append(
+                        " desc=")
+                .append(
+                        description == null
+                                ? "null"
+                                : description)
+                .append(
+                        " shown=")
+                .append(
+                        emojiView.isShown()
+                                ? "1"
+                                : "0")
+                .append(
+                        " alpha=")
+                .append(
+                        emojiView.getAlpha());
+
+        try {
+            java.lang.reflect.Field bitmapField =
+                    emojiView.getClass()
+                            .getDeclaredField(
+                                    "offscreenCanvasBitmap");
+
+            bitmapField.setAccessible(
+                    true);
+
+            Object bitmapValue =
+                    bitmapField.get(
+                            emojiView);
+
+            if (bitmapValue instanceof Bitmap) {
+                result.append(
+                        " internalBmp=")
+                        .append(
+                                countNonTransparentPixels(
+                                        (Bitmap)
+                                                bitmapValue));
+            } else {
+                result.append(
+                        " internalBmp=NONE");
+            }
+
+        } catch (ReflectiveOperationException exception) {
+            result.append(
+                    " internalBmp=ERR");
+        }
+
+        emojiView.setLayerType(
+                View.LAYER_TYPE_SOFTWARE,
+                null);
+
+        emojiView.invalidate();
+
+        result.append(
+                " layer=")
+                .append(
+                        emojiView.getLayerType());
+    }
+
+    private View findInternalEmojiView(
+            View view) {
+
+        if (view.getClass()
+                .getName()
+                .endsWith(
+                        ".EmojiView")) {
+
+            return view;
+        }
+
+        if (!(view instanceof ViewGroup)) {
+            return null;
+        }
+
+        ViewGroup group =
+                (ViewGroup) view;
+
+        for (int i = 0;
+             i < group.getChildCount();
+             i++) {
+
+            View found =
+                    findInternalEmojiView(
+                            group.getChildAt(i));
+
+            if (found != null) {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
+    private int countNonTransparentPixels(
+            Bitmap bitmap) {
+
+        if (bitmap == null
+                || bitmap.isRecycled()) {
+
+            return -1;
+        }
+
+        int width =
+                bitmap.getWidth();
+
+        int height =
+                bitmap.getHeight();
+
+        int[] pixels =
+                new int[width * height];
+
+        bitmap.getPixels(
+                pixels,
+                0,
+                width,
+                0,
+                0,
+                width,
+                height);
+
+        int count =
+                0;
+
+        for (int pixel : pixels) {
+            if ((pixel >>> 24) != 0) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private int countBitmapTextPixels(
