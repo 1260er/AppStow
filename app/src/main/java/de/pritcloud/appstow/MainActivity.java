@@ -2,7 +2,11 @@ package de.pritcloud.appstow;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -44,6 +48,16 @@ public class MainActivity extends Activity {
 
     private static final int REQUEST_CREATE_BACKUP = 1001;
     private static final int REQUEST_RESTORE_BACKUP = 1002;
+
+    private static final String BACKUP_RUNTIME_PREFS =
+            "backup_runtime";
+    private static final String KEY_RESTORE_RESULT_PENDING =
+            "restore_result_pending";
+    private static final String KEY_RESTORE_RESULT_SUCCESS =
+            "restore_result_success";
+    private static final String ACTION_RESTORE_FINISHED =
+            MainActivity.class.getName()
+                    + ".action.RESTORE_FINISHED";
 
     private static final String STATE_PAGE = "main_page";
     private static final String STATE_APP_SEARCH = "app_search";
@@ -90,6 +104,23 @@ public class MainActivity extends Activity {
     private boolean appsLoading;
     private boolean appsLoaded;
     private String currentPage = PAGE_OVERVIEW;
+
+    private boolean restoreReceiverRegistered;
+
+    private final BroadcastReceiver restoreReceiver =
+            new BroadcastReceiver() {
+                @Override
+                public void onReceive(
+                        Context context,
+                        Intent intent) {
+
+                    if (ACTION_RESTORE_FINISHED.equals(
+                            intent.getAction())) {
+
+                        handlePendingRestoreResult();
+                    }
+                }
+            };
 
     private final ExecutorService appLoader =
             Executors.newSingleThreadExecutor();
@@ -583,6 +614,47 @@ public class MainActivity extends Activity {
                     section.id.equals(
                             sectionId);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        IntentFilter filter =
+                new IntentFilter(
+                        ACTION_RESTORE_FINISHED);
+
+        if (Build.VERSION.SDK_INT
+                >= Build.VERSION_CODES.TIRAMISU) {
+
+            registerReceiver(
+                    restoreReceiver,
+                    filter,
+                    Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(
+                    restoreReceiver,
+                    filter);
+        }
+
+        restoreReceiverRegistered = true;
+
+        handlePendingRestoreResult();
+    }
+
+    @Override
+    protected void onStop() {
+        if (restoreReceiverRegistered) {
+            try {
+                unregisterReceiver(
+                        restoreReceiver);
+            } catch (IllegalArgumentException ignored) {
+            }
+
+            restoreReceiverRegistered = false;
+        }
+
+        super.onStop();
     }
 
     @Override
@@ -1334,20 +1406,39 @@ public class MainActivity extends Activity {
         for (ResolveInfo resolveInfo :
                 resolveInfos) {
 
+            if (resolveInfo == null
+                    || resolveInfo.activityInfo == null) {
+
+                continue;
+            }
+
             String packageName =
                     resolveInfo.activityInfo.packageName;
 
-            if (packageName.equals(
-                    ownPackageName)
+            String activityName =
+                    resolveInfo.activityInfo.name;
+
+            if (packageName == null
+                    || packageName.isEmpty()
+                    || activityName == null
+                    || activityName.isEmpty()
+                    || packageName.equals(
+                            ownPackageName)
                     || !seenPackages.add(
                             packageName)) {
 
                 continue;
             }
 
-            CharSequence labelSequence =
-                    resolveInfo.loadLabel(
-                            packageManager);
+            CharSequence labelSequence;
+
+            try {
+                labelSequence =
+                        resolveInfo.loadLabel(
+                                packageManager);
+            } catch (RuntimeException exception) {
+                labelSequence = null;
+            }
 
             String label =
                     labelSequence != null
@@ -1424,8 +1515,8 @@ public class MainActivity extends Activity {
             }
 
             if (showOnlyUnassignedApps
-                    && !categoryStore.getAssignedCategoryIds(
-                            app.packageName).isEmpty()) {
+                    && categoryStore.hasAssignments(
+                            app.packageName)) {
                 continue;
             }
 
@@ -2086,6 +2177,89 @@ public class MainActivity extends Activity {
         }
     }
 
+    private static void clearPendingRestoreResult(
+            Context context) {
+
+        context.getSharedPreferences(
+                        BACKUP_RUNTIME_PREFS,
+                        Context.MODE_PRIVATE)
+                .edit()
+                .remove(
+                        KEY_RESTORE_RESULT_PENDING)
+                .remove(
+                        KEY_RESTORE_RESULT_SUCCESS)
+                .apply();
+    }
+
+    private static void publishRestoreResult(
+            Context context,
+            boolean success) {
+
+        context.getSharedPreferences(
+                        BACKUP_RUNTIME_PREFS,
+                        Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(
+                        KEY_RESTORE_RESULT_PENDING,
+                        true)
+                .putBoolean(
+                        KEY_RESTORE_RESULT_SUCCESS,
+                        success)
+                .apply();
+
+        Intent intent =
+                new Intent(
+                        ACTION_RESTORE_FINISHED);
+
+        intent.setPackage(
+                context.getPackageName());
+
+        context.sendBroadcast(
+                intent);
+    }
+
+    private void handlePendingRestoreResult() {
+
+        SharedPreferences preferences =
+                getSharedPreferences(
+                        BACKUP_RUNTIME_PREFS,
+                        MODE_PRIVATE);
+
+        if (!preferences.getBoolean(
+                KEY_RESTORE_RESULT_PENDING,
+                false)) {
+
+            return;
+        }
+
+        boolean success =
+                preferences.getBoolean(
+                        KEY_RESTORE_RESULT_SUCCESS,
+                        false);
+
+        preferences.edit()
+                .remove(
+                        KEY_RESTORE_RESULT_PENDING)
+                .remove(
+                        KEY_RESTORE_RESULT_SUCCESS)
+                .apply();
+
+        Toast.makeText(
+                this,
+                success
+                        ? R.string.backup_restored
+                        : R.string.backup_restore_failed,
+                Toast.LENGTH_LONG)
+                .show();
+
+        if (success
+                && !isFinishing()
+                && !isDestroyed()) {
+
+            recreate();
+        }
+    }
+
     private void confirmBackupRestore(
             JSONObject backup) {
 
@@ -2097,44 +2271,32 @@ public class MainActivity extends Activity {
                                 R.string.backup_restore_message)
                         .setPositiveButton(
                                 R.string.backup_restore_confirm,
-                                (currentDialog, which) ->
-                                        backupExecutor.execute(() -> {
-                                            boolean success;
+                                (currentDialog, which) -> {
+                                    Context appContext =
+                                            getApplicationContext();
 
-                                            try {
-                                                BackupManager.restoreBackup(
-                                                        this,
-                                                        backup);
+                                    clearPendingRestoreResult(
+                                            appContext);
 
-                                                success = true;
+                                    backupExecutor.execute(() -> {
+                                        boolean success;
 
-                                            } catch (Exception exception) {
-                                                success = false;
-                                            }
+                                        try {
+                                            BackupManager.restoreBackup(
+                                                    appContext,
+                                                    backup);
 
-                                            boolean restoreSucceeded =
-                                                    success;
+                                            success = true;
 
-                                            runOnUiThread(() -> {
-                                                if (isFinishing()
-                                                        || isDestroyed()) {
+                                        } catch (Exception exception) {
+                                            success = false;
+                                        }
 
-                                                    return;
-                                                }
-
-                                                Toast.makeText(
-                                                        this,
-                                                        restoreSucceeded
-                                                                ? R.string.backup_restored
-                                                                : R.string.backup_restore_failed,
-                                                        Toast.LENGTH_LONG)
-                                                        .show();
-
-                                                if (restoreSucceeded) {
-                                                    recreate();
-                                                }
-                                            });
-                                        }))
+                                        publishRestoreResult(
+                                                appContext,
+                                                success);
+                                    });
+                                })
                         .setNegativeButton(
                                 R.string.action_cancel,
                                 null)

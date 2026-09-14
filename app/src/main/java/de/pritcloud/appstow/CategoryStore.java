@@ -96,6 +96,30 @@ final class CategoryStore {
         removeCategoryFromAssignments(id);
     }
 
+    boolean hasAssignments(
+            String packageName) {
+
+        Set<String> assigned =
+                assignments.get(
+                        packageName);
+
+        return assigned != null
+                && !assigned.isEmpty();
+    }
+
+    boolean isAssignedToCategory(
+            String packageName,
+            String categoryId) {
+
+        Set<String> assigned =
+                assignments.get(
+                        packageName);
+
+        return assigned != null
+                && assigned.contains(
+                        categoryId);
+    }
+
     Set<String> getAssignedCategoryIds(
             String packageName) {
 
@@ -126,7 +150,14 @@ final class CategoryStore {
             String packageName) {
 
         Set<String> assignedIds =
-                getAssignedCategoryIds(packageName);
+                assignments.get(
+                        packageName);
+
+        if (assignedIds == null
+                || assignedIds.isEmpty()) {
+
+            return "";
+        }
 
         StringBuilder label =
                 new StringBuilder();

@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 final class OverviewAdapter
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -305,13 +304,10 @@ final class OverviewAdapter
                 new ArrayList<>();
 
         for (AppEntry app : allApps) {
-            Set<String> assignedIds =
-                    categoryStore
-                            .getAssignedCategoryIds(
-                                    app.packageName);
-
-            if (assignedIds.contains(
-                    categoryId)) {
+            if (categoryStore
+                    .isAssignedToCategory(
+                            app.packageName,
+                            categoryId)) {
 
                 result.add(app);
             }
