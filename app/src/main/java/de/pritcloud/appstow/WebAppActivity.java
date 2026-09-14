@@ -30,6 +30,7 @@ public class WebAppActivity extends Activity {
             "web_app_url";
 
     private WebView webView;
+    private AlertDialog errorDialog;
 
     @Override
     protected void onCreate(
@@ -170,8 +171,11 @@ public class WebAppActivity extends Activity {
                                 view,
                                 url);
 
-                        CookieManager.getInstance()
-                                .flush();
+                        try {
+                            CookieManager.getInstance()
+                                    .flush();
+                        } catch (RuntimeException ignored) {
+                        }
                     }
 
                     @Override
@@ -329,48 +333,91 @@ public class WebAppActivity extends Activity {
             String title,
             String details) {
 
-        if (isFinishing()
-                || isDestroyed()) {
-
-            return;
-        }
-
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(
-                        details
-                                + "\n\n"
-                                + getWebViewInformation())
-                .setPositiveButton(
-                        android.R.string.ok,
-                        null)
-                .show();
+        showWebViewErrorDialog(
+                title,
+                details,
+                false);
     }
 
     private void showFatalWebViewError(
             String title,
             String details) {
 
+        showWebViewErrorDialog(
+                title,
+                details,
+                true);
+    }
+
+    private void showWebViewErrorDialog(
+            String title,
+            String details,
+            boolean fatal) {
+
         if (isFinishing()
                 || isDestroyed()) {
 
             return;
         }
 
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(
-                        details
-                                + "\n\n"
-                                + getWebViewInformation())
-                .setPositiveButton(
-                        android.R.string.ok,
-                        (dialog, which) ->
-                                finish())
-                .setOnCancelListener(
-                        dialog ->
-                                finish())
-                .show();
+        dismissErrorDialog();
+
+        String message = details;
+
+        try {
+            message +=
+                    "\n\n"
+                            + getWebViewInformation();
+        } catch (RuntimeException ignored) {
+        }
+
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(this)
+                        .setTitle(title)
+                        .setMessage(message);
+
+        if (fatal) {
+            builder.setPositiveButton(
+                            android.R.string.ok,
+                            (dialog, which) ->
+                                    finish())
+                    .setOnCancelListener(
+                            dialog ->
+                                    finish());
+        } else {
+            builder.setPositiveButton(
+                    android.R.string.ok,
+                    null);
+        }
+
+        AlertDialog dialog =
+                builder.create();
+
+        errorDialog = dialog;
+
+        dialog.setOnDismissListener(ignored -> {
+            if (errorDialog == dialog) {
+                errorDialog = null;
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void dismissErrorDialog() {
+        AlertDialog dialog =
+                errorDialog;
+
+        errorDialog = null;
+
+        if (dialog == null) {
+            return;
+        }
+
+        try {
+            dialog.dismiss();
+        } catch (RuntimeException ignored) {
+        }
     }
 
     private String getWebViewInformation() {
@@ -492,6 +539,8 @@ public class WebAppActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+
+        dismissErrorDialog();
 
         disposeWebView(
                 webView);

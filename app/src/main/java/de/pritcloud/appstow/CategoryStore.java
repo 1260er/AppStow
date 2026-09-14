@@ -146,6 +146,36 @@ final class CategoryStore {
         saveAssignments();
     }
 
+    String getCategoryLabel(
+            Set<String> categoryIds) {
+
+        if (categoryIds == null
+                || categoryIds.isEmpty()) {
+
+            return "";
+        }
+
+        StringBuilder label =
+                new StringBuilder();
+
+        for (CategoryEntry category : categories) {
+            if (!categoryIds.contains(
+                    category.id)) {
+
+                continue;
+            }
+
+            if (label.length() > 0) {
+                label.append(" · ");
+            }
+
+            label.append(
+                    category.name);
+        }
+
+        return label.toString();
+    }
+
     String getAssignedCategoryLabel(
             String packageName) {
 

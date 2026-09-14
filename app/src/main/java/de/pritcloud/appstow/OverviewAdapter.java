@@ -694,8 +694,8 @@ final class OverviewAdapter
                 shortcut.name);
 
         String categoryLabel =
-                getShortcutCategoryLabel(
-                        shortcut);
+                categoryStore.getCategoryLabel(
+                        shortcut.categoryIds);
 
         holder.categories.setText(
                 categoryLabel);
@@ -781,32 +781,6 @@ final class OverviewAdapter
 
             holder.itemView.setLongClickable(true);
         }
-    }
-
-    private String getShortcutCategoryLabel(
-            ShortcutEntry shortcut) {
-
-        StringBuilder result =
-                new StringBuilder();
-
-        for (CategoryEntry category :
-                categoryStore.getCategories()) {
-
-            if (!shortcut.categoryIds.contains(
-                    category.id)) {
-
-                continue;
-            }
-
-            if (result.length() > 0) {
-                result.append(" · ");
-            }
-
-            result.append(
-                    category.name);
-        }
-
-        return result.toString();
     }
 
     private void updateFavoriteButton(

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.content.pm.ChangedPackages;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
@@ -103,6 +104,9 @@ public class MainActivity extends Activity {
     private boolean showOnlyUnassignedApps;
     private boolean appsLoading;
     private boolean appsLoaded;
+    private boolean appsReloadPending;
+    private int packageChangeSequence;
+    private boolean packageChangeSequenceInitialized;
     private String currentPage = PAGE_OVERVIEW;
 
     private boolean restoreReceiverRegistered;
@@ -497,6 +501,8 @@ public class MainActivity extends Activity {
             }
         });
 
+        initializePackageChangeSequence();
+
         if (savedInstanceState == null) {
             showOverview();
         } else {
@@ -537,6 +543,12 @@ public class MainActivity extends Activity {
                                 aboutScroll));
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshAppsIfPackagesChanged();
     }
 
     @Override
@@ -1302,6 +1314,74 @@ public class MainActivity extends Activity {
         return input;
     }
 
+    private void initializePackageChangeSequence() {
+        if (packageChangeSequenceInitialized) {
+            return;
+        }
+
+        try {
+            ChangedPackages changedPackages =
+                    getPackageManager()
+                            .getChangedPackages(0);
+
+            if (changedPackages != null) {
+                packageChangeSequence =
+                        changedPackages
+                                .getSequenceNumber();
+            }
+        } catch (RuntimeException ignored) {
+            packageChangeSequence = 0;
+        }
+
+        packageChangeSequenceInitialized = true;
+    }
+
+    private void refreshAppsIfPackagesChanged() {
+        if (!packageChangeSequenceInitialized) {
+            initializePackageChangeSequence();
+            return;
+        }
+
+        ChangedPackages changedPackages;
+
+        try {
+            changedPackages =
+                    getPackageManager()
+                            .getChangedPackages(
+                                    packageChangeSequence);
+        } catch (RuntimeException ignored) {
+            return;
+        }
+
+        if (changedPackages == null) {
+            return;
+        }
+
+        packageChangeSequence =
+                changedPackages
+                        .getSequenceNumber();
+
+        if (changedPackages
+                .getPackageNames()
+                .isEmpty()) {
+
+            return;
+        }
+
+        requestAppReload();
+    }
+
+    private void requestAppReload() {
+        appsLoaded = false;
+
+        if (appsLoading) {
+            appsReloadPending = true;
+            return;
+        }
+
+        loadAppsAsync();
+    }
+
     private void loadAppsAsync() {
         if (appsLoading
                 || appsLoaded) {
@@ -1310,6 +1390,7 @@ public class MainActivity extends Activity {
         }
 
         appsLoading = true;
+        appsReloadPending = false;
 
         PackageManager packageManager =
                 getPackageManager();
@@ -1350,6 +1431,11 @@ public class MainActivity extends Activity {
 
                 appsLoading = false;
 
+                boolean reloadAgain =
+                        appsReloadPending;
+
+                appsReloadPending = false;
+
                 if (success) {
                     appsLoaded = true;
 
@@ -1366,6 +1452,11 @@ public class MainActivity extends Activity {
                     renderApps(
                             appSearch.getText()
                                     .toString());
+                }
+
+                if (reloadAgain) {
+                    appsLoaded = false;
+                    loadAppsAsync();
                 }
             });
         });
@@ -1502,15 +1593,11 @@ public class MainActivity extends Activity {
                 new ArrayList<>();
 
         for (AppEntry app : apps) {
-            String label =
-                    app.label.toLowerCase(Locale.ROOT);
-
-            String packageName =
-                    app.packageName.toLowerCase(Locale.ROOT);
-
             if (!normalizedQuery.isEmpty()
-                    && !label.contains(normalizedQuery)
-                    && !packageName.contains(normalizedQuery)) {
+                    && !app.searchLabel.contains(
+                            normalizedQuery)
+                    && !app.searchPackageName.contains(
+                            normalizedQuery)) {
                 continue;
             }
 

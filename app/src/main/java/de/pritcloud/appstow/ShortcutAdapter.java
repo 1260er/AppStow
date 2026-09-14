@@ -103,7 +103,8 @@ final class ShortcutAdapter
                 shortcut.name);
 
         String categories =
-                getCategoryLabel(shortcut);
+                categoryStore.getCategoryLabel(
+                        shortcut.categoryIds);
 
         holder.subtitle.setText(
                 categories);
@@ -163,31 +164,6 @@ final class ShortcutAdapter
 
         holder.delete.setOnClickListener(v ->
                 listener.onDelete(shortcut));
-    }
-
-    private String getCategoryLabel(
-            ShortcutEntry shortcut) {
-
-        StringBuilder result =
-                new StringBuilder();
-
-        for (CategoryEntry category :
-                categoryStore.getCategories()) {
-
-            if (!shortcut.categoryIds.contains(
-                    category.id)) {
-                continue;
-            }
-
-            if (result.length() > 0) {
-                result.append(" · ");
-            }
-
-            result.append(
-                    category.name);
-        }
-
-        return result.toString();
     }
 
     static final class ViewHolder
