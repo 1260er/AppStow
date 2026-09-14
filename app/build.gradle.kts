@@ -97,5 +97,4 @@ dependencies {
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.emoji2:emoji2-emojipicker:1.6.0")
-    implementation("androidx.emoji2:emoji2-bundled:1.6.0")
 }

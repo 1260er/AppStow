@@ -706,15 +706,9 @@ final class BackupManager {
                             "Ungültige Kategorien im Backup.");
 
             if (category.has("symbol")) {
-                String symbol =
-                        requireCanonicalNonEmpty(
-                                category.getString("symbol"),
-                                "Ungültige Kategorien im Backup.");
-
-                if (!EmojiValidator.isValid(symbol)) {
-                    throw new JSONException(
-                            "Ungültige Kategorien im Backup.");
-                }
+                requireCanonicalNonEmpty(
+                        category.getString("symbol"),
+                        "Ungültige Kategorien im Backup.");
             }
 
             if (!categoryIds.add(id)

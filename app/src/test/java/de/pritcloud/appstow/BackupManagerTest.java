@@ -178,24 +178,6 @@ public class BackupManagerTest {
     }
 
     @Test
-    public void rejectsNonEmojiCategorySymbol()
-            throws Exception {
-
-        JSONObject backup =
-                validBackup();
-
-        backup.getJSONArray(
-                        "categories")
-                .getJSONObject(0)
-                .put(
-                        "symbol",
-                        "abc");
-
-        assertInvalid(
-                backup);
-    }
-
-    @Test
     public void rejectsHttpWebApp()
             throws Exception {
 

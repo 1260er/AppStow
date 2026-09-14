@@ -73,7 +73,7 @@ final class CategoryStore {
                 symbol.trim();
 
         if (normalizedName.isEmpty()
-                || !EmojiValidator.isValid(normalizedSymbol)
+                || normalizedSymbol.isEmpty()
                 || nameExists(
                         normalizedName,
                         null)) {
@@ -103,7 +103,7 @@ final class CategoryStore {
                 symbol.trim();
 
         if (normalizedName.isEmpty()
-                || !EmojiValidator.isValid(normalizedSymbol)
+                || normalizedSymbol.isEmpty()
                 || nameExists(
                         normalizedName,
                         id)) {
@@ -295,7 +295,7 @@ final class CategoryStore {
                                         "")
                                 .trim();
 
-                if (!EmojiValidator.isValid(symbol)) {
+                if (symbol.isEmpty()) {
                     symbol = DEFAULT_SYMBOL;
                     migrated = true;
                 }

@@ -31,9 +31,7 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
-import androidx.emoji2.bundled.BundledEmojiCompatConfig;
 import androidx.emoji2.emojipicker.EmojiPickerView;
-import androidx.emoji2.text.EmojiCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -55,9 +53,6 @@ public class MainActivity extends Activity {
 
     private static final int REQUEST_CREATE_BACKUP = 1001;
     private static final int REQUEST_RESTORE_BACKUP = 1002;
-
-    private static final ExecutorService EMOJI_FONT_LOADER =
-            Executors.newSingleThreadExecutor();
 
     private static final String BACKUP_RUNTIME_PREFS =
             "backup_runtime";
@@ -191,13 +186,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (!EmojiCompat.isConfigured()) {
-            EmojiCompat.init(
-                    new BundledEmojiCompatConfig(
-                            getApplicationContext(),
-                            EMOJI_FONT_LOADER));
-        }
 
         setContentView(R.layout.activity_main);
 
@@ -1425,82 +1413,6 @@ public class MainActivity extends Activity {
     private void showEmojiPicker(
             TextView symbolInput) {
 
-        EmojiCompat emojiCompat =
-                EmojiCompat.get();
-
-        int loadState =
-                emojiCompat.getLoadState();
-
-        if (loadState
-                == EmojiCompat.LOAD_STATE_SUCCEEDED) {
-
-            showLoadedEmojiPicker(
-                    symbolInput);
-
-            return;
-        }
-
-        if (loadState
-                == EmojiCompat.LOAD_STATE_FAILED) {
-
-            Toast.makeText(
-                    this,
-                    R.string.category_emoji_picker_failed,
-                    Toast.LENGTH_LONG)
-                    .show();
-
-            return;
-        }
-
-        Toast.makeText(
-                this,
-                R.string.category_emoji_picker_loading,
-                Toast.LENGTH_SHORT)
-                .show();
-
-        emojiCompat.registerInitCallback(
-                new EmojiCompat.InitCallback() {
-
-                    @Override
-                    public void onInitialized() {
-                        emojiCompat.unregisterInitCallback(
-                                this);
-
-                        if (isFinishing()
-                                || isDestroyed()) {
-
-                            return;
-                        }
-
-                        showLoadedEmojiPicker(
-                                symbolInput);
-                    }
-
-                    @Override
-                    public void onFailed(
-                            Throwable throwable) {
-
-                        emojiCompat.unregisterInitCallback(
-                                this);
-
-                        if (isFinishing()
-                                || isDestroyed()) {
-
-                            return;
-                        }
-
-                        Toast.makeText(
-                                MainActivity.this,
-                                R.string.category_emoji_picker_failed,
-                                Toast.LENGTH_LONG)
-                                .show();
-                    }
-                });
-    }
-
-    private void showLoadedEmojiPicker(
-            TextView symbolInput) {
-
         View pickerContent =
                 getLayoutInflater()
                         .inflate(
@@ -1524,17 +1436,8 @@ public class MainActivity extends Activity {
 
         picker.setOnEmojiPickedListener(
                 item -> {
-                    String emoji =
-                            item.getEmoji();
-
-                    if (!EmojiValidator.isValid(
-                            emoji)) {
-
-                        return;
-                    }
-
                     symbolInput.setText(
-                            emoji);
+                            item.getEmoji());
 
                     dialog.dismiss();
                 });
