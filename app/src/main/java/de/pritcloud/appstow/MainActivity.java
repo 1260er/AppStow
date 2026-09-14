@@ -1425,6 +1425,82 @@ public class MainActivity extends Activity {
     private void showEmojiPicker(
             TextView symbolInput) {
 
+        EmojiCompat emojiCompat =
+                EmojiCompat.get();
+
+        int loadState =
+                emojiCompat.getLoadState();
+
+        if (loadState
+                == EmojiCompat.LOAD_STATE_SUCCEEDED) {
+
+            showLoadedEmojiPicker(
+                    symbolInput);
+
+            return;
+        }
+
+        if (loadState
+                == EmojiCompat.LOAD_STATE_FAILED) {
+
+            Toast.makeText(
+                    this,
+                    R.string.category_emoji_picker_failed,
+                    Toast.LENGTH_LONG)
+                    .show();
+
+            return;
+        }
+
+        Toast.makeText(
+                this,
+                R.string.category_emoji_picker_loading,
+                Toast.LENGTH_SHORT)
+                .show();
+
+        emojiCompat.registerInitCallback(
+                new EmojiCompat.InitCallback() {
+
+                    @Override
+                    public void onInitialized() {
+                        emojiCompat.unregisterInitCallback(
+                                this);
+
+                        if (isFinishing()
+                                || isDestroyed()) {
+
+                            return;
+                        }
+
+                        showLoadedEmojiPicker(
+                                symbolInput);
+                    }
+
+                    @Override
+                    public void onFailed(
+                            Throwable throwable) {
+
+                        emojiCompat.unregisterInitCallback(
+                                this);
+
+                        if (isFinishing()
+                                || isDestroyed()) {
+
+                            return;
+                        }
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                R.string.category_emoji_picker_failed,
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+    }
+
+    private void showLoadedEmojiPicker(
+            TextView symbolInput) {
+
         View pickerContent =
                 getLayoutInflater()
                         .inflate(
