@@ -12,6 +12,9 @@ import android.content.res.ColorStateList;
 import android.content.pm.ChangedPackages;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -20,6 +23,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextPaint;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.DisplayCutout;
 import android.view.View;
 import android.view.ViewGroup;
@@ -1529,6 +1533,24 @@ public class MainActivity extends Activity {
                     .append(" ");
         }
 
+        result.append(
+                System.lineSeparator())
+                .append(
+                        "bitmapPixels: A=")
+                .append(
+                        countBitmapTextPixels(
+                                "A"))
+                .append(
+                        " 😀=")
+                .append(
+                        countBitmapTextPixels(
+                                "😀"))
+                .append(
+                        " 🚘=")
+                .append(
+                        countBitmapTextPixels(
+                                "🚘"));
+
         if (!includeLayout) {
             result.append(
                     "\nwarte auf Picker ...");
@@ -1597,6 +1619,80 @@ public class MainActivity extends Activity {
                         body.getChildCount());
 
         return result.toString();
+    }
+
+    private int countBitmapTextPixels(
+            String value) {
+
+        TextPaint textPaint =
+                new TextPaint(
+                        Paint.ANTI_ALIAS_FLAG
+                                | Paint.FILTER_BITMAP_FLAG);
+
+        textPaint.setTextSize(
+                TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_SP,
+                        30f,
+                        getResources()
+                                .getDisplayMetrics()));
+
+        Paint.FontMetricsInt metrics =
+                textPaint.getFontMetricsInt();
+
+        int size =
+                Math.max(
+                        1,
+                        metrics.bottom
+                                - metrics.top);
+
+        Bitmap bitmap =
+                Bitmap.createBitmap(
+                        size,
+                        size,
+                        Bitmap.Config.ARGB_8888);
+
+        Canvas canvas =
+                new Canvas(
+                        bitmap);
+
+        float textWidth =
+                textPaint.measureText(
+                        value,
+                        0,
+                        value.length());
+
+        canvas.drawText(
+                value,
+                0,
+                value.length(),
+                (size - textWidth) / 2f,
+                -textPaint.getFontMetrics().top,
+                textPaint);
+
+        int[] pixels =
+                new int[size * size];
+
+        bitmap.getPixels(
+                pixels,
+                0,
+                size,
+                0,
+                0,
+                size,
+                size);
+
+        int nonTransparent =
+                0;
+
+        for (int pixel : pixels) {
+            if ((pixel >>> 24) != 0) {
+                nonTransparent++;
+            }
+        }
+
+        bitmap.recycle();
+
+        return nonTransparent;
     }
 
     private View createCategoryEditor(
