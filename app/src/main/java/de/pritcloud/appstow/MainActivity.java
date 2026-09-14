@@ -1424,11 +1424,13 @@ public class MainActivity extends Activity {
         pickerContent.setFocusableInTouchMode(
                 true);
 
-        pickerContent.requestFocus();
-
         EditText searchInput =
                 pickerContent.findViewById(
                         R.id.emojiSearchInput);
+
+        ImageButton searchClear =
+                pickerContent.findViewById(
+                        R.id.emojiSearchClear);
 
         FrameLayout pickerContainer =
                 pickerContent.findViewById(
@@ -1441,6 +1443,10 @@ public class MainActivity extends Activity {
         TextView searchEmpty =
                 pickerContent.findViewById(
                         R.id.emojiSearchEmpty);
+
+        searchInput.clearFocus();
+
+        pickerContent.requestFocus();
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
@@ -1473,6 +1479,14 @@ public class MainActivity extends Activity {
         searchResults.setHasFixedSize(
                 true);
 
+        searchClear.setOnClickListener(
+                ignored -> {
+                    searchInput.setText(
+                            "");
+
+                    searchInput.requestFocus();
+                });
+
         searchInput.addTextChangedListener(
                 new TextWatcher() {
 
@@ -1499,6 +1513,11 @@ public class MainActivity extends Activity {
                         String query =
                                 editable.toString()
                                         .trim();
+
+                        searchClear.setVisibility(
+                                query.isEmpty()
+                                        ? View.GONE
+                                        : View.VISIBLE);
 
                         if (query.isEmpty()) {
                             pickerContainer.setVisibility(
@@ -1543,13 +1562,27 @@ public class MainActivity extends Activity {
                 });
 
         dialog.setOnShowListener(
-                ignored ->
-                        pickerContainer.post(
-                                () ->
-                                        createEmojiPickerAfterLayout(
-                                                pickerContainer,
-                                                symbolInput,
-                                                dialog)));
+                ignored -> {
+
+                    searchInput.clearFocus();
+
+                    pickerContent.requestFocus();
+
+                    if (dialog.getWindow() != null) {
+                        dialog.getWindow()
+                                .setSoftInputMode(
+                                        android.view.WindowManager
+                                                .LayoutParams
+                                                .SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                    }
+
+                    pickerContainer.post(
+                            () ->
+                                    createEmojiPickerAfterLayout(
+                                            pickerContainer,
+                                            symbolInput,
+                                            dialog));
+                });
 
         dialog.show();
     }
