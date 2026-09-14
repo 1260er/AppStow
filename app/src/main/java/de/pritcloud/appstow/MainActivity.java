@@ -1487,42 +1487,51 @@ public class MainActivity extends Activity {
                                                         true)),
                                 2500));
 
-        picker.addOnLayoutChangeListener(
-                new View.OnLayoutChangeListener() {
+        android.view.ViewTreeObserver.OnPreDrawListener
+                pickerReadyListener =
+                new android.view.ViewTreeObserver.OnPreDrawListener() {
 
                     private boolean refreshed;
 
                     @Override
-                    public void onLayoutChange(
-                            View view,
-                            int left,
-                            int top,
-                            int right,
-                            int bottom,
-                            int oldLeft,
-                            int oldTop,
-                            int oldRight,
-                            int oldBottom) {
+                    public boolean onPreDraw() {
 
                         if (refreshed
-                                || right <= left
-                                || bottom <= top) {
+                                || picker.getChildCount() == 0
+                                || picker.getWidth() <= 0
+                                || picker.getHeight() <= 0) {
 
-                            return;
+                            return true;
                         }
 
                         refreshed =
                                 true;
 
-                        picker.removeOnLayoutChangeListener(
-                                this);
+                        if (picker.getViewTreeObserver()
+                                .isAlive()) {
+
+                            picker.getViewTreeObserver()
+                                    .removeOnPreDrawListener(
+                                            this);
+                        }
 
                         picker.post(
-                                () ->
-                                        picker.setEmojiGridColumns(
-                                                picker.getEmojiGridColumns()));
+                                () -> {
+                                    if (!picker.isAttachedToWindow()) {
+                                        return;
+                                    }
+
+                                    picker.setEmojiGridColumns(
+                                            picker.getEmojiGridColumns());
+                                });
+
+                        return true;
                     }
-                });
+                };
+
+        picker.getViewTreeObserver()
+                .addOnPreDrawListener(
+                        pickerReadyListener);
 
         dialog.show();
     }
