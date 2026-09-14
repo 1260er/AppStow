@@ -111,6 +111,34 @@ public class MainActivity extends Activity {
     private String currentPage = PAGE_OVERVIEW;
 
     private boolean restoreReceiverRegistered;
+    private boolean packageReceiverRegistered;
+
+    private final BroadcastReceiver packageChangeReceiver =
+            new BroadcastReceiver() {
+                @Override
+                public void onReceive(
+                        Context context,
+                        Intent intent) {
+
+                    String action =
+                            intent.getAction();
+
+                    if (!Intent.ACTION_PACKAGE_ADDED.equals(action)
+                            && !Intent.ACTION_PACKAGE_REMOVED.equals(action)
+                            && !Intent.ACTION_PACKAGE_REPLACED.equals(action)
+                            && !Intent.ACTION_PACKAGE_CHANGED.equals(action)) {
+
+                        return;
+                    }
+
+                    requestAppReload();
+
+                    // Sequenz auf den aktuellen Stand setzen, damit
+                    // onResume nicht unnötig denselben Reload wiederholt.
+                    packageChangeSequenceInitialized = false;
+                    initializePackageChangeSequence();
+                }
+            };
 
     private final BroadcastReceiver restoreReceiver =
             new BroadcastReceiver() {
@@ -503,6 +531,7 @@ public class MainActivity extends Activity {
         });
 
         initializePackageChangeSequence();
+        registerPackageChangeReceiver();
 
         if (savedInstanceState == null) {
             showOverview();
@@ -672,6 +701,16 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (packageReceiverRegistered) {
+            try {
+                unregisterReceiver(
+                        packageChangeReceiver);
+            } catch (IllegalArgumentException ignored) {
+            }
+
+            packageReceiverRegistered = false;
+        }
+
         appLoader.shutdownNow();
         backupExecutor.shutdown();
         super.onDestroy();
@@ -1313,6 +1352,47 @@ public class MainActivity extends Activity {
         }
 
         return input;
+    }
+
+    private void registerPackageChangeReceiver() {
+        if (packageReceiverRegistered) {
+            return;
+        }
+
+        IntentFilter filter =
+                new IntentFilter();
+
+        filter.addAction(
+                Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(
+                Intent.ACTION_PACKAGE_REMOVED);
+        filter.addAction(
+                Intent.ACTION_PACKAGE_REPLACED);
+        filter.addAction(
+                Intent.ACTION_PACKAGE_CHANGED);
+
+        filter.addDataScheme(
+                "package");
+
+        try {
+            if (Build.VERSION.SDK_INT
+                    >= Build.VERSION_CODES.TIRAMISU) {
+
+                registerReceiver(
+                        packageChangeReceiver,
+                        filter,
+                        Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                registerReceiver(
+                        packageChangeReceiver,
+                        filter);
+            }
+
+            packageReceiverRegistered = true;
+
+        } catch (RuntimeException ignored) {
+            // getChangedPackages() bleibt als Fallback aktiv.
+        }
     }
 
     private void initializePackageChangeSequence() {
