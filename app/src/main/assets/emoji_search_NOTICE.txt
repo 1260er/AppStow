@@ -1,0 +1,8 @@
+AppStow Emoji Search Data
+
+Generated from:
+- Unicode Emoji 16.0 emoji-test.txt
+- Unicode CLDR 48.2.0 German and English annotations
+
+Unicode data files are licensed under Unicode License v3 (SPDX: Unicode-3.0).
+See emoji_search_LICENSE.txt.

@@ -35,6 +35,8 @@
     <string name="category_list_label">%1$s  %2$s</string>
     <string name="category_symbol_hint">Symbol (Emoji)</string>
     <string name="category_emoji_picker_title">Emoji auswählen</string>
+    <string name="category_emoji_search_hint">Emoji suchen</string>
+    <string name="category_emoji_search_empty">Keine passenden Emojis gefunden.</string>
     <string name="category_symbols_show">Symbole in der Übersicht anzeigen</string>
     <string name="category_symbols_description">Jede Kategorie hat ein Symbol. Mit diesem Schalter bestimmst du, ob Symbole in der Übersicht angezeigt werden.</string>
     <string name="category_name_hint">Kategoriename</string>

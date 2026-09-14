@@ -3,20 +3,44 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:focusableInTouchMode="true"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/emojiPickerDiagnostics"
+    <EditText
+        android:id="@+id/emojiSearchInput"
+        style="@style/UiSearchInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="@dimen/spacing_sm"
-        android:paddingVertical="@dimen/spacing_sm"
-        android:textColor="@color/ui_text_primary"
-        android:textSize="12sp" />
+        android:layout_marginHorizontal="@dimen/spacing_sm"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:hint="@string/category_emoji_search_hint"
+        android:imeOptions="actionDone"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1"
+        android:singleLine="true" />
 
     <FrameLayout
         android:id="@+id/emojiPickerContainer"
         android:layout_width="match_parent"
         android:layout_height="@dimen/emoji_picker_height" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/emojiSearchResults"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/emoji_picker_height"
+        android:clipToPadding="false"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/emojiSearchEmpty"
+        style="@style/UiBodyText"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/emoji_picker_height"
+        android:gravity="center"
+        android:padding="@dimen/spacing_md"
+        android:text="@string/category_emoji_search_empty"
+        android:textColor="@color/ui_text_secondary"
+        android:visibility="gone" />
 
 </LinearLayout>

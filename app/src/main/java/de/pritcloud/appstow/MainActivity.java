@@ -12,22 +12,18 @@ import android.content.res.ColorStateList;
 import android.content.pm.ChangedPackages;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextPaint;
 import android.text.TextWatcher;
-import android.util.TypedValue;
 import android.view.DisplayCutout;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.Switch;
@@ -35,10 +31,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.PaintCompat;
 import androidx.core.view.GravityCompat;
 import androidx.emoji2.emojipicker.EmojiPickerView;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -1416,21 +1412,8 @@ public class MainActivity extends Activity {
                                 : neutralColor);
     }
 
-    @SuppressLint({
-            "SetTextI18n",
-            "ApplySharedPref"
-    })
     private void showEmojiPicker(
             TextView symbolInput) {
-
-        getSharedPreferences(
-                "androidx.emoji2.emojipicker.preferences",
-                Context.MODE_PRIVATE)
-                .edit()
-                .putString(
-                        "pref_key_recent_emoji",
-                        "😀,🚘,⭐,⚡,❤️,👩‍💻,🇩🇪")
-                .commit();
 
         View pickerContent =
                 getLayoutInflater()
@@ -1438,16 +1421,26 @@ public class MainActivity extends Activity {
                                 R.layout.dialog_emoji_picker,
                                 null);
 
-        android.widget.FrameLayout pickerContainer =
+        pickerContent.setFocusableInTouchMode(
+                true);
+
+        pickerContent.requestFocus();
+
+        EditText searchInput =
+                pickerContent.findViewById(
+                        R.id.emojiSearchInput);
+
+        FrameLayout pickerContainer =
                 pickerContent.findViewById(
                         R.id.emojiPickerContainer);
 
-        TextView diagnostics =
+        RecyclerView searchResults =
                 pickerContent.findViewById(
-                        R.id.emojiPickerDiagnostics);
+                        R.id.emojiSearchResults);
 
-        diagnostics.setText(
-                "warte auf Dialog-Layout ...");
+        TextView searchEmpty =
+                pickerContent.findViewById(
+                        R.id.emojiSearchEmpty);
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
@@ -1460,475 +1453,163 @@ public class MainActivity extends Activity {
                                 null)
                         .create();
 
+        EmojiSearchAdapter searchAdapter =
+                new EmojiSearchAdapter(
+                        emoji -> {
+                            symbolInput.setText(
+                                    emoji);
+
+                            dialog.dismiss();
+                        });
+
+        searchResults.setLayoutManager(
+                new GridLayoutManager(
+                        this,
+                        8));
+
+        searchResults.setAdapter(
+                searchAdapter);
+
+        searchResults.setHasFixedSize(
+                true);
+
+        searchInput.addTextChangedListener(
+                new TextWatcher() {
+
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence text,
+                            int start,
+                            int count,
+                            int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence text,
+                            int start,
+                            int before,
+                            int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            Editable editable) {
+
+                        String query =
+                                editable.toString()
+                                        .trim();
+
+                        if (query.isEmpty()) {
+                            pickerContainer.setVisibility(
+                                    View.VISIBLE);
+
+                            searchResults.setVisibility(
+                                    View.GONE);
+
+                            searchEmpty.setVisibility(
+                                    View.GONE);
+
+                            return;
+                        }
+
+                        List<EmojiSearchIndex.Result>
+                                matches =
+                                EmojiSearchIndex.search(
+                                        MainActivity.this,
+                                        query);
+
+                        searchAdapter.submitList(
+                                matches);
+
+                        pickerContainer.setVisibility(
+                                View.GONE);
+
+                        if (matches.isEmpty()) {
+                            searchResults.setVisibility(
+                                    View.GONE);
+
+                            searchEmpty.setVisibility(
+                                    View.VISIBLE);
+
+                        } else {
+                            searchResults.setVisibility(
+                                    View.VISIBLE);
+
+                            searchEmpty.setVisibility(
+                                    View.GONE);
+                        }
+                    }
+                });
+
         dialog.setOnShowListener(
                 ignored ->
                         pickerContainer.post(
-                                () -> {
-
-                                    if (!dialog.isShowing()
-                                            || pickerContainer.getWidth()
-                                            <= 0
-                                            || pickerContainer.getHeight()
-                                            <= 0) {
-
-                                        return;
-                                    }
-
-                                    EmojiPickerView picker =
-                                            new EmojiPickerView(
-                                                    MainActivity.this);
-
-                                    picker.setEmojiGridColumns(
-                                            8);
-
-                                    if (Build.VERSION.SDK_INT
-                                            >= Build.VERSION_CODES.Q) {
-
-                                        picker.setForceDarkAllowed(
-                                                false);
-                                    }
-
-                                    picker.setOnEmojiPickedListener(
-                                            item -> {
-                                                symbolInput.setText(
-                                                        item.getEmoji());
-
-                                                dialog.dismiss();
-                                            });
-
-                                    android.widget.FrameLayout.LayoutParams
-                                            params =
-                                            new android.widget.FrameLayout.LayoutParams(
-                                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                                    ViewGroup.LayoutParams.MATCH_PARENT);
-
-                                    pickerContainer.addView(
-                                            picker,
-                                            params);
-
-                                    int width =
-                                            pickerContainer.getWidth();
-
-                                    int height =
-                                            pickerContainer.getHeight();
-
-                                    picker.measure(
-                                            View.MeasureSpec.makeMeasureSpec(
-                                                    width,
-                                                    View.MeasureSpec.EXACTLY),
-                                            View.MeasureSpec.makeMeasureSpec(
-                                                    height,
-                                                    View.MeasureSpec.EXACTLY));
-
-                                    picker.layout(
-                                            0,
-                                            0,
-                                            width,
-                                            height);
-
-                                    diagnostics.setText(
-                                            buildEmojiPickerDiagnostics(
-                                                    picker,
-                                                    false));
-
-                                    picker.postDelayed(
-                                            () -> {
-                                                if (dialog.isShowing()) {
-                                                    diagnostics.setText(
-                                                            buildEmojiPickerDiagnostics(
-                                                                    picker,
-                                                                    true));
-                                                }
-                                            },
-                                            2500);
-                                }));
+                                () ->
+                                        createEmojiPickerAfterLayout(
+                                                pickerContainer,
+                                                symbolInput,
+                                                dialog)));
 
         dialog.show();
     }
 
-    private String buildEmojiPickerDiagnostics(
-            EmojiPickerView picker,
-            boolean includeLayout) {
+    private void createEmojiPickerAfterLayout(
+            FrameLayout pickerContainer,
+            TextView symbolInput,
+            AlertDialog dialog) {
 
-        String[] probes = {
-                "😀",
-                "🚘",
-                "⭐",
-                "⚡",
-                "❤️",
-                "👩‍💻",
-                "🇩🇪"
-        };
-
-        TextPaint paint =
-                new TextPaint();
-
-        StringBuilder result =
-                new StringBuilder();
-
-        result.append(
-                "System: ");
-
-        for (String probe : probes) {
-            result.append(probe)
-                    .append(" ");
-        }
-
-        result.append(
-                "\nhasGlyph: ");
-
-        for (String probe : probes) {
-            result.append(probe)
-                    .append("=")
-                    .append(
-                            PaintCompat.hasGlyph(
-                                    paint,
-                                    probe)
-                                    ? "1"
-                                    : "0")
-                    .append(" ");
-        }
-
-        result.append(
-                System.lineSeparator())
-                .append(
-                        "bitmapPixels: A=")
-                .append(
-                        countBitmapTextPixels(
-                                "A"))
-                .append(
-                        " 😀=")
-                .append(
-                        countBitmapTextPixels(
-                                "😀"))
-                .append(
-                        " 🚘=")
-                .append(
-                        countBitmapTextPixels(
-                                "🚘"));
-
-        if (!includeLayout) {
-            result.append(
-                    "\nwarte auf Picker ...");
-
-            return result.toString();
-        }
-
-        result.append(
-                "\npicker=")
-                .append(
-                        picker.getWidth())
-                .append("x")
-                .append(
-                        picker.getHeight())
-                .append(
-                        " children=")
-                .append(
-                        picker.getChildCount());
-
-        if (picker.getChildCount() == 0
-                || !(picker.getChildAt(0)
-                instanceof ViewGroup)) {
-
-            return result.toString();
-        }
-
-        ViewGroup internalRoot =
-                (ViewGroup)
-                        picker.getChildAt(0);
-
-        result.append(
-                " rootChildren=")
-                .append(
-                        internalRoot.getChildCount());
-
-        if (internalRoot.getChildCount() < 2
-                || !(internalRoot.getChildAt(1)
-                instanceof RecyclerView)) {
-
-            return result.toString();
-        }
-
-        RecyclerView body =
-                (RecyclerView)
-                        internalRoot.getChildAt(1);
-
-        RecyclerView.Adapter<?> adapter =
-                body.getAdapter();
-
-        result.append(
-                "\nbody=")
-                .append(
-                        body.getWidth())
-                .append("x")
-                .append(
-                        body.getHeight())
-                .append(
-                        " items=")
-                .append(
-                        adapter == null
-                                ? -1
-                                : adapter.getItemCount())
-                .append(
-                        " visible=")
-                .append(
-                        body.getChildCount());
-
-        appendEmojiCellDiagnostics(
-                result,
-                body);
-
-        return result.toString();
-    }
-
-    private void appendEmojiCellDiagnostics(
-            StringBuilder result,
-            RecyclerView body) {
-
-        View emojiView =
-                null;
-
-        for (int i = 0;
-             i < body.getChildCount();
-             i++) {
-
-            emojiView =
-                    findInternalEmojiView(
-                            body.getChildAt(i));
-
-            if (emojiView != null) {
-                break;
-            }
-        }
-
-        result.append(
-                System.lineSeparator());
-
-        if (emojiView == null) {
-            result.append(
-                    "cell=NOT_FOUND");
+        if (!dialog.isShowing()
+                || pickerContainer.getWidth() <= 0
+                || pickerContainer.getHeight() <= 0
+                || pickerContainer.getChildCount() > 0) {
 
             return;
         }
 
-        CharSequence description =
-                emojiView.getContentDescription();
+        EmojiPickerView picker =
+                new EmojiPickerView(
+                        this);
 
-        result.append(
-                "cell=")
-                .append(
-                        emojiView.getClass()
-                                .getSimpleName())
-                .append(" ")
-                .append(
-                        emojiView.getWidth())
-                .append("x")
-                .append(
-                        emojiView.getHeight())
-                .append(
-                        " desc=")
-                .append(
-                        description == null
-                                ? "null"
-                                : description)
-                .append(
-                        " shown=")
-                .append(
-                        emojiView.isShown()
-                                ? "1"
-                                : "0")
-                .append(
-                        " alpha=")
-                .append(
-                        emojiView.getAlpha());
+        picker.setEmojiGridColumns(
+                8);
 
-        try {
-            java.lang.reflect.Field bitmapField =
-                    emojiView.getClass()
-                            .getDeclaredField(
-                                    "offscreenCanvasBitmap");
+        picker.setOnEmojiPickedListener(
+                item -> {
+                    symbolInput.setText(
+                            item.getEmoji());
 
-            bitmapField.setAccessible(
-                    true);
+                    dialog.dismiss();
+                });
 
-            Object bitmapValue =
-                    bitmapField.get(
-                            emojiView);
+        FrameLayout.LayoutParams params =
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT);
 
-            if (bitmapValue instanceof Bitmap) {
-                result.append(
-                        " internalBmp=")
-                        .append(
-                                countNonTransparentPixels(
-                                        (Bitmap)
-                                                bitmapValue));
-            } else {
-                result.append(
-                        " internalBmp=NONE");
-            }
-
-        } catch (ReflectiveOperationException exception) {
-            result.append(
-                    " internalBmp=ERR");
-        }
-
-        emojiView.setLayerType(
-                View.LAYER_TYPE_SOFTWARE,
-                null);
-
-        emojiView.invalidate();
-
-        result.append(
-                " layer=")
-                .append(
-                        emojiView.getLayerType());
-    }
-
-    private View findInternalEmojiView(
-            View view) {
-
-        if (view.getClass()
-                .getName()
-                .endsWith(
-                        ".EmojiView")) {
-
-            return view;
-        }
-
-        if (!(view instanceof ViewGroup)) {
-            return null;
-        }
-
-        ViewGroup group =
-                (ViewGroup) view;
-
-        for (int i = 0;
-             i < group.getChildCount();
-             i++) {
-
-            View found =
-                    findInternalEmojiView(
-                            group.getChildAt(i));
-
-            if (found != null) {
-                return found;
-            }
-        }
-
-        return null;
-    }
-
-    private int countNonTransparentPixels(
-            Bitmap bitmap) {
-
-        if (bitmap == null
-                || bitmap.isRecycled()) {
-
-            return -1;
-        }
+        pickerContainer.addView(
+                picker,
+                params);
 
         int width =
-                bitmap.getWidth();
+                pickerContainer.getWidth();
 
         int height =
-                bitmap.getHeight();
+                pickerContainer.getHeight();
 
-        int[] pixels =
-                new int[width * height];
+        picker.measure(
+                View.MeasureSpec.makeMeasureSpec(
+                        width,
+                        View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(
+                        height,
+                        View.MeasureSpec.EXACTLY));
 
-        bitmap.getPixels(
-                pixels,
-                0,
-                width,
+        picker.layout(
                 0,
                 0,
                 width,
                 height);
-
-        int count =
-                0;
-
-        for (int pixel : pixels) {
-            if ((pixel >>> 24) != 0) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private int countBitmapTextPixels(
-            String value) {
-
-        TextPaint textPaint =
-                new TextPaint(
-                        Paint.ANTI_ALIAS_FLAG
-                                | Paint.FILTER_BITMAP_FLAG);
-
-        textPaint.setTextSize(
-                TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_SP,
-                        30f,
-                        getResources()
-                                .getDisplayMetrics()));
-
-        Paint.FontMetricsInt metrics =
-                textPaint.getFontMetricsInt();
-
-        int size =
-                Math.max(
-                        1,
-                        metrics.bottom
-                                - metrics.top);
-
-        Bitmap bitmap =
-                Bitmap.createBitmap(
-                        size,
-                        size,
-                        Bitmap.Config.ARGB_8888);
-
-        Canvas canvas =
-                new Canvas(
-                        bitmap);
-
-        float textWidth =
-                textPaint.measureText(
-                        value,
-                        0,
-                        value.length());
-
-        canvas.drawText(
-                value,
-                0,
-                value.length(),
-                (size - textWidth) / 2f,
-                -textPaint.getFontMetrics().top,
-                textPaint);
-
-        int[] pixels =
-                new int[size * size];
-
-        bitmap.getPixels(
-                pixels,
-                0,
-                size,
-                0,
-                0,
-                size,
-                size);
-
-        int nonTransparent =
-                0;
-
-        for (int pixel : pixels) {
-            if ((pixel >>> 24) != 0) {
-                nonTransparent++;
-            }
-        }
-
-        bitmap.recycle();
-
-        return nonTransparent;
     }
 
     private View createCategoryEditor(
