@@ -31,7 +31,9 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
+import androidx.emoji2.bundled.BundledEmojiCompatConfig;
 import androidx.emoji2.emojipicker.EmojiPickerView;
+import androidx.emoji2.text.EmojiCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -53,6 +55,9 @@ public class MainActivity extends Activity {
 
     private static final int REQUEST_CREATE_BACKUP = 1001;
     private static final int REQUEST_RESTORE_BACKUP = 1002;
+
+    private static final ExecutorService EMOJI_FONT_LOADER =
+            Executors.newSingleThreadExecutor();
 
     private static final String BACKUP_RUNTIME_PREFS =
             "backup_runtime";
@@ -186,6 +191,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!EmojiCompat.isConfigured()) {
+            EmojiCompat.init(
+                    new BundledEmojiCompatConfig(
+                            getApplicationContext(),
+                            EMOJI_FONT_LOADER));
+        }
+
         setContentView(R.layout.activity_main);
 
         View contentRoot = findViewById(android.R.id.content);

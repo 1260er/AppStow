@@ -2,6 +2,8 @@ package de.pritcloud.appstow;
 
 import android.icu.lang.UCharacter;
 
+import androidx.emoji2.text.EmojiCompat;
+
 final class EmojiValidator {
 
     private static final int PROPERTY_EMOJI =
@@ -40,6 +42,10 @@ final class EmojiValidator {
             return false;
         }
 
+        if (isSupportedByEmojiCompat(value)) {
+            return true;
+        }
+
         int[] codePoints =
                 value.codePoints()
                         .toArray();
@@ -62,6 +68,28 @@ final class EmojiValidator {
         }
 
         return isEmojiSequence(codePoints);
+    }
+
+    private static boolean isSupportedByEmojiCompat(
+            String value) {
+
+        if (!EmojiCompat.isConfigured()) {
+            return false;
+        }
+
+        EmojiCompat emojiCompat =
+                EmojiCompat.get();
+
+        if (emojiCompat.getLoadState()
+                != EmojiCompat.LOAD_STATE_SUCCEEDED) {
+
+            return false;
+        }
+
+        return emojiCompat.getEmojiMatch(
+                value,
+                Integer.MAX_VALUE)
+                == EmojiCompat.EMOJI_SUPPORTED;
     }
 
     private static boolean isEmojiSequence(
