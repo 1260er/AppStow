@@ -21,6 +21,10 @@ final class CategoryStore {
     private static final String PREFS_NAME = "categories";
     private static final String KEY_CATEGORIES = "category_list";
     private static final String KEY_ASSIGNMENTS = "category_assignments";
+    private static final String KEY_SYMBOLS_ENABLED =
+            "category_symbols_enabled";
+
+    static final String DEFAULT_SYMBOL = "📁";
 
     private final SharedPreferences preferences;
     private final List<CategoryEntry> categories =
@@ -42,18 +46,46 @@ final class CategoryStore {
         return new ArrayList<>(categories);
     }
 
-    boolean addCategory(String name) {
-        String normalized = name.trim();
+    boolean areSymbolsEnabled() {
+        return preferences.getBoolean(
+                KEY_SYMBOLS_ENABLED,
+                false);
+    }
 
-        if (normalized.isEmpty()
-                || nameExists(normalized, null)) {
+    void setSymbolsEnabled(
+            boolean enabled) {
+
+        preferences.edit()
+                .putBoolean(
+                        KEY_SYMBOLS_ENABLED,
+                        enabled)
+                .apply();
+    }
+
+    boolean addCategory(
+            String name,
+            String symbol) {
+
+        String normalizedName =
+                name.trim();
+
+        String normalizedSymbol =
+                symbol.trim();
+
+        if (normalizedName.isEmpty()
+                || normalizedSymbol.isEmpty()
+                || nameExists(
+                        normalizedName,
+                        null)) {
+
             return false;
         }
 
         categories.add(
                 new CategoryEntry(
                         UUID.randomUUID().toString(),
-                        normalized));
+                        normalizedName,
+                        normalizedSymbol));
 
         saveCategories();
         return true;
@@ -61,12 +93,21 @@ final class CategoryStore {
 
     boolean renameCategory(
             String id,
-            String name) {
+            String name,
+            String symbol) {
 
-        String normalized = name.trim();
+        String normalizedName =
+                name.trim();
 
-        if (normalized.isEmpty()
-                || nameExists(normalized, id)) {
+        String normalizedSymbol =
+                symbol.trim();
+
+        if (normalizedName.isEmpty()
+                || normalizedSymbol.isEmpty()
+                || nameExists(
+                        normalizedName,
+                        id)) {
+
             return false;
         }
 
@@ -78,7 +119,8 @@ final class CategoryStore {
                         i,
                         new CategoryEntry(
                                 id,
-                                normalized));
+                                normalizedName,
+                                normalizedSymbol));
 
                 saveCategories();
                 return true;
@@ -233,18 +275,42 @@ final class CategoryStore {
                         KEY_CATEGORIES,
                         "[]");
 
-        try {
-            JSONArray array = new JSONArray(saved);
+        boolean migrated =
+                false;
 
-            for (int i = 0; i < array.length(); i++) {
+        try {
+            JSONArray array =
+                    new JSONArray(saved);
+
+            for (int i = 0;
+                 i < array.length();
+                 i++) {
+
                 JSONObject object =
                         array.getJSONObject(i);
+
+                String symbol =
+                        object.optString(
+                                        "symbol",
+                                        "")
+                                .trim();
+
+                if (symbol.isEmpty()) {
+                    symbol = DEFAULT_SYMBOL;
+                    migrated = true;
+                }
 
                 categories.add(
                         new CategoryEntry(
                                 object.getString("id"),
-                                object.getString("name")));
+                                object.getString("name"),
+                                symbol));
             }
+
+            if (migrated) {
+                saveCategories();
+            }
+
         } catch (JSONException ignored) {
         }
     }
@@ -259,6 +325,9 @@ final class CategoryStore {
 
                 object.put("id", category.id);
                 object.put("name", category.name);
+                object.put(
+                        "symbol",
+                        category.symbol);
 
                 array.put(object);
             }

@@ -65,6 +65,13 @@ public class BackupManagerTest {
                 "Work",
                 categories.get(0).name);
 
+        assertEquals(
+                "💼",
+                categories.get(0).symbol);
+
+        assertTrue(
+                categoryStore.areSymbolsEnabled());
+
         assertTrue(
                 categoryStore
                         .getAssignedCategoryIds(
@@ -114,6 +121,60 @@ public class BackupManagerTest {
                                 "shortcut:site",
                                 "app:com.example.app",
                                 "app:new")));
+    }
+
+    @Test
+    public void legacyBackupWithoutSymbolsStillRestores()
+            throws Exception {
+
+        JSONObject backup =
+                validBackup();
+
+        backup.remove(
+                "categorySymbolsEnabled");
+
+        backup.getJSONArray(
+                        "categories")
+                .getJSONObject(0)
+                .remove(
+                        "symbol");
+
+        BackupManager.restoreBackup(
+                context,
+                backup);
+
+        CategoryStore categoryStore =
+                new CategoryStore(
+                        context);
+
+        CategoryEntry category =
+                categoryStore.getCategories()
+                        .get(0);
+
+        assertEquals(
+                CategoryStore.DEFAULT_SYMBOL,
+                category.symbol);
+
+        assertTrue(
+                !categoryStore.areSymbolsEnabled());
+    }
+
+    @Test
+    public void rejectsBlankCategorySymbol()
+            throws Exception {
+
+        JSONObject backup =
+                validBackup();
+
+        backup.getJSONArray(
+                        "categories")
+                .getJSONObject(0)
+                .put(
+                        "symbol",
+                        "   ");
+
+        assertInvalid(
+                backup);
     }
 
     @Test
@@ -290,7 +351,10 @@ public class BackupManagerTest {
                                                 "cat-work")
                                         .put(
                                                 "name",
-                                                "Work"));
+                                                "Work")
+                                        .put(
+                                                "symbol",
+                                                "💼"));
 
         JSONObject assignments =
                 new JSONObject()
@@ -369,6 +433,9 @@ public class BackupManagerTest {
                 .put(
                         "categoryAssignments",
                         assignments)
+                .put(
+                        "categorySymbolsEnabled",
+                        true)
                 .put(
                         "favoritePackages",
                         favorites)

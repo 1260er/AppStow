@@ -20,9 +20,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.DisplayCutout;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -83,6 +85,7 @@ public class MainActivity extends Activity {
     private RecyclerView categoryList;
     private View categoryManagement;
     private TextView categoryEmptyMessage;
+    private Switch categorySymbolsSwitch;
 
     private RecyclerView shortcutList;
     private View shortcutManagement;
@@ -228,6 +231,9 @@ public class MainActivity extends Activity {
         categoryList = findViewById(R.id.categoryList);
         categoryManagement = findViewById(R.id.categoryManagement);
         categoryEmptyMessage = findViewById(R.id.categoryEmptyMessage);
+        categorySymbolsSwitch =
+                findViewById(
+                        R.id.categorySymbolsSwitch);
 
         shortcutList =
                 findViewById(R.id.shortcutList);
@@ -299,6 +305,23 @@ public class MainActivity extends Activity {
         findViewById(R.id.categoryAddButton)
                 .setOnClickListener(v ->
                         showAddCategoryDialog());
+
+        categorySymbolsSwitch.setChecked(
+                categoryStore.areSymbolsEnabled());
+
+        categorySymbolsSwitch
+                .setOnCheckedChangeListener(
+                        (buttonView, enabled) -> {
+                            categoryStore.setSymbolsEnabled(
+                                    enabled);
+
+                            rebuildOverviewSections();
+
+                            if (overviewAdapter != null) {
+                                overviewAdapter.setApps(
+                                        apps);
+                            }
+                        });
 
         shortcutAdapter =
                 new ShortcutAdapter(
@@ -736,10 +759,21 @@ public class MainActivity extends Activity {
 
         overviewSections.clear();
 
+        boolean showSymbols =
+                categoryStore.areSymbolsEnabled();
+
+        String favoritesTitle =
+                showSymbols
+                        ? "⭐ "
+                        + getString(
+                                R.string.overview_favorites)
+                        : getString(
+                                R.string.overview_favorites);
+
         OverviewSection favorites =
                 new OverviewSection(
                         "favorites",
-                        getString(R.string.overview_favorites),
+                        favoritesTitle,
                         getString(R.string.overview_favorites_empty));
 
         favorites.expanded =
@@ -752,10 +786,17 @@ public class MainActivity extends Activity {
         for (CategoryEntry category :
                 categoryStore.getCategories()) {
 
+            String categoryTitle =
+                    showSymbols
+                            ? category.symbol
+                            + " "
+                            + category.name
+                            : category.name;
+
             OverviewSection section =
                     new OverviewSection(
                             "category:" + category.id,
-                            category.name,
+                            categoryTitle,
                             getString(
                                     R.string.overview_category_empty));
 
@@ -767,10 +808,18 @@ public class MainActivity extends Activity {
             overviewSections.add(section);
         }
 
+        String shortcutsTitle =
+                showSymbols
+                        ? "⚡ "
+                        + getString(
+                                R.string.overview_shortcuts)
+                        : getString(
+                                R.string.overview_shortcuts);
+
         OverviewSection shortcuts =
                 new OverviewSection(
                         "shortcuts",
-                        getString(R.string.overview_shortcuts),
+                        shortcutsTitle,
                         getString(R.string.overview_shortcuts_empty));
 
         shortcuts.expanded =
@@ -1203,17 +1252,30 @@ public class MainActivity extends Activity {
     }
 
     private void showAddCategoryDialog() {
-        EditText input = createCategoryInput("");
+        View editor =
+                createCategoryEditor(
+                        "",
+                        CategoryStore.DEFAULT_SYMBOL);
+
+        EditText symbolInput =
+                editor.findViewById(
+                        R.id.categorySymbolInput);
+
+        EditText nameInput =
+                editor.findViewById(
+                        R.id.categoryNameInput);
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
-                        .setTitle(R.string.category_add_title)
-                        .setView(input)
+                        .setTitle(
+                                R.string.category_add_title)
+                        .setView(editor)
                         .setPositiveButton(
                                 R.string.action_save,
                                 (currentDialog, which) -> {
                                     if (!categoryStore.addCategory(
-                                            input.getText().toString())) {
+                                            nameInput.getText().toString(),
+                                            symbolInput.getText().toString())) {
 
                                         Toast.makeText(
                                                 this,
@@ -1222,31 +1284,48 @@ public class MainActivity extends Activity {
                                     }
 
                                     refreshCategories();
+                                    rebuildOverviewSections();
+                                    overviewAdapter.setApps(
+                                            apps);
                                 })
                         .setNegativeButton(
                                 R.string.action_cancel,
                                 null)
                         .show();
 
-        styleCategoryDialog(dialog, false);
+        styleCategoryDialog(
+                dialog,
+                false);
     }
 
     private void showRenameCategoryDialog(
             CategoryEntry category) {
 
-        EditText input =
-                createCategoryInput(category.name);
+        View editor =
+                createCategoryEditor(
+                        category.name,
+                        category.symbol);
+
+        EditText symbolInput =
+                editor.findViewById(
+                        R.id.categorySymbolInput);
+
+        EditText nameInput =
+                editor.findViewById(
+                        R.id.categoryNameInput);
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
-                        .setTitle(R.string.category_rename_title)
-                        .setView(input)
+                        .setTitle(
+                                R.string.category_rename_title)
+                        .setView(editor)
                         .setPositiveButton(
                                 R.string.action_save,
                                 (currentDialog, which) -> {
                                     if (!categoryStore.renameCategory(
                                             category.id,
-                                            input.getText().toString())) {
+                                            nameInput.getText().toString(),
+                                            symbolInput.getText().toString())) {
 
                                         Toast.makeText(
                                                 this,
@@ -1255,13 +1334,18 @@ public class MainActivity extends Activity {
                                     }
 
                                     refreshCategories();
+                                    rebuildOverviewSections();
+                                    overviewAdapter.setApps(
+                                            apps);
                                 })
                         .setNegativeButton(
                                 R.string.action_cancel,
                                 null)
                         .show();
 
-        styleCategoryDialog(dialog, false);
+        styleCategoryDialog(
+                dialog,
+                false);
     }
 
     private void showDeleteCategoryDialog(
@@ -1322,10 +1406,52 @@ public class MainActivity extends Activity {
                                 : neutralColor);
     }
 
-    private EditText createCategoryInput(
-            String value) {
+    private View createCategoryEditor(
+            String name,
+            String symbol) {
 
-        EditText input = new EditText(this);
+        ViewGroup root =
+                findViewById(
+                        android.R.id.content);
+
+        View editor =
+                getLayoutInflater()
+                        .inflate(
+                                R.layout.dialog_category_edit,
+                                root,
+                                false);
+
+        EditText symbolInput =
+                editor.findViewById(
+                        R.id.categorySymbolInput);
+
+        EditText nameInput =
+                editor.findViewById(
+                        R.id.categoryNameInput);
+
+        styleCategoryInput(
+                symbolInput);
+
+        styleCategoryInput(
+                nameInput);
+
+        symbolInput.setText(
+                symbol);
+
+        symbolInput.setSelectAllOnFocus(
+                true);
+
+        nameInput.setText(
+                name);
+
+        nameInput.setSelectAllOnFocus(
+                true);
+
+        return editor;
+    }
+
+    private void styleCategoryInput(
+            EditText input) {
 
         int textColor =
                 ContextCompat.getColor(
@@ -1342,24 +1468,22 @@ public class MainActivity extends Activity {
                         this,
                         R.color.ui_border);
 
-        input.setHint(R.string.category_name_hint);
-        input.setSingleLine(true);
-        input.setText(value);
-        input.setSelectAllOnFocus(true);
+        input.setTextColor(
+                textColor);
 
-        input.setTextColor(textColor);
-        input.setHintTextColor(hintColor);
+        input.setHintTextColor(
+                hintColor);
 
         input.setBackgroundTintList(
-                ColorStateList.valueOf(borderColor));
+                ColorStateList.valueOf(
+                        borderColor));
 
         if (Build.VERSION.SDK_INT
                 >= Build.VERSION_CODES.Q) {
+
             input.setTextCursorDrawable(
                     R.drawable.search_cursor);
         }
-
-        return input;
     }
 
     private void registerPackageChangeReceiver() {

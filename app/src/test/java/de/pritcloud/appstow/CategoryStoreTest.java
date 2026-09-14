@@ -45,7 +45,8 @@ public class CategoryStoreTest {
 
         assertTrue(
                 store.addCategory(
-                        "Work"));
+                        "Work",
+                        "💼"));
 
         String categoryId =
                 store.getCategories()
@@ -75,7 +76,8 @@ public class CategoryStoreTest {
 
         assertTrue(
                 store.addCategory(
-                        "Work"));
+                        "Work",
+                        "💼"));
 
         String categoryId =
                 store.getCategories()
@@ -97,19 +99,62 @@ public class CategoryStoreTest {
     }
 
     @Test
+    public void categorySymbolIsRequiredAndPersists() {
+
+        assertFalse(
+                store.addCategory(
+                        "Work",
+                        "   "));
+
+        assertTrue(
+                store.addCategory(
+                        "Work",
+                        "💼"));
+
+        CategoryEntry category =
+                new CategoryStore(
+                        context)
+                        .getCategories()
+                        .get(0);
+
+        assertEquals(
+                "💼",
+                category.symbol);
+    }
+
+    @Test
+    public void symbolVisibilityPreferencePersists() {
+
+        assertFalse(
+                store.areSymbolsEnabled());
+
+        store.setSymbolsEnabled(
+                true);
+
+        assertTrue(
+                new CategoryStore(
+                        context)
+                        .areSymbolsEnabled());
+    }
+
+
+    @Test
     public void duplicateCategoryNamesAreRejectedCaseInsensitive() {
 
         assertTrue(
                 store.addCategory(
-                        "Work"));
+                        "Work",
+                        "💼"));
 
         assertFalse(
                 store.addCategory(
-                        "work"));
+                        "work",
+                        "💼"));
 
         assertFalse(
                 store.addCategory(
-                        "  WORK  "));
+                        "  WORK  ",
+                        "💼"));
 
         assertEquals(
                 1,

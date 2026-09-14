@@ -118,6 +118,22 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
+                <Switch
+                    android:id="@+id/categorySymbolsSwitch"
+                    style="@style/UiBodyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="@string/category_symbols_show" />
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_md"
+                    android:text="@string/category_symbols_description"
+                    android:textColor="@color/ui_text_secondary" />
+
                 <TextView
                     android:id="@+id/categoryAddButton"
                     style="@style/UiBodyText"

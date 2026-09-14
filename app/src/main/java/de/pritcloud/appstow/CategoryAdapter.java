@@ -39,7 +39,9 @@ final class CategoryAdapter
                         @NonNull CategoryEntry newItem) {
 
                     return oldItem.name.equals(
-                            newItem.name);
+                            newItem.name)
+                            && oldItem.symbol.equals(
+                                    newItem.symbol);
                 }
             };
 
@@ -79,7 +81,13 @@ final class CategoryAdapter
         CategoryEntry category =
                 getItem(position);
 
-        holder.name.setText(category.name);
+        holder.name.setText(
+                holder.itemView
+                        .getContext()
+                        .getString(
+                                R.string.category_list_label,
+                                category.symbol,
+                                category.name));
 
         holder.name.setOnClickListener(v ->
                 listener.onRename(category));

@@ -118,6 +118,16 @@ final class BackupManager {
                 backup,
                 true);
 
+        if (backup.has(
+                "categorySymbolsEnabled")
+                && !(backup.get(
+                        "categorySymbolsEnabled")
+                instanceof Boolean)) {
+
+            throw new JSONException(
+                    "Ungültige Symbol-Einstellung im Backup.");
+        }
+
         JSONArray categories =
                 backup.getJSONArray(
                         "categories");
@@ -125,6 +135,11 @@ final class BackupManager {
         JSONObject assignments =
                 backup.getJSONObject(
                         "categoryAssignments");
+
+        boolean categorySymbolsEnabled =
+                backup.optBoolean(
+                        "categorySymbolsEnabled",
+                        false);
 
         JSONArray favoritePackages =
                 backup.getJSONArray(
@@ -209,6 +224,9 @@ final class BackupManager {
                             .putString(
                                     "category_assignments",
                                     assignments.toString())
+                            .putBoolean(
+                                    "category_symbols_enabled",
+                                    categorySymbolsEnabled)
                             .commit();
 
             boolean favoritesSaved =
@@ -441,6 +459,11 @@ final class BackupManager {
                                 "category_assignments",
                                 "{}"));
 
+        boolean categorySymbolsEnabled =
+                categoryPrefs.getBoolean(
+                        "category_symbols_enabled",
+                        false);
+
         List<String> favoriteList =
                 new ArrayList<>(
                         favoritePrefs.getStringSet(
@@ -499,6 +522,10 @@ final class BackupManager {
         backup.put(
                 "categoryAssignments",
                 assignments);
+
+        backup.put(
+                "categorySymbolsEnabled",
+                categorySymbolsEnabled);
 
         backup.put(
                 "favoritePackages",
@@ -677,6 +704,12 @@ final class BackupManager {
                     requireCanonicalNonEmpty(
                             category.getString("name"),
                             "Ungültige Kategorien im Backup.");
+
+            if (category.has("symbol")) {
+                requireCanonicalNonEmpty(
+                        category.getString("symbol"),
+                        "Ungültige Kategorien im Backup.");
+            }
 
             if (!categoryIds.add(id)
                     || !categoryNames.add(
