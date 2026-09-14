@@ -172,6 +172,9 @@ public class MainActivity extends Activity {
     private final ExecutorService emojiLoader =
             Executors.newSingleThreadExecutor();
 
+    private final ExecutorService emojiSearchExecutor =
+            Executors.newSingleThreadExecutor();
+
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
     private FavoritesStore favoritesStore;
@@ -1497,6 +1500,18 @@ public class MainActivity extends Activity {
         emojiGrid.setHasFixedSize(
                 true);
 
+        // Bei Suchwechseln werden große Teile des
+        // Datensatzes ersetzt. Animationen bringen hier
+        // keinen Nutzen und kosten nur Zeit.
+        emojiGrid.setItemAnimator(
+                null);
+
+        final Runnable[] pendingSearch =
+                new Runnable[1];
+
+        final int[] searchGeneration =
+                new int[] {0};
+
         searchClear.setOnClickListener(
                 ignored -> {
                     searchInput.setText(
@@ -1532,6 +1547,19 @@ public class MainActivity extends Activity {
                                 editable.toString()
                                         .trim();
 
+                        int generation =
+                                ++searchGeneration[0];
+
+                        if (pendingSearch[0]
+                                != null) {
+
+                            searchInput.removeCallbacks(
+                                    pendingSearch[0]);
+
+                            pendingSearch[0] =
+                                    null;
+                        }
+
                         searchClear.setVisibility(
                                 query.isEmpty()
                                         ? View.GONE
@@ -1542,7 +1570,11 @@ public class MainActivity extends Activity {
                                         ? View.VISIBLE
                                         : View.GONE);
 
+                        searchEmpty.setVisibility(
+                                View.GONE);
+
                         if (query.isEmpty()) {
+
                             loadAllEmoji(
                                     adapter,
                                     emojiGrid,
@@ -1560,29 +1592,62 @@ public class MainActivity extends Activity {
                         loading.setVisibility(
                                 View.GONE);
 
-                        List<EmojiSearchIndex.Result>
-                                matches =
-                                EmojiSearchIndex.search(
-                                        MainActivity.this,
-                                        query);
+                        Runnable searchTask =
+                                () ->
+                                        emojiSearchExecutor.execute(
+                                                () -> {
 
-                        adapter.submitList(
-                                matches);
+                                                    List<EmojiSearchIndex.Result>
+                                                            matches =
+                                                            EmojiSearchIndex.search(
+                                                                    getApplicationContext(),
+                                                                    query);
 
-                        if (matches.isEmpty()) {
-                            emojiGrid.setVisibility(
-                                    View.GONE);
+                                                    runOnUiThread(
+                                                            () -> {
 
-                            searchEmpty.setVisibility(
-                                    View.VISIBLE);
+                                                                if (!dialog.isShowing()
+                                                                        || generation
+                                                                        != searchGeneration[0]
+                                                                        || !query.equals(
+                                                                                searchInput
+                                                                                        .getText()
+                                                                                        .toString()
+                                                                                        .trim())) {
 
-                        } else {
-                            emojiGrid.setVisibility(
-                                    View.VISIBLE);
+                                                                    return;
+                                                                }
 
-                            searchEmpty.setVisibility(
-                                    View.GONE);
-                        }
+                                                                adapter.submitList(
+                                                                        matches);
+
+                                                                if (matches.isEmpty()) {
+                                                                    emojiGrid.setVisibility(
+                                                                            View.GONE);
+
+                                                                    searchEmpty.setVisibility(
+                                                                            View.VISIBLE);
+
+                                                                } else {
+                                                                    emojiGrid.setVisibility(
+                                                                            View.VISIBLE);
+
+                                                                    searchEmpty.setVisibility(
+                                                                            View.GONE);
+                                                                }
+                                                            });
+                                                });
+
+                        pendingSearch[0] =
+                                searchTask;
+
+                        // Kurzes Debounce:
+                        // beim schnellen Tippen wird z.B.
+                        // nicht a -> au -> aut -> auto
+                        // einzeln berechnet.
+                        searchInput.postDelayed(
+                                searchTask,
+                                80L);
                     }
                 });
 
@@ -1611,6 +1676,22 @@ public class MainActivity extends Activity {
                             searchEmpty,
                             searchInput,
                             dialog);
+                });
+
+        dialog.setOnDismissListener(
+                ignored -> {
+
+                    ++searchGeneration[0];
+
+                    if (pendingSearch[0]
+                            != null) {
+
+                        searchInput.removeCallbacks(
+                                pendingSearch[0]);
+
+                        pendingSearch[0] =
+                                null;
+                    }
                 });
 
         dialog.show();

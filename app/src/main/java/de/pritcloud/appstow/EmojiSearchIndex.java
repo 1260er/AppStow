@@ -1,11 +1,9 @@
 package de.pritcloud.appstow;
 
 import android.content.Context;
-import android.text.TextPaint;
 import android.util.JsonReader;
 import android.util.Log;
 
-import androidx.core.graphics.PaintCompat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,10 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 final class EmojiSearchIndex {
 
@@ -26,10 +22,6 @@ final class EmojiSearchIndex {
 
     private static final int MAX_RESULTS =
             120;
-
-    private static final Map<String, Boolean>
-            RENDER_CACHE =
-            new HashMap<>();
 
     private static List<Entry> cachedEntries;
     private static List<Result> cachedAllGerman;
@@ -58,13 +50,17 @@ final class EmojiSearchIndex {
                                 .get(0)
                                 .getLanguage());
 
+        String[] requestedTerms =
+                normalizedQuery.split(
+                        " +");
+
         List<ScoredEntry> candidates =
                 new ArrayList<>();
 
         for (Entry entry : getEntries(context)) {
-            if (!matchesTerms(
-                    entry.terms,
-                    normalizedQuery)) {
+            if (!matchesTokens(
+                    entry.termTokens,
+                    requestedTerms)) {
 
                 continue;
             }
@@ -103,12 +99,6 @@ final class EmojiSearchIndex {
 
             Entry entry =
                     candidate.entry;
-
-            if (!isRenderable(
-                    entry.emoji)) {
-
-                continue;
-            }
 
             String label =
                     german
@@ -412,13 +402,24 @@ final class EmojiSearchIndex {
             return false;
         }
 
-        String[] available =
+        return matchesTokens(
                 terms.split(
-                        " +");
-
-        String[] requested =
+                        " +"),
                 normalizedQuery.split(
-                        " +");
+                        " +"));
+    }
+
+    private static boolean matchesTokens(
+            String[] available,
+            String[] requested) {
+
+        if (available == null
+                || available.length == 0
+                || requested == null
+                || requested.length == 0) {
+
+            return false;
+        }
 
         for (String needle : requested) {
             boolean found =
@@ -483,33 +484,6 @@ final class EmojiSearchIndex {
         }
 
         return 4;
-    }
-
-    private static boolean isRenderable(
-            String emoji) {
-
-        synchronized (RENDER_CACHE) {
-            Boolean cached =
-                    RENDER_CACHE.get(
-                            emoji);
-
-            if (cached != null) {
-                return cached;
-            }
-        }
-
-        boolean renderable =
-                PaintCompat.hasGlyph(
-                        new TextPaint(),
-                        emoji);
-
-        synchronized (RENDER_CACHE) {
-            RENDER_CACHE.put(
-                    emoji,
-                    renderable);
-        }
-
-        return renderable;
     }
 
     private static List<Entry> getEntries(
@@ -697,6 +671,7 @@ final class EmojiSearchIndex {
         final String normalizedGerman;
         final String normalizedEnglish;
         final String terms;
+        final String[] termTokens;
         final String group;
         final int order;
 
@@ -727,6 +702,12 @@ final class EmojiSearchIndex {
 
             this.terms =
                     terms;
+
+            this.termTokens =
+                    terms.isEmpty()
+                            ? new String[0]
+                            : terms.split(
+                                    " +");
 
             this.group =
                     group;
