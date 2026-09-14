@@ -41,7 +41,7 @@
     <string name="category_rename_title">Edit category</string>
     <string name="category_delete_title">Delete category</string>
     <string name="category_delete_message">Delete category “%1$s”? Its app assignments will also be removed.</string>
-    <string name="category_invalid_name">Please enter a symbol and a unique category name.</string>
+    <string name="category_invalid_name">Please enter an emoji symbol and a unique category name.</string>
     <string name="action_save">Save</string>
     <string name="action_cancel">Cancel</string>
     <string name="category_assign_title">Assign categories</string>

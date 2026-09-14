@@ -106,6 +106,11 @@ public class CategoryStoreTest {
                         "Work",
                         "   "));
 
+        assertFalse(
+                store.addCategory(
+                        "Work",
+                        "abc"));
+
         assertTrue(
                 store.addCategory(
                         "Work",
@@ -120,6 +125,32 @@ public class CategoryStoreTest {
         assertEquals(
                 "💼",
                 category.symbol);
+    }
+
+    @Test
+    public void renameRejectsInvalidEmojiSymbol() {
+
+        assertTrue(
+                store.addCategory(
+                        "Work",
+                        "💼"));
+
+        String categoryId =
+                store.getCategories()
+                        .get(0)
+                        .id;
+
+        assertFalse(
+                store.renameCategory(
+                        categoryId,
+                        "Work",
+                        "abc"));
+
+        assertEquals(
+                "💼",
+                store.getCategories()
+                        .get(0)
+                        .symbol);
     }
 
     @Test

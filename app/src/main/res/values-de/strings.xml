@@ -41,7 +41,7 @@
     <string name="category_rename_title">Kategorie bearbeiten</string>
     <string name="category_delete_title">Kategorie löschen</string>
     <string name="category_delete_message">Kategorie „%1$s“ löschen? Zugehörige App-Zuweisungen werden ebenfalls entfernt.</string>
-    <string name="category_invalid_name">Bitte ein Symbol und einen eindeutigen Kategorienamen eingeben.</string>
+    <string name="category_invalid_name">Bitte ein Emoji-Symbol und einen eindeutigen Kategorienamen eingeben.</string>
     <string name="action_save">Speichern</string>
     <string name="action_cancel">Abbrechen</string>
     <string name="category_assign_title">Kategorien zuweisen</string>
