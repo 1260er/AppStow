@@ -578,6 +578,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (PAGE_APPS.equals(currentPage)
+                && appsLoaded) {
+
+            requestAppReload();
+            return;
+        }
+
         refreshAppsIfPackagesChanged();
     }
 
@@ -949,7 +957,7 @@ public class MainActivity extends Activity {
         aboutManagement.setVisibility(View.GONE);
         overviewList.setVisibility(View.GONE);
 
-        loadAppsAsync();
+        requestAppReload();
 
         pageTitle.setText(R.string.nav_apps);
 
@@ -1375,18 +1383,11 @@ public class MainActivity extends Activity {
                 "package");
 
         try {
-            if (Build.VERSION.SDK_INT
-                    >= Build.VERSION_CODES.TIRAMISU) {
-
-                registerReceiver(
-                        packageChangeReceiver,
-                        filter,
-                        Context.RECEIVER_NOT_EXPORTED);
-            } else {
-                registerReceiver(
-                        packageChangeReceiver,
-                        filter);
-            }
+            ContextCompat.registerReceiver(
+                    this,
+                    packageChangeReceiver,
+                    filter,
+                    ContextCompat.RECEIVER_EXPORTED);
 
             packageReceiverRegistered = true;
 
