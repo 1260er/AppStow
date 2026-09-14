@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -592,6 +593,22 @@ final class BackupManager {
         }
     }
 
+    private static String requireCanonicalNonEmpty(
+            String value,
+            String errorMessage)
+            throws JSONException {
+
+        if (value.isEmpty()
+                || !value.equals(
+                        value.trim())) {
+
+            throw new JSONException(
+                    errorMessage);
+        }
+
+        return value;
+    }
+
     private static void validateBackup(
             JSONObject backup,
             boolean strictShortcutValidation)
@@ -641,6 +658,9 @@ final class BackupManager {
         Set<String> categoryIds =
                 new HashSet<>();
 
+        Set<String> categoryNames =
+                new HashSet<>();
+
         for (int i = 0;
              i < categories.length();
              i++) {
@@ -649,16 +669,19 @@ final class BackupManager {
                     categories.getJSONObject(i);
 
             String id =
-                    category.getString("id")
-                            .trim();
+                    requireCanonicalNonEmpty(
+                            category.getString("id"),
+                            "Ungültige Kategorien im Backup.");
 
             String name =
-                    category.getString("name")
-                            .trim();
+                    requireCanonicalNonEmpty(
+                            category.getString("name"),
+                            "Ungültige Kategorien im Backup.");
 
-            if (id.isEmpty()
-                    || name.isEmpty()
-                    || !categoryIds.add(id)) {
+            if (!categoryIds.add(id)
+                    || !categoryNames.add(
+                            name.toLowerCase(
+                                    Locale.ROOT))) {
 
                 throw new JSONException(
                         "Ungültige Kategorien im Backup.");
@@ -670,12 +693,9 @@ final class BackupManager {
 
         while (assignmentKeys.hasNext()) {
             String packageName =
-                    assignmentKeys.next();
-
-            if (packageName.trim().isEmpty()) {
-                throw new JSONException(
-                        "Ungültige App-Zuweisung im Backup.");
-            }
+                    requireCanonicalNonEmpty(
+                            assignmentKeys.next(),
+                            "Ungültige App-Zuweisung im Backup.");
 
             JSONArray ids =
                     assignments.getJSONArray(
@@ -686,7 +706,9 @@ final class BackupManager {
                  i++) {
 
                 String categoryId =
-                        ids.getString(i);
+                        requireCanonicalNonEmpty(
+                                ids.getString(i),
+                                "Ungültige App-Zuweisung im Backup.");
 
                 if (!categoryIds.contains(
                         categoryId)) {
@@ -705,13 +727,12 @@ final class BackupManager {
              i++) {
 
             String packageName =
-                    favoritePackages
-                            .getString(i)
-                            .trim();
+                    requireCanonicalNonEmpty(
+                            favoritePackages.getString(i),
+                            "Ungültiger oder doppelter Favorit im Backup.");
 
-            if (packageName.isEmpty()
-                    || !favoritePackageIds.add(
-                            packageName)) {
+            if (!favoritePackageIds.add(
+                    packageName)) {
 
                 throw new JSONException(
                         "Ungültiger oder doppelter Favorit im Backup.");
@@ -729,26 +750,26 @@ final class BackupManager {
                     shortcuts.getJSONObject(i);
 
             String id =
-                    shortcut.getString("id")
-                            .trim();
+                    requireCanonicalNonEmpty(
+                            shortcut.getString("id"),
+                            "Ungültiger Shortcut im Backup.");
 
             String name =
-                    shortcut.getString("name")
-                            .trim();
+                    requireCanonicalNonEmpty(
+                            shortcut.getString("name"),
+                            "Ungültiger Shortcut im Backup.");
 
             String type =
-                    shortcut.getString("type")
-                            .trim();
+                    requireCanonicalNonEmpty(
+                            shortcut.getString("type"),
+                            "Ungültiger Shortcut im Backup.");
 
             String target =
-                    shortcut.getString("target")
-                            .trim();
+                    requireCanonicalNonEmpty(
+                            shortcut.getString("target"),
+                            "Ungültiger Shortcut im Backup.");
 
-            if (id.isEmpty()
-                    || name.isEmpty()
-                    || type.isEmpty()
-                    || target.isEmpty()
-                    || !shortcutIds.add(id)
+            if (!shortcutIds.add(id)
                     || (strictShortcutValidation
                     && (!isKnownShortcutType(type)
                     || !isValidShortcutTarget(
@@ -772,7 +793,9 @@ final class BackupManager {
                  j++) {
 
                 String categoryId =
-                        shortcutCategories.getString(j);
+                        requireCanonicalNonEmpty(
+                                shortcutCategories.getString(j),
+                                "Shortcut verweist auf eine ungültige Kategorie.");
 
                 if (!categoryIds.contains(
                         categoryId)) {
@@ -791,13 +814,12 @@ final class BackupManager {
              i++) {
 
             String sectionId =
-                    overviewOrder
-                            .getString(i)
-                            .trim();
+                    requireCanonicalNonEmpty(
+                            overviewOrder.getString(i),
+                            "Ungültige oder doppelte Sortierung im Backup.");
 
-            if (sectionId.isEmpty()
-                    || !overviewIds.add(
-                            sectionId)) {
+            if (!overviewIds.add(
+                    sectionId)) {
 
                 throw new JSONException(
                         "Ungültige oder doppelte Sortierung im Backup.");
@@ -809,12 +831,9 @@ final class BackupManager {
 
         while (orderKeys.hasNext()) {
             String sectionId =
-                    orderKeys.next();
-
-            if (sectionId.trim().isEmpty()) {
-                throw new JSONException(
-                        "Ungültige Bereichssortierung im Backup.");
-            }
+                    requireCanonicalNonEmpty(
+                            orderKeys.next(),
+                            "Ungültige Bereichssortierung im Backup.");
 
             JSONArray itemIds =
                     sectionItemOrder.getJSONArray(
@@ -828,11 +847,11 @@ final class BackupManager {
                  i++) {
 
                 String itemId =
-                        itemIds.getString(i)
-                                .trim();
+                        requireCanonicalNonEmpty(
+                                itemIds.getString(i),
+                                "Ungültige Bereichssortierung im Backup.");
 
-                if (itemId.isEmpty()
-                        || !seenIds.add(itemId)) {
+                if (!seenIds.add(itemId)) {
 
                     throw new JSONException(
                             "Ungültige Bereichssortierung im Backup.");

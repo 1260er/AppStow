@@ -107,6 +107,7 @@ public class MainActivity extends Activity {
     private boolean appsReloadPending;
     private int packageChangeSequence;
     private boolean packageChangeSequenceInitialized;
+    private int appContentGeneration;
     private String currentPage = PAGE_OVERVIEW;
 
     private boolean restoreReceiverRegistered;
@@ -1392,6 +1393,9 @@ public class MainActivity extends Activity {
         appsLoading = true;
         appsReloadPending = false;
 
+        int contentGeneration =
+                ++appContentGeneration;
+
         PackageManager packageManager =
                 getPackageManager();
 
@@ -1408,7 +1412,8 @@ public class MainActivity extends Activity {
                 loadedApps =
                         queryLauncherApps(
                                 packageManager,
-                                ownPackageName);
+                                ownPackageName,
+                                contentGeneration);
 
                 loadSucceeded = true;
 
@@ -1464,7 +1469,8 @@ public class MainActivity extends Activity {
 
     private List<AppEntry> queryLauncherApps(
             PackageManager packageManager,
-            String ownPackageName) {
+            String ownPackageName,
+            int contentGeneration) {
 
         Intent launcherIntent =
                 new Intent(Intent.ACTION_MAIN);
@@ -1561,7 +1567,8 @@ public class MainActivity extends Activity {
                             label,
                             packageName,
                             resolveInfo,
-                            iconState));
+                            iconState,
+                            contentGeneration));
         }
 
         loadedApps.sort(

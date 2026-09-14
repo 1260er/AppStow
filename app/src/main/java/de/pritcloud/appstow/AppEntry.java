@@ -13,12 +13,14 @@ final class AppEntry {
     final Drawable.ConstantState iconState;
     final String searchLabel;
     final String searchPackageName;
+    final int contentGeneration;
 
     AppEntry(
             String label,
             String packageName,
             ResolveInfo resolveInfo,
-            Drawable.ConstantState iconState) {
+            Drawable.ConstantState iconState,
+            int contentGeneration) {
         this.label = label;
         this.packageName = packageName;
         this.resolveInfo = resolveInfo;
@@ -29,5 +31,7 @@ final class AppEntry {
         this.searchPackageName =
                 packageName.toLowerCase(
                         Locale.ROOT);
+        this.contentGeneration =
+                contentGeneration;
     }
 }

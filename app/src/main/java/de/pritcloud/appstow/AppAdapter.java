@@ -60,7 +60,9 @@ public class AppAdapter
 
                     return oldItem.label.equals(newItem.label)
                             && oldItem.resolveInfo.activityInfo.name.equals(
-                                    newItem.resolveInfo.activityInfo.name);
+                                    newItem.resolveInfo.activityInfo.name)
+                            && oldItem.contentGeneration
+                            == newItem.contentGeneration;
                 }
             };
 

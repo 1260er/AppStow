@@ -221,6 +221,46 @@ public class BackupManagerTest {
                 backup);
     }
 
+    @Test
+    public void rejectsWhitespaceInStoredValues()
+            throws Exception {
+
+        JSONObject backup =
+                validBackup();
+
+        backup.getJSONArray(
+                        "shortcuts")
+                .getJSONObject(0)
+                .put(
+                        "target",
+                        " http://example.com ");
+
+        assertInvalid(
+                backup);
+    }
+
+    @Test
+    public void rejectsDuplicateCategoryNameIgnoringCase()
+            throws Exception {
+
+        JSONObject backup =
+                validBackup();
+
+        backup.getJSONArray(
+                        "categories")
+                .put(
+                        new JSONObject()
+                                .put(
+                                        "id",
+                                        "cat-work-2")
+                                .put(
+                                        "name",
+                                        "work"));
+
+        assertInvalid(
+                backup);
+    }
+
     private void assertInvalid(
             JSONObject backup)
             throws Exception {
