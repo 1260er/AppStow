@@ -1487,6 +1487,43 @@ public class MainActivity extends Activity {
                                                         true)),
                                 2500));
 
+        picker.addOnLayoutChangeListener(
+                new View.OnLayoutChangeListener() {
+
+                    private boolean refreshed;
+
+                    @Override
+                    public void onLayoutChange(
+                            View view,
+                            int left,
+                            int top,
+                            int right,
+                            int bottom,
+                            int oldLeft,
+                            int oldTop,
+                            int oldRight,
+                            int oldBottom) {
+
+                        if (refreshed
+                                || right <= left
+                                || bottom <= top) {
+
+                            return;
+                        }
+
+                        refreshed =
+                                true;
+
+                        picker.removeOnLayoutChangeListener(
+                                this);
+
+                        picker.post(
+                                () ->
+                                        picker.setEmojiGridColumns(
+                                                picker.getEmojiGridColumns()));
+                    }
+                });
+
         dialog.show();
     }
 
