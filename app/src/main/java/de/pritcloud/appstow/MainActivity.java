@@ -1487,53 +1487,152 @@ public class MainActivity extends Activity {
                                                         true)),
                                 2500));
 
-        android.view.ViewTreeObserver.OnPreDrawListener
-                pickerReadyListener =
-                new android.view.ViewTreeObserver.OnPreDrawListener() {
+        installEmojiPickerCellSizeWorkaround(
+                picker);
 
-                    private boolean refreshed;
+        dialog.show();
+    }
 
-                    @Override
-                    public boolean onPreDraw() {
+    private void installEmojiPickerCellSizeWorkaround(
+            EmojiPickerView picker) {
 
-                        if (refreshed
-                                || picker.getChildCount() == 0
-                                || picker.getWidth() <= 0
-                                || picker.getHeight() <= 0) {
+        final android.view.ViewTreeObserver.OnPreDrawListener[]
+                listenerHolder =
+                new android.view.ViewTreeObserver.OnPreDrawListener[1];
 
-                            return true;
-                        }
+        listenerHolder[0] =
+                () -> {
 
-                        refreshed =
-                                true;
+                    RecyclerView body =
+                            findEmojiPickerBody(
+                                    picker);
 
-                        if (picker.getViewTreeObserver()
-                                .isAlive()) {
-
-                            picker.getViewTreeObserver()
-                                    .removeOnPreDrawListener(
-                                            this);
-                        }
-
-                        picker.post(
-                                () -> {
-                                    if (!picker.isAttachedToWindow()) {
-                                        return;
-                                    }
-
-                                    picker.setEmojiGridColumns(
-                                            picker.getEmojiGridColumns());
-                                });
+                    if (body == null
+                            || body.getWidth() <= 0) {
 
                         return true;
                     }
+
+                    int availableWidth =
+                            body.getWidth()
+                                    - body.getPaddingLeft()
+                                    - body.getPaddingRight();
+
+                    int columns =
+                            Math.max(
+                                    1,
+                                    picker.getEmojiGridColumns());
+
+                    int cellSize =
+                            availableWidth / columns;
+
+                    if (cellSize <= 0) {
+                        return true;
+                    }
+
+                    for (int i = 0;
+                         i < body.getChildCount();
+                         i++) {
+
+                        fixEmojiPickerCellSize(
+                                body.getChildAt(i),
+                                cellSize);
+                    }
+
+                    body.addOnChildAttachStateChangeListener(
+                            new RecyclerView.OnChildAttachStateChangeListener() {
+
+                                @Override
+                                public void onChildViewAttachedToWindow(
+                                        View view) {
+
+                                    fixEmojiPickerCellSize(
+                                            view,
+                                            cellSize);
+                                }
+
+                                @Override
+                                public void onChildViewDetachedFromWindow(
+                                        View view) {
+                                }
+                            });
+
+                    if (picker.getViewTreeObserver()
+                            .isAlive()) {
+
+                        picker.getViewTreeObserver()
+                                .removeOnPreDrawListener(
+                                        listenerHolder[0]);
+                    }
+
+                    body.requestLayout();
+
+                    return true;
                 };
 
         picker.getViewTreeObserver()
                 .addOnPreDrawListener(
-                        pickerReadyListener);
+                        listenerHolder[0]);
+    }
 
-        dialog.show();
+    private RecyclerView findEmojiPickerBody(
+            EmojiPickerView picker) {
+
+        if (picker.getChildCount() == 0
+                || !(picker.getChildAt(0)
+                instanceof ViewGroup)) {
+
+            return null;
+        }
+
+        ViewGroup root =
+                (ViewGroup)
+                        picker.getChildAt(0);
+
+        if (root.getChildCount() < 2
+                || !(root.getChildAt(1)
+                instanceof RecyclerView)) {
+
+            return null;
+        }
+
+        return (RecyclerView)
+                root.getChildAt(1);
+    }
+
+    private void fixEmojiPickerCellSize(
+            View view,
+            int cellSize) {
+
+        if (!view.getClass()
+                .getName()
+                .equals(
+                        "androidx.emoji2.emojipicker.EmojiView")) {
+
+            return;
+        }
+
+        ViewGroup.LayoutParams params =
+                view.getLayoutParams();
+
+        if (params == null) {
+            params =
+                    new ViewGroup.LayoutParams(
+                            cellSize,
+                            cellSize);
+        } else {
+            params.width =
+                    cellSize;
+
+            params.height =
+                    cellSize;
+        }
+
+        view.setLayoutParams(
+                params);
+
+        view.requestLayout();
+        view.invalidate();
     }
 
     private String buildEmojiPickerDiagnostics(
