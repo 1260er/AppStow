@@ -299,6 +299,9 @@ public class WebAppActivity extends Activity {
                                 uri);
             }
 
+            intent.addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK);
+
             startActivity(
                     intent);
 

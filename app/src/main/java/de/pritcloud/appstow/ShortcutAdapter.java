@@ -67,6 +67,14 @@ final class ShortcutAdapter
                 new ArrayList<>(items));
     }
 
+    void refreshVisibleState() {
+        if (getItemCount() > 0) {
+            notifyItemRangeChanged(
+                    0,
+                    getItemCount());
+        }
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(

@@ -719,9 +719,6 @@ public class MainActivity extends Activity {
 
         overviewSections.clear();
         overviewSections.addAll(ordered);
-
-        overviewOrderStore.saveOrder(
-                overviewSections);
     }
 
     private void startOverviewDrag(
@@ -964,6 +961,9 @@ public class MainActivity extends Activity {
                 View.VISIBLE);
 
         refreshShortcuts();
+
+        shortcutList.post(
+                shortcutAdapter::refreshVisibleState);
 
         drawerLayout.closeDrawer(
                 GravityCompat.END);
@@ -1602,6 +1602,9 @@ public class MainActivity extends Activity {
                                 Uri.parse(target));
             }
 
+            intent.addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK);
+
             startActivity(intent);
 
         } catch (Exception exception) {
@@ -1633,7 +1636,7 @@ public class MainActivity extends Activity {
 
         intent.addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         startActivity(
                 intent);
@@ -1658,6 +1661,9 @@ public class MainActivity extends Activity {
 
         intent.addCategory(
                 Intent.CATEGORY_BROWSABLE);
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK);
 
         Intent browserSelector =
                 Intent.makeMainSelectorActivity(
@@ -1710,6 +1716,9 @@ public class MainActivity extends Activity {
                 new Intent(
                         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                         Uri.parse(packageTarget));
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK);
 
         startActivity(intent);
     }
@@ -1903,6 +1912,9 @@ public class MainActivity extends Activity {
                         Uri.parse(
                                 getString(
                                         R.string.about_github_url)));
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK);
 
         try {
             startActivity(intent);
