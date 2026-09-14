@@ -37,6 +37,15 @@
     <string name="category_emoji_picker_title">Choose emoji</string>
     <string name="category_emoji_search_hint">Search emoji</string>
     <string name="category_emoji_search_empty">No matching emoji found.</string>
+    <string name="emoji_category_smileys">Smileys &amp; emotion</string>
+    <string name="emoji_category_people">People &amp; body</string>
+    <string name="emoji_category_animals">Animals &amp; nature</string>
+    <string name="emoji_category_food">Food &amp; drink</string>
+    <string name="emoji_category_travel">Travel &amp; places</string>
+    <string name="emoji_category_activities">Activities</string>
+    <string name="emoji_category_objects">Objects</string>
+    <string name="emoji_category_symbols">Symbols</string>
+    <string name="emoji_category_flags">Flags</string>
     <string name="category_symbols_show">Show symbols in overview</string>
     <string name="category_symbols_description">Every category has a symbol. This switch controls whether symbols are shown in the overview.</string>
     <string name="category_name_hint">Category name</string>

@@ -32,6 +32,8 @@ final class EmojiSearchIndex {
             new HashMap<>();
 
     private static List<Entry> cachedEntries;
+    private static List<Result> cachedAllGerman;
+    private static List<Result> cachedAllEnglish;
 
     private EmojiSearchIndex() {
     }
@@ -145,34 +147,187 @@ final class EmojiSearchIndex {
                                 .get(0)
                                 .getLanguage());
 
-        List<Result> results =
+        synchronized (EmojiSearchIndex.class) {
+
+            List<Result> cached =
+                    german
+                            ? cachedAllGerman
+                            : cachedAllEnglish;
+
+            if (cached != null) {
+                return cached;
+            }
+
+            List<Result> results =
+                    new ArrayList<>();
+
+            for (Entry entry : getEntries(context)) {
+
+                String label =
+                        german
+                                ? firstNonEmpty(
+                                        entry.germanLabel,
+                                        entry.englishLabel,
+                                        entry.emoji)
+                                : firstNonEmpty(
+                                        entry.englishLabel,
+                                        entry.germanLabel,
+                                        entry.emoji);
+
+                results.add(
+                        new Result(
+                                entry.emoji,
+                                label));
+            }
+
+            List<Result> immutable =
+                    Collections.unmodifiableList(
+                            results);
+
+            if (german) {
+                cachedAllGerman =
+                        immutable;
+            } else {
+                cachedAllEnglish =
+                        immutable;
+            }
+
+            return immutable;
+        }
+    }
+
+    static List<Category> categories(
+            Context context) {
+
+        List<Entry> entries =
+                getEntries(
+                        context);
+
+        List<Category> categories =
                 new ArrayList<>();
 
-        for (Entry entry : getEntries(context)) {
-            if (!isRenderable(
-                    entry.emoji)) {
+        String previousGroup =
+                "";
+
+        for (int position = 0;
+             position < entries.size();
+             position++) {
+
+            String group =
+                    entries.get(position)
+                            .group;
+
+            if (group.isEmpty()
+                    || group.equals(
+                            previousGroup)) {
 
                 continue;
             }
 
-            String label =
-                    german
-                            ? firstNonEmpty(
-                                    entry.germanLabel,
-                                    entry.englishLabel,
-                                    entry.emoji)
-                            : firstNonEmpty(
-                                    entry.englishLabel,
-                                    entry.germanLabel,
-                                    entry.emoji);
+            previousGroup =
+                    group;
 
-            results.add(
-                    new Result(
-                            entry.emoji,
-                            label));
+            String icon =
+                    categoryIcon(
+                            group);
+
+            if (icon == null) {
+                continue;
+            }
+
+            categories.add(
+                    new Category(
+                            icon,
+                            categoryLabel(
+                                    context,
+                                    group),
+                            position));
         }
 
-        return results;
+        return Collections.unmodifiableList(
+                categories);
+    }
+
+    private static String categoryIcon(
+            String group) {
+
+        switch (group) {
+            case "Smileys & Emotion":
+                return "😀";
+
+            case "People & Body":
+                return "👋";
+
+            case "Animals & Nature":
+                return "🐻";
+
+            case "Food & Drink":
+                return "🍔";
+
+            case "Travel & Places":
+                return "🚗";
+
+            case "Activities":
+                return "⚽";
+
+            case "Objects":
+                return "💡";
+
+            case "Symbols":
+                return "🔣";
+
+            case "Flags":
+                return "🏳️";
+
+            default:
+                return null;
+        }
+    }
+
+    private static String categoryLabel(
+            Context context,
+            String group) {
+
+        switch (group) {
+            case "Smileys & Emotion":
+                return context.getString(
+                        R.string.emoji_category_smileys);
+
+            case "People & Body":
+                return context.getString(
+                        R.string.emoji_category_people);
+
+            case "Animals & Nature":
+                return context.getString(
+                        R.string.emoji_category_animals);
+
+            case "Food & Drink":
+                return context.getString(
+                        R.string.emoji_category_food);
+
+            case "Travel & Places":
+                return context.getString(
+                        R.string.emoji_category_travel);
+
+            case "Activities":
+                return context.getString(
+                        R.string.emoji_category_activities);
+
+            case "Objects":
+                return context.getString(
+                        R.string.emoji_category_objects);
+
+            case "Symbols":
+                return context.getString(
+                        R.string.emoji_category_symbols);
+
+            case "Flags":
+                return context.getString(
+                        R.string.emoji_category_flags);
+
+            default:
+                return group;
+        }
     }
 
     static String normalizeForSearch(
@@ -398,6 +553,9 @@ final class EmojiSearchIndex {
                     String terms =
                             "";
 
+                    String group =
+                            "";
+
                     reader.beginObject();
 
                     while (reader.hasNext()) {
@@ -425,6 +583,11 @@ final class EmojiSearchIndex {
                                         reader.nextString();
                                 break;
 
+                            case "g":
+                                group =
+                                        reader.nextString();
+                                break;
+
                             default:
                                 reader.skipValue();
                                 break;
@@ -442,6 +605,7 @@ final class EmojiSearchIndex {
                                         german,
                                         english,
                                         terms,
+                                        group,
                                         order));
                     }
 
@@ -503,6 +667,28 @@ final class EmojiSearchIndex {
         }
     }
 
+    static final class Category {
+
+        final String icon;
+        final String label;
+        final int position;
+
+        Category(
+                String icon,
+                String label,
+                int position) {
+
+            this.icon =
+                    icon;
+
+            this.label =
+                    label;
+
+            this.position =
+                    position;
+        }
+    }
+
     private static final class Entry {
 
         final String emoji;
@@ -511,6 +697,7 @@ final class EmojiSearchIndex {
         final String normalizedGerman;
         final String normalizedEnglish;
         final String terms;
+        final String group;
         final int order;
 
         Entry(
@@ -518,6 +705,7 @@ final class EmojiSearchIndex {
                 String germanLabel,
                 String englishLabel,
                 String terms,
+                String group,
                 int order) {
 
             this.emoji =
@@ -539,6 +727,9 @@ final class EmojiSearchIndex {
 
             this.terms =
                     terms;
+
+            this.group =
+                    group;
 
             this.order =
                     order;

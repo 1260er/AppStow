@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -192,6 +193,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        emojiLoader.execute(
+                () -> EmojiSearchIndex.all(
+                        getApplicationContext()));
 
         View contentRoot = findViewById(android.R.id.content);
         contentRoot.setOnApplyWindowInsetsListener((view, insets) -> {
@@ -1434,6 +1439,14 @@ public class MainActivity extends Activity {
                 pickerContent.findViewById(
                         R.id.emojiSearchClear);
 
+        View categoryStrip =
+                pickerContent.findViewById(
+                        R.id.emojiCategoryStrip);
+
+        LinearLayout categoryBar =
+                pickerContent.findViewById(
+                        R.id.emojiCategoryBar);
+
         RecyclerView emojiGrid =
                 pickerContent.findViewById(
                         R.id.emojiGrid);
@@ -1470,10 +1483,13 @@ public class MainActivity extends Activity {
                             dialog.dismiss();
                         });
 
-        emojiGrid.setLayoutManager(
+        GridLayoutManager gridLayoutManager =
                 new GridLayoutManager(
                         this,
-                        8));
+                        8);
+
+        emojiGrid.setLayoutManager(
+                gridLayoutManager);
 
         emojiGrid.setAdapter(
                 adapter);
@@ -1521,10 +1537,18 @@ public class MainActivity extends Activity {
                                         ? View.GONE
                                         : View.VISIBLE);
 
+                        categoryStrip.setVisibility(
+                                query.isEmpty()
+                                        ? View.VISIBLE
+                                        : View.GONE);
+
                         if (query.isEmpty()) {
                             loadAllEmoji(
                                     adapter,
                                     emojiGrid,
+                                    gridLayoutManager,
+                                    categoryStrip,
+                                    categoryBar,
                                     loading,
                                     searchEmpty,
                                     searchInput,
@@ -1580,6 +1604,9 @@ public class MainActivity extends Activity {
                     loadAllEmoji(
                             adapter,
                             emojiGrid,
+                            gridLayoutManager,
+                            categoryStrip,
+                            categoryBar,
                             loading,
                             searchEmpty,
                             searchInput,
@@ -1592,6 +1619,9 @@ public class MainActivity extends Activity {
     private void loadAllEmoji(
             EmojiSearchAdapter adapter,
             RecyclerView emojiGrid,
+            GridLayoutManager gridLayoutManager,
+            View categoryStrip,
+            LinearLayout categoryBar,
             View loading,
             TextView searchEmpty,
             EditText searchInput,
@@ -1603,12 +1633,20 @@ public class MainActivity extends Activity {
         searchEmpty.setVisibility(
                 View.GONE);
 
+        categoryStrip.setVisibility(
+                View.VISIBLE);
+
         emojiLoader.execute(
                 () -> {
 
                     List<EmojiSearchIndex.Result>
                             allEmoji =
                             EmojiSearchIndex.all(
+                                    MainActivity.this);
+
+                    List<EmojiSearchIndex.Category>
+                            categories =
+                            EmojiSearchIndex.categories(
                                     MainActivity.this);
 
                     runOnUiThread(
@@ -1626,6 +1664,16 @@ public class MainActivity extends Activity {
 
                                 loading.setVisibility(
                                         View.GONE);
+
+                                if (categoryBar.getChildCount()
+                                        == 0) {
+
+                                    bindEmojiCategories(
+                                            categoryBar,
+                                            emojiGrid,
+                                            gridLayoutManager,
+                                            categories);
+                                }
 
                                 adapter.submitList(
                                         allEmoji);
@@ -1646,6 +1694,74 @@ public class MainActivity extends Activity {
                                 }
                             });
                 });
+    }
+
+    private void bindEmojiCategories(
+            LinearLayout categoryBar,
+            RecyclerView emojiGrid,
+            GridLayoutManager gridLayoutManager,
+            List<EmojiSearchIndex.Category> categories) {
+
+        categoryBar.removeAllViews();
+
+        for (EmojiSearchIndex.Category category
+                : categories) {
+
+            TextView button =
+                    (TextView)
+                            getLayoutInflater()
+                                    .inflate(
+                                            R.layout.item_emoji_category,
+                                            categoryBar,
+                                            false);
+
+            button.setText(
+                    category.icon);
+
+            button.setContentDescription(
+                    category.label);
+
+            button.setOnClickListener(
+                    ignored -> {
+
+                        emojiGrid.stopScroll();
+
+                        gridLayoutManager
+                                .scrollToPositionWithOffset(
+                                        category.position,
+                                        0);
+
+                        for (int i = 0;
+                             i < categoryBar.getChildCount();
+                             i++) {
+
+                            categoryBar.getChildAt(i)
+                                    .setAlpha(
+                                            categoryBar.getChildAt(i)
+                                                    == button
+                                                    ? 1f
+                                                    : 0.55f);
+                        }
+                    });
+
+            categoryBar.addView(
+                    button);
+        }
+
+        if (categoryBar.getChildCount() > 0) {
+            categoryBar.getChildAt(0)
+                    .setAlpha(
+                            1f);
+
+            for (int i = 1;
+                 i < categoryBar.getChildCount();
+                 i++) {
+
+                categoryBar.getChildAt(i)
+                        .setAlpha(
+                                0.55f);
+            }
+        }
     }
 
     private View createCategoryEditor(

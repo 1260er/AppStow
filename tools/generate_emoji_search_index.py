@@ -284,9 +284,22 @@ def load_emoji_order():
 
     result = []
     seen = set()
+    current_group = ""
 
     for line in text.splitlines():
         if not line:
+            continue
+
+        if line.startswith(
+            "# group:"
+        ):
+            current_group = (
+                line.split(
+                    ":",
+                    1,
+                )[1].strip()
+            )
+
             continue
 
         if line.startswith(
@@ -325,9 +338,8 @@ def load_emoji_order():
             in code_points
         )
 
-        # Hautfarbenvarianten werden im normalen
-        # AndroidX-Picker bereits über Varianten angeboten.
-        # So bleibt die Suche übersichtlich.
+        # Hautfarbenvarianten bleiben aus dem normalen
+        # Hauptraster heraus, damit die Übersicht kompakt bleibt.
         if any(
             0x1F3FB <= value <= 0x1F3FF
             for value
@@ -364,6 +376,7 @@ def load_emoji_order():
             (
                 emoji,
                 official_name,
+                current_group,
             )
         )
 
@@ -402,7 +415,7 @@ def main():
 
     entries = []
 
-    for emoji, official_name in emoji_order:
+    for emoji, official_name, group in emoji_order:
         german_record = find_record(
             german,
             emoji,
@@ -458,6 +471,7 @@ def main():
                 "e": emoji,
                 "de": german_label,
                 "en": english_label,
+                "g": group,
                 "q": " ".join(tokens),
             }
         )
