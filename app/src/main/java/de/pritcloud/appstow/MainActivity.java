@@ -32,7 +32,6 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
-import androidx.emoji2.emojipicker.EmojiPickerView;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -167,6 +166,9 @@ public class MainActivity extends Activity {
             Executors.newSingleThreadExecutor();
 
     private final ExecutorService backupExecutor =
+            Executors.newSingleThreadExecutor();
+
+    private final ExecutorService emojiLoader =
             Executors.newSingleThreadExecutor();
 
     private AppAdapter appAdapter;
@@ -1432,13 +1434,13 @@ public class MainActivity extends Activity {
                 pickerContent.findViewById(
                         R.id.emojiSearchClear);
 
-        FrameLayout pickerContainer =
+        RecyclerView emojiGrid =
                 pickerContent.findViewById(
-                        R.id.emojiPickerContainer);
+                        R.id.emojiGrid);
 
-        RecyclerView searchResults =
+        View loading =
                 pickerContent.findViewById(
-                        R.id.emojiSearchResults);
+                        R.id.emojiGridLoading);
 
         TextView searchEmpty =
                 pickerContent.findViewById(
@@ -1459,7 +1461,7 @@ public class MainActivity extends Activity {
                                 null)
                         .create();
 
-        EmojiSearchAdapter searchAdapter =
+        EmojiSearchAdapter adapter =
                 new EmojiSearchAdapter(
                         emoji -> {
                             symbolInput.setText(
@@ -1468,15 +1470,15 @@ public class MainActivity extends Activity {
                             dialog.dismiss();
                         });
 
-        searchResults.setLayoutManager(
+        emojiGrid.setLayoutManager(
                 new GridLayoutManager(
                         this,
                         8));
 
-        searchResults.setAdapter(
-                searchAdapter);
+        emojiGrid.setAdapter(
+                adapter);
 
-        searchResults.setHasFixedSize(
+        emojiGrid.setHasFixedSize(
                 true);
 
         searchClear.setOnClickListener(
@@ -1520,17 +1522,19 @@ public class MainActivity extends Activity {
                                         : View.VISIBLE);
 
                         if (query.isEmpty()) {
-                            pickerContainer.setVisibility(
-                                    View.VISIBLE);
-
-                            searchResults.setVisibility(
-                                    View.GONE);
-
-                            searchEmpty.setVisibility(
-                                    View.GONE);
+                            loadAllEmoji(
+                                    adapter,
+                                    emojiGrid,
+                                    loading,
+                                    searchEmpty,
+                                    searchInput,
+                                    dialog);
 
                             return;
                         }
+
+                        loading.setVisibility(
+                                View.GONE);
 
                         List<EmojiSearchIndex.Result>
                                 matches =
@@ -1538,21 +1542,18 @@ public class MainActivity extends Activity {
                                         MainActivity.this,
                                         query);
 
-                        searchAdapter.submitList(
+                        adapter.submitList(
                                 matches);
 
-                        pickerContainer.setVisibility(
-                                View.GONE);
-
                         if (matches.isEmpty()) {
-                            searchResults.setVisibility(
+                            emojiGrid.setVisibility(
                                     View.GONE);
 
                             searchEmpty.setVisibility(
                                     View.VISIBLE);
 
                         } else {
-                            searchResults.setVisibility(
+                            emojiGrid.setVisibility(
                                     View.VISIBLE);
 
                             searchEmpty.setVisibility(
@@ -1576,73 +1577,75 @@ public class MainActivity extends Activity {
                                                 .SOFT_INPUT_STATE_ALWAYS_HIDDEN);
                     }
 
-                    pickerContainer.post(
-                            () ->
-                                    createEmojiPickerAfterLayout(
-                                            pickerContainer,
-                                            symbolInput,
-                                            dialog));
+                    loadAllEmoji(
+                            adapter,
+                            emojiGrid,
+                            loading,
+                            searchEmpty,
+                            searchInput,
+                            dialog);
                 });
 
         dialog.show();
     }
 
-    private void createEmojiPickerAfterLayout(
-            FrameLayout pickerContainer,
-            TextView symbolInput,
+    private void loadAllEmoji(
+            EmojiSearchAdapter adapter,
+            RecyclerView emojiGrid,
+            View loading,
+            TextView searchEmpty,
+            EditText searchInput,
             AlertDialog dialog) {
 
-        if (!dialog.isShowing()
-                || pickerContainer.getWidth() <= 0
-                || pickerContainer.getHeight() <= 0
-                || pickerContainer.getChildCount() > 0) {
+        loading.setVisibility(
+                View.VISIBLE);
 
-            return;
-        }
+        searchEmpty.setVisibility(
+                View.GONE);
 
-        EmojiPickerView picker =
-                new EmojiPickerView(
-                        this);
+        emojiLoader.execute(
+                () -> {
 
-        picker.setEmojiGridColumns(
-                8);
+                    List<EmojiSearchIndex.Result>
+                            allEmoji =
+                            EmojiSearchIndex.all(
+                                    MainActivity.this);
 
-        picker.setOnEmojiPickedListener(
-                item -> {
-                    symbolInput.setText(
-                            item.getEmoji());
+                    runOnUiThread(
+                            () -> {
 
-                    dialog.dismiss();
+                                if (!dialog.isShowing()
+                                        || !searchInput
+                                                .getText()
+                                                .toString()
+                                                .trim()
+                                                .isEmpty()) {
+
+                                    return;
+                                }
+
+                                loading.setVisibility(
+                                        View.GONE);
+
+                                adapter.submitList(
+                                        allEmoji);
+
+                                if (allEmoji.isEmpty()) {
+                                    emojiGrid.setVisibility(
+                                            View.GONE);
+
+                                    searchEmpty.setVisibility(
+                                            View.VISIBLE);
+
+                                } else {
+                                    emojiGrid.setVisibility(
+                                            View.VISIBLE);
+
+                                    searchEmpty.setVisibility(
+                                            View.GONE);
+                                }
+                            });
                 });
-
-        FrameLayout.LayoutParams params =
-                new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT);
-
-        pickerContainer.addView(
-                picker,
-                params);
-
-        int width =
-                pickerContainer.getWidth();
-
-        int height =
-                pickerContainer.getHeight();
-
-        picker.measure(
-                View.MeasureSpec.makeMeasureSpec(
-                        width,
-                        View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(
-                        height,
-                        View.MeasureSpec.EXACTLY));
-
-        picker.layout(
-                0,
-                0,
-                width,
-                height);
     }
 
     private View createCategoryEditor(

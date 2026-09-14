@@ -41,26 +41,33 @@
     </FrameLayout>
 
     <FrameLayout
-        android:id="@+id/emojiPickerContainer"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/emoji_picker_height" />
+        android:layout_height="@dimen/emoji_picker_height">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/emojiSearchResults"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/emoji_picker_height"
-        android:clipToPadding="false"
-        android:visibility="gone" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/emojiGrid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/emojiSearchEmpty"
-        style="@style/UiBodyText"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/emoji_picker_height"
-        android:gravity="center"
-        android:padding="@dimen/spacing_md"
-        android:text="@string/category_emoji_search_empty"
-        android:textColor="@color/ui_text_secondary"
-        android:visibility="gone" />
+        <ProgressBar
+            android:id="@+id/emojiGridLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+        <TextView
+            android:id="@+id/emojiSearchEmpty"
+            style="@style/UiBodyText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="@dimen/spacing_md"
+            android:text="@string/category_emoji_search_empty"
+            android:textColor="@color/ui_text_secondary"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
 </LinearLayout>

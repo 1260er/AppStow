@@ -134,6 +134,47 @@ final class EmojiSearchIndex {
         return results;
     }
 
+    static List<Result> all(
+            Context context) {
+
+        boolean german =
+                "de".equals(
+                        context.getResources()
+                                .getConfiguration()
+                                .getLocales()
+                                .get(0)
+                                .getLanguage());
+
+        List<Result> results =
+                new ArrayList<>();
+
+        for (Entry entry : getEntries(context)) {
+            if (!isRenderable(
+                    entry.emoji)) {
+
+                continue;
+            }
+
+            String label =
+                    german
+                            ? firstNonEmpty(
+                                    entry.germanLabel,
+                                    entry.englishLabel,
+                                    entry.emoji)
+                            : firstNonEmpty(
+                                    entry.englishLabel,
+                                    entry.germanLabel,
+                                    entry.emoji);
+
+            results.add(
+                    new Result(
+                            entry.emoji,
+                            label));
+        }
+
+        return results;
+    }
+
     static String normalizeForSearch(
             String value) {
 
