@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.emoji2.emojipicker.EmojiPickerView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/emojiPicker"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/emoji_picker_height"
-    app:emojiGridColumns="8"
-    app:emojiGridRows="5.5" />
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/emojiPickerDiagnostics"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/spacing_sm"
+        android:paddingVertical="@dimen/spacing_sm"
+        android:textColor="@color/ui_text_primary"
+        android:textSize="12sp" />
+
+    <androidx.emoji2.emojipicker.EmojiPickerView
+        android:id="@+id/emojiPicker"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/emoji_picker_height"
+        app:emojiGridColumns="8"
+        app:emojiGridRows="5.5" />
+
+</LinearLayout>

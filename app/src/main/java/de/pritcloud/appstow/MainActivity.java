@@ -18,6 +18,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.view.DisplayCutout;
 import android.view.View;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.PaintCompat;
 import androidx.core.view.GravityCompat;
 import androidx.emoji2.emojipicker.EmojiPickerView;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -1410,8 +1412,21 @@ public class MainActivity extends Activity {
                                 : neutralColor);
     }
 
+    @SuppressLint({
+            "SetTextI18n",
+            "ApplySharedPref"
+    })
     private void showEmojiPicker(
             TextView symbolInput) {
+
+        getSharedPreferences(
+                "androidx.emoji2.emojipicker.preferences",
+                Context.MODE_PRIVATE)
+                .edit()
+                .putString(
+                        "pref_key_recent_emoji",
+                        "😀,🚘,⭐,⚡,❤️,👩‍💻,🇩🇪")
+                .commit();
 
         View pickerContent =
                 getLayoutInflater()
@@ -1422,6 +1437,15 @@ public class MainActivity extends Activity {
         EmojiPickerView picker =
                 pickerContent.findViewById(
                         R.id.emojiPicker);
+
+        TextView diagnostics =
+                pickerContent.findViewById(
+                        R.id.emojiPickerDiagnostics);
+
+        diagnostics.setText(
+                buildEmojiPickerDiagnostics(
+                        picker,
+                        false));
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
@@ -1442,7 +1466,130 @@ public class MainActivity extends Activity {
                     dialog.dismiss();
                 });
 
+        dialog.setOnShowListener(
+                ignored ->
+                        picker.postDelayed(
+                                () ->
+                                        diagnostics.setText(
+                                                buildEmojiPickerDiagnostics(
+                                                        picker,
+                                                        true)),
+                                2500));
+
         dialog.show();
+    }
+
+    private String buildEmojiPickerDiagnostics(
+            EmojiPickerView picker,
+            boolean includeLayout) {
+
+        String[] probes = {
+                "😀",
+                "🚘",
+                "⭐",
+                "⚡",
+                "❤️",
+                "👩‍💻",
+                "🇩🇪"
+        };
+
+        TextPaint paint =
+                new TextPaint();
+
+        StringBuilder result =
+                new StringBuilder();
+
+        result.append(
+                "System: ");
+
+        for (String probe : probes) {
+            result.append(probe)
+                    .append(" ");
+        }
+
+        result.append(
+                "\nhasGlyph: ");
+
+        for (String probe : probes) {
+            result.append(probe)
+                    .append("=")
+                    .append(
+                            PaintCompat.hasGlyph(
+                                    paint,
+                                    probe)
+                                    ? "1"
+                                    : "0")
+                    .append(" ");
+        }
+
+        if (!includeLayout) {
+            result.append(
+                    "\nwarte auf Picker ...");
+
+            return result.toString();
+        }
+
+        result.append(
+                "\npicker=")
+                .append(
+                        picker.getWidth())
+                .append("x")
+                .append(
+                        picker.getHeight())
+                .append(
+                        " children=")
+                .append(
+                        picker.getChildCount());
+
+        if (picker.getChildCount() == 0
+                || !(picker.getChildAt(0)
+                instanceof ViewGroup)) {
+
+            return result.toString();
+        }
+
+        ViewGroup internalRoot =
+                (ViewGroup)
+                        picker.getChildAt(0);
+
+        result.append(
+                " rootChildren=")
+                .append(
+                        internalRoot.getChildCount());
+
+        if (internalRoot.getChildCount() < 2
+                || !(internalRoot.getChildAt(1)
+                instanceof RecyclerView)) {
+
+            return result.toString();
+        }
+
+        RecyclerView body =
+                (RecyclerView)
+                        internalRoot.getChildAt(1);
+
+        RecyclerView.Adapter<?> adapter =
+                body.getAdapter();
+
+        result.append(
+                "\nbody=")
+                .append(
+                        body.getWidth())
+                .append("x")
+                .append(
+                        body.getHeight())
+                .append(
+                        " items=")
+                .append(
+                        adapter == null
+                                ? -1
+                                : adapter.getItemCount())
+                .append(
+                        " visible=")
+                .append(
+                        body.getChildCount());
+
+        return result.toString();
     }
 
     private View createCategoryEditor(
