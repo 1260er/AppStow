@@ -121,7 +121,6 @@ public class WebAppActivity extends Activity {
 
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
         settings.setAllowFileAccess(false);
@@ -151,15 +150,6 @@ public class WebAppActivity extends Activity {
 
                         return handleUri(
                                 request.getUrl());
-                    }
-
-                    @Override
-                    public boolean shouldOverrideUrlLoading(
-                            WebView view,
-                            String url) {
-
-                        return handleUri(
-                                Uri.parse(url));
                     }
 
                     @Override
@@ -486,6 +476,10 @@ public class WebAppActivity extends Activity {
         super.onPause();
     }
 
+    // Legacy fallback for Android 8-12.
+    // Kept until the Activity back-navigation layer
+    // is migrated as a whole.
+    @SuppressWarnings("deprecation")
     @Override
     public void onBackPressed() {
 

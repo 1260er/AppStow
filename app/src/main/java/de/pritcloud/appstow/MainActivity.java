@@ -19,7 +19,6 @@ import android.provider.Settings;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.DisplayCutout;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -32,7 +31,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -201,43 +203,27 @@ public class MainActivity extends Activity {
                 () -> EmojiSearchIndex.all(
                         getApplicationContext()));
 
-        View contentRoot = findViewById(android.R.id.content);
-        contentRoot.setOnApplyWindowInsetsListener((view, insets) -> {
-            int left;
-            int top;
-            int right;
-            int bottom;
+        View contentRoot =
+                findViewById(
+                        android.R.id.content);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                android.graphics.Insets safeInsets = insets.getInsets(
-                        android.view.WindowInsets.Type.systemBars()
-                                | android.view.WindowInsets.Type.displayCutout());
+        ViewCompat.setOnApplyWindowInsetsListener(
+                contentRoot,
+                (view, insets) -> {
 
-                left = safeInsets.left;
-                top = safeInsets.top;
-                right = safeInsets.right;
-                bottom = safeInsets.bottom;
-            } else {
-                left = insets.getSystemWindowInsetLeft();
-                top = insets.getSystemWindowInsetTop();
-                right = insets.getSystemWindowInsetRight();
-                bottom = insets.getSystemWindowInsetBottom();
+                    Insets safeInsets =
+                            insets.getInsets(
+                                    WindowInsetsCompat.Type.systemBars()
+                                            | WindowInsetsCompat.Type.displayCutout());
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    DisplayCutout cutout = insets.getDisplayCutout();
+                    view.setPadding(
+                            safeInsets.left,
+                            safeInsets.top,
+                            safeInsets.right,
+                            safeInsets.bottom);
 
-                    if (cutout != null) {
-                        left = Math.max(left, cutout.getSafeInsetLeft());
-                        top = Math.max(top, cutout.getSafeInsetTop());
-                        right = Math.max(right, cutout.getSafeInsetRight());
-                        bottom = Math.max(bottom, cutout.getSafeInsetBottom());
-                    }
-                }
-            }
-
-            view.setPadding(left, top, right, bottom);
-            return insets;
-        });
+                    return insets;
+                });
 
         drawerLayout = findViewById(R.id.drawerLayout);
         pageTitle = findViewById(R.id.pageTitle);
@@ -2650,6 +2636,10 @@ public class MainActivity extends Activity {
                 showOverview());
     }
 
+    // Legacy fallback for Android 8-12.
+    // A full Predictive Back migration is intentionally
+    // deferred until the Activity base class is modernized.
+    @SuppressWarnings("deprecation")
     @Override
     public void onBackPressed() {
 
