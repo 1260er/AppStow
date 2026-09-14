@@ -1438,6 +1438,13 @@ public class MainActivity extends Activity {
                 pickerContent.findViewById(
                         R.id.emojiPicker);
 
+        if (Build.VERSION.SDK_INT
+                >= Build.VERSION_CODES.Q) {
+
+            picker.setForceDarkAllowed(
+                    false);
+        }
+
         TextView diagnostics =
                 pickerContent.findViewById(
                         R.id.emojiPickerDiagnostics);
