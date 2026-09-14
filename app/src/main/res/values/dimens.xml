@@ -8,6 +8,7 @@
     <dimen name="spacing_lg">24dp</dimen>
     <dimen name="icon_button_size">48dp</dimen>
     <dimen name="input_height">48dp</dimen>
+    <dimen name="emoji_picker_height">320dp</dimen>
 
     <dimen name="text_title">22sp</dimen>
     <dimen name="text_body">16sp</dimen>

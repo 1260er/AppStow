@@ -1,5 +1,6 @@
 package de.pritcloud.appstow;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
+import androidx.emoji2.emojipicker.EmojiPickerView;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -85,6 +87,7 @@ public class MainActivity extends Activity {
     private RecyclerView categoryList;
     private View categoryManagement;
     private TextView categoryEmptyMessage;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch categorySymbolsSwitch;
 
     private RecyclerView shortcutList;
@@ -1257,7 +1260,7 @@ public class MainActivity extends Activity {
                         "",
                         CategoryStore.DEFAULT_SYMBOL);
 
-        EditText symbolInput =
+        TextView symbolInput =
                 editor.findViewById(
                         R.id.categorySymbolInput);
 
@@ -1306,7 +1309,7 @@ public class MainActivity extends Activity {
                         category.name,
                         category.symbol);
 
-        EditText symbolInput =
+        TextView symbolInput =
                 editor.findViewById(
                         R.id.categorySymbolInput);
 
@@ -1406,6 +1409,50 @@ public class MainActivity extends Activity {
                                 : neutralColor);
     }
 
+    private void showEmojiPicker(
+            TextView symbolInput) {
+
+        View pickerContent =
+                getLayoutInflater()
+                        .inflate(
+                                R.layout.dialog_emoji_picker,
+                                null);
+
+        EmojiPickerView picker =
+                pickerContent.findViewById(
+                        R.id.emojiPicker);
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.category_emoji_picker_title)
+                        .setView(
+                                pickerContent)
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .create();
+
+        picker.setOnEmojiPickedListener(
+                item -> {
+                    String emoji =
+                            item.getEmoji();
+
+                    if (!EmojiValidator.isValid(
+                            emoji)) {
+
+                        return;
+                    }
+
+                    symbolInput.setText(
+                            emoji);
+
+                    dialog.dismiss();
+                });
+
+        dialog.show();
+    }
+
     private View createCategoryEditor(
             String name,
             String symbol) {
@@ -1421,7 +1468,7 @@ public class MainActivity extends Activity {
                                 root,
                                 false);
 
-        EditText symbolInput =
+        TextView symbolInput =
                 editor.findViewById(
                         R.id.categorySymbolInput);
 
@@ -1438,8 +1485,9 @@ public class MainActivity extends Activity {
         symbolInput.setText(
                 symbol);
 
-        symbolInput.setSelectAllOnFocus(
-                true);
+        symbolInput.setOnClickListener(v ->
+                showEmojiPicker(
+                        symbolInput));
 
         nameInput.setText(
                 name);
@@ -1451,7 +1499,7 @@ public class MainActivity extends Activity {
     }
 
     private void styleCategoryInput(
-            EditText input) {
+            TextView input) {
 
         int textColor =
                 ContextCompat.getColor(

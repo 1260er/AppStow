@@ -5,13 +5,15 @@
     android:orientation="vertical"
     android:paddingHorizontal="@dimen/spacing_md">
 
-    <EditText
+    <TextView
         android:id="@+id/categorySymbolInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="false"
         android:hint="@string/category_symbol_hint"
         android:importantForAutofill="no"
-        android:inputType="text"
+        android:longClickable="false"
         android:singleLine="true" />
 
     <EditText
