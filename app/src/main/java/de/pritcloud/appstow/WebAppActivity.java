@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.RenderProcessGoneDetail;
@@ -22,6 +23,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 @SuppressLint({"SetJavaScriptEnabled", "WebViewApiAvailability", "ObsoleteSdkInt"})
 public class WebAppActivity extends Activity {
@@ -46,6 +51,8 @@ public class WebAppActivity extends Activity {
             webView =
                     findViewById(
                             R.id.webAppView);
+
+            applySafeAreaInsets();
 
         } catch (RuntimeException exception) {
 
@@ -112,6 +119,38 @@ public class WebAppActivity extends Activity {
                             R.string.webapp_load_failed_title),
                     exception.toString());
         }
+    }
+
+    private void applySafeAreaInsets() {
+
+        View contentRoot =
+                findViewById(
+                        android.R.id.content);
+
+        if (contentRoot == null) {
+            return;
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                contentRoot,
+                (view, insets) -> {
+
+                    Insets safeInsets =
+                            insets.getInsets(
+                                    WindowInsetsCompat.Type.systemBars()
+                                            | WindowInsetsCompat.Type.displayCutout());
+
+                    view.setPadding(
+                            safeInsets.left,
+                            safeInsets.top,
+                            safeInsets.right,
+                            safeInsets.bottom);
+
+                    return insets;
+                });
+
+        ViewCompat.requestApplyInsets(
+                contentRoot);
     }
 
     private void configureWebView() {
