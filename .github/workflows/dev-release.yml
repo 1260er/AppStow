@@ -1,9 +1,6 @@
 name: Dev release
 
 on:
-  push:
-    branches:
-      - ui-v0.1.1
   workflow_dispatch:
 
 permissions:
@@ -124,7 +121,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh release create "$TAG"             "$APK_FILE" "$APK_FILE.sha256"             --target "$GITHUB_SHA"             --title "AppStow Dev ${GITHUB_RUN_NUMBER}"             --notes "R8-optimierter Test-Build aus dem Branch ui-v0.1.1."             --prerelease             --latest=false
+          gh release create "$TAG"             "$APK_FILE" "$APK_FILE.sha256"             --target "$GITHUB_SHA"             --title "AppStow Dev ${GITHUB_RUN_NUMBER}"             --notes "R8-optimierter Test-Build aus Ref ${GITHUB_REF_NAME}."             --prerelease             --latest=false
 
       - name: Remove restored keystore
         if: always()
