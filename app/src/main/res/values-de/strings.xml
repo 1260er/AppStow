@@ -26,7 +26,7 @@
     <string name="apps_unassigned_empty">Keine nicht zugewiesenen Apps gefunden.</string>
     <string name="apps_empty">Keine startbaren Apps gefunden.</string>
     <string name="apps_search_empty">Keine passenden Apps gefunden.</string>
-    <string name="app_launch_failed">App konnte nicht gestartet werden.</string>
+    <string name="app_launch_failed">App konnte nicht geöffnet werden.</string>
     <string name="action_add_favorite">Zu Favoriten hinzufügen</string>
     <string name="action_remove_favorite">Aus Favoriten entfernen</string>
     <string name="action_add_category">Kategorie hinzufügen</string>
@@ -53,11 +53,11 @@
     <string name="category_rename_title">Kategorie bearbeiten</string>
     <string name="category_delete_title">Kategorie löschen</string>
     <string name="category_delete_message">Kategorie „%1$s“ löschen? Zugehörige App-Zuweisungen werden ebenfalls entfernt.</string>
-    <string name="category_invalid_name">Bitte ein Emoji-Symbol und einen eindeutigen Kategorienamen eingeben.</string>
+    <string name="category_invalid_name">Name fehlt/vergeben oder Emoji fehlt.</string>
     <string name="action_save">Speichern</string>
     <string name="action_cancel">Abbrechen</string>
     <string name="category_assign_title">Kategorien zuweisen</string>
-    <string name="category_assign_none">Noch keine Kategorien vorhanden. Lege zuerst unter „Kategorien verwalten“ eine Kategorie an.</string>
+    <string name="category_assign_none">Keine Kategorien vorhanden.</string>
     <string name="action_sort_overview">Übersicht sortieren</string>
     <string name="action_finish_sorting">Sortieren beenden</string>
     <string name="action_drag_section">Bereich verschieben</string>
@@ -75,7 +75,7 @@
     <string name="shortcut_target_hint">URL oder Deep Link</string>
     <string name="shortcut_categories">Kategorien auswählen</string>
     <string name="shortcut_favorite">Favorit</string>
-    <string name="shortcut_invalid">Bitte Name und ein gültiges Ziel angeben.</string>
+    <string name="shortcut_invalid">Name oder Ziel ungültig.</string>
     <string name="shortcut_type_website">Webseite</string>
     <string name="shortcut_type_webapp">Web-App</string>
     <string name="shortcut_type_deep_link">Aktion: Deep Link (erweitert)</string>
@@ -83,7 +83,7 @@
     <string name="shortcut_target_deep_link_hint">z. B. spotify:… oder intent://…</string>
     <string name="shortcut_categories_selected">Kategorien: %1$s</string>
     <string name="action_shortcut_help">Hilfe zu eigenen Shortcuts</string>
-    <string name="shortcut_launch_failed">Shortcut konnte nicht gestartet werden.</string>
+    <string name="shortcut_launch_failed">Shortcut konnte nicht geöffnet werden.</string>
     <string name="webview_start_failed_title">WebView konnte nicht gestartet werden</string>
     <string name="webapp_load_failed_title">Web-App konnte nicht geladen werden</string>
     <string name="webview_load_error_title">WebView-Ladefehler</string>
@@ -117,7 +117,7 @@ Keines gefunden</string>
 
     <string name="webapp_network_missing">Kein Netzwerkzugriff</string>
     <string name="webapp_network_check">Netzwerk prüfen</string>
-    <string name="webapp_network_required">Für Web-Apps wird eine nutzbare Netzwerkverbindung benötigt.</string>
+    <string name="webapp_network_required">Keine Netzwerkverbindung.</string>
     <string name="webapp_network_title">Kein Netzwerkzugriff</string>
     <string name="webapp_network_message">Es besteht derzeit keine nutzbare Netzwerkverbindung. Prüfe WLAN, mobile Daten oder den Flugmodus. Bei manchen Custom-ROMs kann der Netzwerkzugriff zusätzlich pro App deaktiviert sein.</string>
     <string name="webapp_network_open_settings">App-Einstellungen</string>
@@ -178,13 +178,13 @@ Keines gefunden</string>
     <string name="backup_create">Backup erstellen</string>
     <string name="backup_restore">Backup wiederherstellen</string>
     <string name="backup_description">Sichert Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts und alle Sortierungen. Web-App-Anmeldungen und Android-Berechtigungen sind nicht enthalten.</string>
-    <string name="backup_created">Backup wurde erstellt.</string>
-    <string name="backup_failed">Backup konnte nicht erstellt werden.</string>
-    <string name="backup_restore_failed">Backup konnte nicht gelesen oder wiederhergestellt werden.</string>
+    <string name="backup_created">Backup erstellt.</string>
+    <string name="backup_failed">Backup fehlgeschlagen.</string>
+    <string name="backup_restore_failed">Wiederherstellung fehlgeschlagen.</string>
     <string name="backup_restore_title">Backup wiederherstellen?</string>
     <string name="backup_restore_message">Die vorhandenen Kategorien, App-Zuweisungen, Favoriten, eigenen Shortcuts und die Sortierung werden vollständig durch das Backup ersetzt.</string>
     <string name="backup_restore_confirm">Wiederherstellen</string>
-    <string name="backup_restored">Backup wurde wiederhergestellt.</string>
+    <string name="backup_restored">Backup wiederhergestellt.</string>
 
     <string name="favorite_remove_title">Aus Favoriten entfernen?</string>
     <string name="favorite_remove_message">„%1$s“ aus den Favoriten entfernen?</string>

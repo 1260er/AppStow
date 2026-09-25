@@ -26,7 +26,7 @@
     <string name="apps_unassigned_empty">No unassigned apps found.</string>
     <string name="apps_empty">No launchable apps found.</string>
     <string name="apps_search_empty">No matching apps found.</string>
-    <string name="app_launch_failed">App could not be launched.</string>
+    <string name="app_launch_failed">Could not open app.</string>
     <string name="action_add_favorite">Add to favorites</string>
     <string name="action_remove_favorite">Remove from favorites</string>
     <string name="action_add_category">Add category</string>
@@ -53,11 +53,11 @@
     <string name="category_rename_title">Edit category</string>
     <string name="category_delete_title">Delete category</string>
     <string name="category_delete_message">Delete category “%1$s”? Its app assignments will also be removed.</string>
-    <string name="category_invalid_name">Please enter an emoji symbol and a unique category name.</string>
+    <string name="category_invalid_name">Name invalid/used or emoji missing.</string>
     <string name="action_save">Save</string>
     <string name="action_cancel">Cancel</string>
     <string name="category_assign_title">Assign categories</string>
-    <string name="category_assign_none">No categories yet. First create a category under “Manage categories”.</string>
+    <string name="category_assign_none">No categories available.</string>
     <string name="action_sort_overview">Sort overview</string>
     <string name="action_finish_sorting">Finish sorting</string>
     <string name="action_drag_section">Move section</string>
@@ -75,7 +75,7 @@
     <string name="shortcut_target_hint">URL or deep link</string>
     <string name="shortcut_categories">Select categories</string>
     <string name="shortcut_favorite">Favorite</string>
-    <string name="shortcut_invalid">Please enter a name and a valid target.</string>
+    <string name="shortcut_invalid">Invalid name or target.</string>
     <string name="shortcut_type_website">Website</string>
     <string name="shortcut_type_webapp">Web app</string>
     <string name="shortcut_type_deep_link">Action: Deep link (advanced)</string>
@@ -83,7 +83,7 @@
     <string name="shortcut_target_deep_link_hint">e.g. spotify:… or intent://…</string>
     <string name="shortcut_categories_selected">Categories: %1$s</string>
     <string name="action_shortcut_help">Help for custom shortcuts</string>
-    <string name="shortcut_launch_failed">Shortcut could not be launched.</string>
+    <string name="shortcut_launch_failed">Could not open shortcut.</string>
     <string name="webview_start_failed_title">WebView could not be started</string>
     <string name="webapp_load_failed_title">Web app could not be loaded</string>
     <string name="webview_load_error_title">WebView loading error</string>
@@ -117,7 +117,7 @@ None found</string>
 
     <string name="webapp_network_missing">No network access</string>
     <string name="webapp_network_check">Check network</string>
-    <string name="webapp_network_required">Web apps require a usable network connection.</string>
+    <string name="webapp_network_required">No network connection.</string>
     <string name="webapp_network_title">No network access</string>
     <string name="webapp_network_message">There is currently no usable network connection. Check Wi-Fi, mobile data, or airplane mode. On some custom ROMs, network access can also be disabled per app.</string>
     <string name="webapp_network_open_settings">App settings</string>
@@ -172,15 +172,15 @@ None found</string>
     <string name="about_package">Package: %1$s</string>
     <string name="about_github">Open GitHub</string>
     <string name="about_github_url">https://github.com/1260er/AppStow</string>
-    <string name="about_github_failed">GitHub could not be opened.</string>
+    <string name="about_github_failed">Could not open GitHub.</string>
 
     <string name="nav_backup">Backup &amp; Restore</string>
     <string name="backup_create">Create backup</string>
     <string name="backup_restore">Restore backup</string>
     <string name="backup_description">Backs up categories, app assignments, favorites, custom shortcuts, and all sorting orders. Web app logins and Android permissions are not included.</string>
     <string name="backup_created">Backup created.</string>
-    <string name="backup_failed">Backup could not be created.</string>
-    <string name="backup_restore_failed">Backup could not be read or restored.</string>
+    <string name="backup_failed">Backup failed.</string>
+    <string name="backup_restore_failed">Restore failed.</string>
     <string name="backup_restore_title">Restore backup?</string>
     <string name="backup_restore_message">Existing categories, app assignments, favorites, custom shortcuts, and sorting orders will be completely replaced by the backup.</string>
     <string name="backup_restore_confirm">Restore</string>
