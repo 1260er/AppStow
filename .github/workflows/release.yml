@@ -83,27 +83,43 @@ jobs:
           test -s "$APK"
           test -s app/build/outputs/mapping/release/mapping.txt
 
-          "$APKSIGNER" verify             --verbose --print-certs "$APK"
+          "$APKSIGNER" verify \
+            --verbose \
+            --print-certs \
+            "$APK"
 
-          "$AAPT" dump badging "$APK"             > /tmp/appstow-release-badging.txt
+          "$AAPT" dump badging "$APK" \
+            > /tmp/appstow-release-badging.txt
 
-          grep -q "package: name='de.pritcloud.appstow'"             /tmp/appstow-release-badging.txt
+          grep -q \
+            "package: name='de.pritcloud.appstow'" \
+            /tmp/appstow-release-badging.txt
 
-          VERSION_NAME=$(sed -n             's/^[[:space:]]*versionName = "\([^"]*\)"//p'             app/build.gradle.kts | head -n1)
+          VERSION_NAME=$(sed -n \
+            's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' \
+            app/build.gradle.kts \
+            | head -n1)
 
           test -n "$VERSION_NAME"
 
-          grep -q "versionName='$VERSION_NAME'"             /tmp/appstow-release-badging.txt
+          grep -q \
+            "versionName='$VERSION_NAME'" \
+            /tmp/appstow-release-badging.txt
 
-          if grep -q "application-debuggable"             /tmp/appstow-release-badging.txt
+          if grep -q \
+            "application-debuggable" \
+            /tmp/appstow-release-badging.txt
           then
             echo "Release-APK ist unerwartet debuggable."
             exit 1
           fi
 
-          unzip -l "$APK"             > /tmp/appstow-release-files.txt
+          unzip -l "$APK" \
+            > /tmp/appstow-release-files.txt
 
-          grep -q "assets/dexopt/baseline.prof"             /tmp/appstow-release-files.txt
+          grep -q \
+            "assets/dexopt/baseline.prof" \
+            /tmp/appstow-release-files.txt
 
       - name: Prepare release files
         id: prepare
