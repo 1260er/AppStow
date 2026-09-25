@@ -29,7 +29,7 @@ if (releaseSigningRequired && !releaseSigningConfigured) {
 
 android {
     namespace = "de.pritcloud.appstow"
-    compileSdk = 35
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -43,7 +43,7 @@ android {
     defaultConfig {
         applicationId = "de.pritcloud.appstow"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode =
             providers.environmentVariable("APPSTOW_VERSION_CODE")
                 .orNull?.toIntOrNull() ?: 1
