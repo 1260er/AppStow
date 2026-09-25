@@ -69,15 +69,41 @@ jobs:
         env:
           APPSTOW_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
           APPSTOW_REQUIRE_RELEASE_SIGNING: "true"
-        run: ./gradlew --no-daemon clean testDebugUnitTest lintRelease assembleRelease
+        run: ./gradlew --no-daemon clean testDebugUnitTest testReleaseUnitTest lintRelease assembleRelease
 
-      - name: Verify APK signature
+      - name: Verify optimized release APK
         shell: bash
         run: |
           set -euo pipefail
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify \
-            --verbose --print-certs \
-            app/build/outputs/apk/release/app-release.apk
+
+          APK="app/build/outputs/apk/release/app-release.apk"
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+
+          test -s "$APK"
+          test -s app/build/outputs/mapping/release/mapping.txt
+
+          "$APKSIGNER" verify             --verbose --print-certs "$APK"
+
+          "$AAPT" dump badging "$APK"             > /tmp/appstow-release-badging.txt
+
+          grep -q "package: name='de.pritcloud.appstow'"             /tmp/appstow-release-badging.txt
+
+          VERSION_NAME=$(sed -n             's/^[[:space:]]*versionName = "\([^"]*\)"//p'             app/build.gradle.kts | head -n1)
+
+          test -n "$VERSION_NAME"
+
+          grep -q "versionName='$VERSION_NAME'"             /tmp/appstow-release-badging.txt
+
+          if grep -q "application-debuggable"             /tmp/appstow-release-badging.txt
+          then
+            echo "Release-APK ist unerwartet debuggable."
+            exit 1
+          fi
+
+          unzip -l "$APK"             > /tmp/appstow-release-files.txt
+
+          grep -q "assets/dexopt/baseline.prof"             /tmp/appstow-release-files.txt
 
       - name: Prepare release files
         id: prepare

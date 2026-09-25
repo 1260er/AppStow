@@ -190,6 +190,106 @@ public class MainActivityRecreationTest {
     }
 
     @Test
+    public void appCategoryAssignmentSurvivesRecreation() {
+
+        AtomicReference<String>
+                categoryId =
+                new AtomicReference<>();
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        CategoryStore store =
+                                getPrivateField(
+                                        activity,
+                                        "categoryStore",
+                                        CategoryStore.class);
+
+                        assertTrue(
+                                store.addCategory(
+                                        "Assignment test",
+                                        "📁"));
+
+                        categoryId.set(
+                                store.getCategories()
+                                        .get(0)
+                                        .id);
+
+                        showAppCategoryAssignment(
+                                activity,
+                                "com.example.assignment");
+
+                        AlertDialog dialog =
+                                latestDialog();
+
+                        ListView list =
+                                dialog.getListView();
+
+                        assertNotNull(
+                                list);
+
+                        assertEquals(
+                                1,
+                                list.getCount());
+
+                        list.performItemClick(
+                                null,
+                                0,
+                                list.getAdapter()
+                                        .getItemId(0));
+                    });
+
+            scenario.recreate();
+
+            scenario.onActivity(
+                    activity -> {
+
+                        Bundle draft =
+                                getPrivateField(
+                                        activity,
+                                        "appAssignmentDraft",
+                                        Bundle.class);
+
+                        assertNotNull(
+                                draft);
+
+                        assertEquals(
+                                "com.example.assignment",
+                                draft.getString(
+                                        "app_assignment_package"));
+
+                        ArrayList<String> selected =
+                                draft.getStringArrayList(
+                                        "app_assignment_categories");
+
+                        assertNotNull(
+                                selected);
+
+                        assertTrue(
+                                selected.contains(
+                                        categoryId.get()));
+
+                        AlertDialog dialog =
+                                latestDialog();
+
+                        ListView list =
+                                dialog.getListView();
+
+                        assertNotNull(
+                                list);
+
+                        assertTrue(
+                                list.isItemChecked(
+                                        0));
+                    });
+        }
+    }
+
+    @Test
     public void categoryDraftSurvivesRecreation() {
 
         try (ActivityScenario<MainActivity> scenario =
@@ -373,6 +473,23 @@ public class MainActivityRecreationTest {
                         ShortcutEntry.class
                 },
                 new Object[] {
+                        null
+                });
+    }
+
+    private static void showAppCategoryAssignment(
+            MainActivity activity,
+            String packageName) {
+
+        invoke(
+                activity,
+                "showAppCategoryAssignment",
+                new Class<?>[] {
+                        String.class,
+                        Bundle.class
+                },
+                new Object[] {
+                        packageName,
                         null
                 });
     }

@@ -94,6 +94,13 @@ public class MainActivity extends Activity {
     private static final String STATE_EMOJI_POSITION =
             "emoji_position";
 
+    private static final String STATE_APP_ASSIGNMENT =
+            "app_assignment";
+    private static final String STATE_APP_ASSIGNMENT_PACKAGE =
+            "app_assignment_package";
+    private static final String STATE_APP_ASSIGNMENT_CATEGORIES =
+            "app_assignment_categories";
+
     private static final String PAGE_OVERVIEW = "overview";
     private static final String PAGE_APPS = "apps";
     private static final String PAGE_CATEGORIES = "categories";
@@ -220,6 +227,7 @@ public class MainActivity extends Activity {
     private Bundle shortcutEditorDraft;
     private Bundle categoryEditorDraft;
     private Bundle emojiPickerDraft;
+    private Bundle appAssignmentDraft;
     private TextView activeCategorySymbolInput;
 
     private final List<AppEntry> apps = new ArrayList<>();
@@ -697,6 +705,13 @@ public class MainActivity extends Activity {
                             emojiPickerDraft));
         }
 
+        if (appAssignmentDraft != null) {
+            outState.putBundle(
+                    STATE_APP_ASSIGNMENT,
+                    new Bundle(
+                            appAssignmentDraft));
+        }
+
         super.onSaveInstanceState(
                 outState);
     }
@@ -773,6 +788,24 @@ public class MainActivity extends Activity {
             showEmojiPicker(
                     activeCategorySymbolInput,
                     emojiState);
+        }
+
+        Bundle assignmentState =
+                savedInstanceState.getBundle(
+                        STATE_APP_ASSIGNMENT);
+
+        if (assignmentState != null) {
+
+            String packageName =
+                    assignmentState.getString(
+                            STATE_APP_ASSIGNMENT_PACKAGE,
+                            "");
+
+            if (!packageName.isEmpty()) {
+                showAppCategoryAssignment(
+                        packageName,
+                        assignmentState);
+            }
         }
     }
 
@@ -2734,83 +2767,187 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void handleAppLongClick(AppEntry app) {
+    private void handleAppLongClick(
+            AppEntry app) {
+
+        showAppCategoryAssignment(
+                app.packageName,
+                null);
+    }
+
+    private void showAppCategoryAssignment(
+            String packageName,
+            Bundle restoredState) {
+
         List<CategoryEntry> categories =
                 categoryStore.getCategories();
 
         if (categories.isEmpty()) {
+
+            appAssignmentDraft =
+                    null;
+
             Toast.makeText(
                     this,
                     R.string.category_assign_none,
-                    Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_LONG)
+                    .show();
+
             return;
         }
 
+        Set<String> selectedIds =
+                new HashSet<>();
+
+        if (restoredState != null) {
+
+            ArrayList<String> restoredIds =
+                    restoredState
+                            .getStringArrayList(
+                                    STATE_APP_ASSIGNMENT_CATEGORIES);
+
+            if (restoredIds != null) {
+                selectedIds.addAll(
+                        restoredIds);
+            }
+
+        } else {
+
+            selectedIds.addAll(
+                    categoryStore
+                            .getAssignedCategoryIds(
+                                    packageName));
+        }
+
+        Set<String> validCategoryIds =
+                new HashSet<>();
+
+        for (CategoryEntry category :
+                categories) {
+
+            validCategoryIds.add(
+                    category.id);
+        }
+
+        selectedIds.retainAll(
+                validCategoryIds);
+
+        Bundle draft =
+                new Bundle();
+
+        draft.putString(
+                STATE_APP_ASSIGNMENT_PACKAGE,
+                packageName);
+
+        draft.putStringArrayList(
+                STATE_APP_ASSIGNMENT_CATEGORIES,
+                new ArrayList<>(
+                        selectedIds));
+
+        appAssignmentDraft =
+                new Bundle(
+                        draft);
+
         CharSequence[] names =
-                new CharSequence[categories.size()];
+                new CharSequence[
+                        categories.size()];
 
         boolean[] checked =
-                new boolean[categories.size()];
+                new boolean[
+                        categories.size()];
 
-        Set<String> assignedIds =
-                categoryStore.getAssignedCategoryIds(
-                        app.packageName);
+        for (int i = 0;
+             i < categories.size();
+             i++) {
 
-        Set<String> selectedIds =
-                new HashSet<>(assignedIds);
-
-        for (int i = 0; i < categories.size(); i++) {
             CategoryEntry category =
                     categories.get(i);
 
-            names[i] = category.name;
+            names[i] =
+                    category.name;
+
             checked[i] =
-                    assignedIds.contains(category.id);
+                    selectedIds.contains(
+                            category.id);
         }
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
-                        .setTitle(R.string.category_assign_title)
+                        .setTitle(
+                                R.string.category_assign_title)
                         .setMultiChoiceItems(
                                 names,
                                 checked,
-                                (currentDialog, which, isChecked) -> {
+                                (currentDialog,
+                                 which,
+                                 isChecked) -> {
+
                                     String categoryId =
-                                            categories.get(which).id;
+                                            categories
+                                                    .get(which)
+                                                    .id;
 
                                     if (isChecked) {
-                                        selectedIds.add(categoryId);
+                                        selectedIds.add(
+                                                categoryId);
                                     } else {
-                                        selectedIds.remove(categoryId);
+                                        selectedIds.remove(
+                                                categoryId);
                                     }
+
+                                    draft.putStringArrayList(
+                                            STATE_APP_ASSIGNMENT_CATEGORIES,
+                                            new ArrayList<>(
+                                                    selectedIds));
+
+                                    appAssignmentDraft =
+                                            new Bundle(
+                                                    draft);
                                 })
                         .setPositiveButton(
                                 R.string.action_save,
-                                (currentDialog, which) -> {
-                                    categoryStore.setAssignedCategoryIds(
-                                            app.packageName,
-                                            selectedIds);
+                                (currentDialog,
+                                 which) -> {
 
-                                    if (appSearchContainer.getVisibility()
+                                    categoryStore
+                                            .setAssignedCategoryIds(
+                                                    packageName,
+                                                    selectedIds);
+
+                                    if (appSearchContainer
+                                            .getVisibility()
                                             == View.VISIBLE) {
 
                                         renderApps(
-                                                appSearch.getText()
+                                                appSearch
+                                                        .getText()
                                                         .toString());
 
-                                        appAdapter.refreshPackage(
-                                                app.packageName);
+                                        appAdapter
+                                                .refreshPackage(
+                                                        packageName);
                                     }
 
                                     rebuildOverviewSections();
-                                    overviewAdapter.setApps(apps);
+
+                                    overviewAdapter.setApps(
+                                            apps);
                                 })
                         .setNegativeButton(
                                 R.string.action_cancel,
                                 null)
-                        .show();
+                        .create();
 
-        styleCategoryDialog(dialog, false);
+        dialog.setOnDismissListener(
+                ignored ->
+                        appAssignmentDraft =
+                                null);
+
+        dialog.show();
+
+        styleCategoryDialog(
+                dialog,
+                false);
     }
 
     private void launchShortcut(
