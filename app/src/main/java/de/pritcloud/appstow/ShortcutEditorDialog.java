@@ -5,6 +5,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -16,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -23,6 +27,23 @@ import java.util.Set;
 
 @SuppressLint("SetTextI18n")
 final class ShortcutEditorDialog {
+
+    private static final String STATE_EXISTING_ID =
+            "shortcut_existing_id";
+    private static final String STATE_NAME =
+            "shortcut_name";
+    private static final String STATE_TYPE =
+            "shortcut_type";
+    private static final String STATE_TARGET =
+            "shortcut_target";
+    private static final String STATE_FAVORITE =
+            "shortcut_favorite";
+    private static final String STATE_CATEGORIES =
+            "shortcut_categories";
+    private static final String STATE_PICKER_OPEN =
+            "shortcut_picker_open";
+    private static final String STATE_PICKER_TEMP =
+            "shortcut_picker_temp";
 
     interface Listener {
         void onSave(
@@ -33,20 +54,43 @@ final class ShortcutEditorDialog {
                 boolean favorite);
     }
 
+    interface DraftListener {
+        void onDraftChanged(Bundle draft);
+        void onClosed();
+    }
+
     private ShortcutEditorDialog() {
+    }
+
+    static String getExistingId(
+            Bundle draft) {
+
+        return draft == null
+                ? null
+                : draft.getString(
+                        STATE_EXISTING_ID);
     }
 
     static void show(
             Activity activity,
             CategoryStore categoryStore,
             ShortcutEntry existing,
-            Listener listener) {
+            Bundle restoredState,
+            Listener listener,
+            DraftListener draftListener) {
 
-        View view = LayoutInflater.from(activity)
-                .inflate(
-                        R.layout.dialog_shortcut_edit,
-                        null,
-                        false);
+        Bundle draft =
+                restoredState == null
+                        ? new Bundle()
+                        : new Bundle(
+                                restoredState);
+
+        View view =
+                LayoutInflater.from(activity)
+                        .inflate(
+                                R.layout.dialog_shortcut_edit,
+                                null,
+                                false);
 
         EditText name =
                 view.findViewById(
@@ -102,53 +146,135 @@ final class ShortcutEditorDialog {
         typeAdapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
 
-        type.setAdapter(typeAdapter);
+        type.setAdapter(
+                typeAdapter);
 
         Set<String> selectedCategories =
                 new HashSet<>();
 
-        if (existing != null) {
-            name.setText(
-                    existing.name);
+        String initialName;
+        int initialType;
+        String initialTarget;
+        boolean initialFavorite;
 
-            favorite.setChecked(
-                    existing.favorite);
+        if (restoredState != null) {
+
+            initialName =
+                    draft.getString(
+                            STATE_NAME,
+                            "");
+
+            initialType =
+                    draft.getInt(
+                            STATE_TYPE,
+                            0);
+
+            initialTarget =
+                    draft.getString(
+                            STATE_TARGET,
+                            "");
+
+            initialFavorite =
+                    draft.getBoolean(
+                            STATE_FAVORITE,
+                            false);
+
+            selectedCategories.addAll(
+                    getStringSet(
+                            draft,
+                            STATE_CATEGORIES));
+
+        } else if (existing != null) {
+
+            draft.putString(
+                    STATE_EXISTING_ID,
+                    existing.id);
+
+            initialName =
+                    existing.name;
+
+            initialType =
+                    getTypeIndex(
+                            existing.type);
+
+            initialFavorite =
+                    existing.favorite;
 
             selectedCategories.addAll(
                     existing.categoryIds);
 
-            int typeIndex =
-                    getTypeIndex(
-                            existing.type);
-
-            type.setSelection(
-                    typeIndex);
-
             if (ShortcutEntry.TYPE_APP_SETTINGS.equals(
                     existing.type)) {
 
-                target.setText(
+                initialTarget =
                         "package:"
-                                + existing.target);
+                                + existing.target;
 
             } else {
-                target.setText(
-                        existing.target);
+                initialTarget =
+                        existing.target;
             }
 
         } else {
-            target.setText(
-                    "https://");
 
+            initialName =
+                    "";
+
+            initialType =
+                    0;
+
+            initialTarget =
+                    "https://";
+
+            initialFavorite =
+                    false;
+        }
+
+        name.setText(
+                initialName);
+
+        type.setSelection(
+                initialType);
+
+        target.setText(
+                initialTarget);
+
+        if (!initialTarget.isEmpty()) {
             target.setSelection(
                     target.length());
         }
+
+        favorite.setChecked(
+                initialFavorite);
 
         updateCategoryLabel(
                 activity,
                 pickCategories,
                 selectedCategories,
                 categoryStore.getCategories());
+
+        draft.putString(
+                STATE_NAME,
+                name.getText()
+                        .toString());
+
+        draft.putInt(
+                STATE_TYPE,
+                type.getSelectedItemPosition());
+
+        draft.putString(
+                STATE_TARGET,
+                target.getText()
+                        .toString());
+
+        draft.putBoolean(
+                STATE_FAVORITE,
+                favorite.isChecked());
+
+        putStringSet(
+                draft,
+                STATE_CATEGORIES,
+                selectedCategories);
 
         int[] previousType = {
                 type.getSelectedItemPosition()
@@ -160,6 +286,43 @@ final class ShortcutEditorDialog {
                 target,
                 networkWarning,
                 networkHelp);
+
+        watchText(
+                name,
+                () -> {
+                    draft.putString(
+                            STATE_NAME,
+                            name.getText()
+                                    .toString());
+
+                    notifyDraft(
+                            draftListener,
+                            draft);
+                });
+
+        watchText(
+                target,
+                () -> {
+                    draft.putString(
+                            STATE_TARGET,
+                            target.getText()
+                                    .toString());
+
+                    notifyDraft(
+                            draftListener,
+                            draft);
+                });
+
+        favorite.setOnCheckedChangeListener(
+                (buttonView, checked) -> {
+                    draft.putBoolean(
+                            STATE_FAVORITE,
+                            checked);
+
+                    notifyDraft(
+                            draftListener,
+                            draft);
+                });
 
         type.setOnItemSelectedListener(
                 new android.widget.AdapterView.OnItemSelectedListener() {
@@ -209,6 +372,19 @@ final class ShortcutEditorDialog {
                                 target,
                                 networkWarning,
                                 networkHelp);
+
+                        draft.putInt(
+                                STATE_TYPE,
+                                position);
+
+                        draft.putString(
+                                STATE_TARGET,
+                                target.getText()
+                                        .toString());
+
+                        notifyDraft(
+                                draftListener,
+                                draft);
                     }
 
                     @Override
@@ -222,7 +398,10 @@ final class ShortcutEditorDialog {
                         activity,
                         categoryStore,
                         selectedCategories,
-                        pickCategories));
+                        pickCategories,
+                        draft,
+                        draftListener,
+                        null));
 
         AlertDialog dialog =
                 new AlertDialog.Builder(activity)
@@ -302,7 +481,8 @@ final class ShortcutEditorDialog {
                             Toast.makeText(
                                     activity,
                                     R.string.shortcut_invalid,
-                                    Toast.LENGTH_SHORT).show();
+                                    Toast.LENGTH_SHORT)
+                                    .show();
 
                             return;
                         }
@@ -337,18 +517,246 @@ final class ShortcutEditorDialog {
                 .addOnWindowFocusChangeListener(
                         networkFocusListener);
 
-        dialog.setOnDismissListener(ignored -> {
+        dialog.setOnDismissListener(
+                ignored -> {
 
-            if (view.getViewTreeObserver()
-                    .isAlive()) {
+                    if (view.getViewTreeObserver()
+                            .isAlive()) {
 
-                view.getViewTreeObserver()
-                        .removeOnWindowFocusChangeListener(
-                                networkFocusListener);
-            }
-        });
+                        view.getViewTreeObserver()
+                                .removeOnWindowFocusChangeListener(
+                                        networkFocusListener);
+                    }
+
+                    draftListener.onClosed();
+                });
+
+        notifyDraft(
+                draftListener,
+                draft);
 
         dialog.show();
+
+        if (draft.getBoolean(
+                STATE_PICKER_OPEN,
+                false)) {
+
+            showCategoryPicker(
+                    activity,
+                    categoryStore,
+                    selectedCategories,
+                    pickCategories,
+                    draft,
+                    draftListener,
+                    getStringSet(
+                            draft,
+                            STATE_PICKER_TEMP));
+        }
+    }
+
+    private static void showCategoryPicker(
+            Activity activity,
+            CategoryStore categoryStore,
+            Set<String> selectedCategories,
+            TextView pickCategories,
+            Bundle draft,
+            DraftListener draftListener,
+            Set<String> restoredTemporary) {
+
+        List<CategoryEntry> categories =
+                categoryStore.getCategories();
+
+        if (categories.isEmpty()) {
+            Toast.makeText(
+                    activity,
+                    R.string.category_assign_none,
+                    Toast.LENGTH_LONG)
+                    .show();
+
+            return;
+        }
+
+        Set<String> temporary =
+                restoredTemporary == null
+                        ? new HashSet<>(
+                                selectedCategories)
+                        : new HashSet<>(
+                                restoredTemporary);
+
+        CharSequence[] names =
+                new CharSequence[
+                        categories.size()];
+
+        boolean[] checked =
+                new boolean[
+                        categories.size()];
+
+        for (int i = 0;
+             i < categories.size();
+             i++) {
+
+            CategoryEntry category =
+                    categories.get(i);
+
+            names[i] =
+                    category.name;
+
+            checked[i] =
+                    temporary.contains(
+                            category.id);
+        }
+
+        AlertDialog picker =
+                new AlertDialog.Builder(activity)
+                        .setTitle(
+                                R.string.shortcut_categories)
+                        .setMultiChoiceItems(
+                                names,
+                                checked,
+                                (currentDialog,
+                                 which,
+                                 isChecked) -> {
+
+                                    String id =
+                                            categories
+                                                    .get(which)
+                                                    .id;
+
+                                    if (isChecked) {
+                                        temporary.add(id);
+                                    } else {
+                                        temporary.remove(id);
+                                    }
+
+                                    putStringSet(
+                                            draft,
+                                            STATE_PICKER_TEMP,
+                                            temporary);
+
+                                    notifyDraft(
+                                            draftListener,
+                                            draft);
+                                })
+                        .setPositiveButton(
+                                R.string.action_save,
+                                (currentDialog,
+                                 which) -> {
+
+                                    selectedCategories.clear();
+
+                                    selectedCategories.addAll(
+                                            temporary);
+
+                                    putStringSet(
+                                            draft,
+                                            STATE_CATEGORIES,
+                                            selectedCategories);
+
+                                    updateCategoryLabel(
+                                            activity,
+                                            pickCategories,
+                                            selectedCategories,
+                                            categories);
+                                })
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .create();
+
+        draft.putBoolean(
+                STATE_PICKER_OPEN,
+                true);
+
+        putStringSet(
+                draft,
+                STATE_PICKER_TEMP,
+                temporary);
+
+        notifyDraft(
+                draftListener,
+                draft);
+
+        picker.setOnDismissListener(
+                ignored -> {
+
+                    draft.putBoolean(
+                            STATE_PICKER_OPEN,
+                            false);
+
+                    draft.remove(
+                            STATE_PICKER_TEMP);
+
+                    notifyDraft(
+                            draftListener,
+                            draft);
+                });
+
+        picker.show();
+    }
+
+    private static void watchText(
+            TextView input,
+            Runnable callback) {
+
+        input.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence text,
+                            int start,
+                            int count,
+                            int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence text,
+                            int start,
+                            int before,
+                            int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            Editable editable) {
+
+                        callback.run();
+                    }
+                });
+    }
+
+    private static void notifyDraft(
+            DraftListener listener,
+            Bundle draft) {
+
+        listener.onDraftChanged(
+                new Bundle(
+                        draft));
+    }
+
+    private static void putStringSet(
+            Bundle bundle,
+            String key,
+            Set<String> values) {
+
+        bundle.putStringArrayList(
+                key,
+                new ArrayList<>(
+                        values));
+    }
+
+    private static Set<String> getStringSet(
+            Bundle bundle,
+            String key) {
+
+        ArrayList<String> values =
+                bundle.getStringArrayList(
+                        key);
+
+        return values == null
+                ? new HashSet<>()
+                : new HashSet<>(
+                        values);
     }
 
     private static void updateTypeUi(
@@ -411,92 +819,6 @@ final class ShortcutEditorDialog {
             target.setSelection(
                     target.length());
         }
-    }
-
-    private static void showCategoryPicker(
-            Activity activity,
-            CategoryStore categoryStore,
-            Set<String> selectedCategories,
-            TextView pickCategories) {
-
-        List<CategoryEntry> categories =
-                categoryStore.getCategories();
-
-        if (categories.isEmpty()) {
-            Toast.makeText(
-                    activity,
-                    R.string.category_assign_none,
-                    Toast.LENGTH_LONG).show();
-
-            return;
-        }
-
-        CharSequence[] names =
-                new CharSequence[
-                        categories.size()];
-
-        boolean[] checked =
-                new boolean[
-                        categories.size()];
-
-        Set<String> temporary =
-                new HashSet<>(
-                        selectedCategories);
-
-        for (int i = 0;
-             i < categories.size();
-             i++) {
-
-            CategoryEntry category =
-                    categories.get(i);
-
-            names[i] =
-                    category.name;
-
-            checked[i] =
-                    temporary.contains(
-                            category.id);
-        }
-
-        new AlertDialog.Builder(activity)
-                .setTitle(
-                        R.string.shortcut_categories)
-                .setMultiChoiceItems(
-                        names,
-                        checked,
-                        (dialog,
-                         which,
-                         isChecked) -> {
-
-                            String id =
-                                    categories
-                                            .get(which)
-                                            .id;
-
-                            if (isChecked) {
-                                temporary.add(id);
-                            } else {
-                                temporary.remove(id);
-                            }
-                        })
-                .setPositiveButton(
-                        R.string.action_save,
-                        (dialog, which) -> {
-                            selectedCategories.clear();
-
-                            selectedCategories.addAll(
-                                    temporary);
-
-                            updateCategoryLabel(
-                                    activity,
-                                    pickCategories,
-                                    selectedCategories,
-                                    categories);
-                        })
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
     }
 
     private static void updateCategoryLabel(

@@ -77,6 +77,23 @@ public class MainActivity extends Activity {
     private static final String STATE_HELP_SCROLL = "help_scroll";
     private static final String STATE_ABOUT_SCROLL = "about_scroll";
 
+    private static final String STATE_SHORTCUT_EDITOR =
+            "shortcut_editor";
+    private static final String STATE_CATEGORY_EDITOR =
+            "category_editor";
+    private static final String STATE_CATEGORY_ID =
+            "category_editor_id";
+    private static final String STATE_CATEGORY_NAME =
+            "category_editor_name";
+    private static final String STATE_CATEGORY_SYMBOL =
+            "category_editor_symbol";
+    private static final String STATE_EMOJI_PICKER =
+            "emoji_picker";
+    private static final String STATE_EMOJI_QUERY =
+            "emoji_query";
+    private static final String STATE_EMOJI_POSITION =
+            "emoji_position";
+
     private static final String PAGE_OVERVIEW = "overview";
     private static final String PAGE_APPS = "apps";
     private static final String PAGE_CATEGORIES = "categories";
@@ -199,6 +216,11 @@ public class MainActivity extends Activity {
     private OverviewOrderStore overviewOrderStore;
     private SectionItemOrderStore sectionItemOrderStore;
     private ItemTouchHelper overviewItemTouchHelper;
+
+    private Bundle shortcutEditorDraft;
+    private Bundle categoryEditorDraft;
+    private Bundle emojiPickerDraft;
+    private TextView activeCategorySymbolInput;
 
     private final List<AppEntry> apps = new ArrayList<>();
     private final List<OverviewSection> overviewSections =
@@ -600,6 +622,11 @@ public class MainActivity extends Activity {
                                 aboutScroll));
             }
         }
+
+        if (savedInstanceState != null) {
+            restoreEditorState(
+                    savedInstanceState);
+        }
     }
 
     @Override
@@ -649,8 +676,132 @@ public class MainActivity extends Activity {
                         ? aboutManagement.getScrollY()
                         : 0);
 
+        if (shortcutEditorDraft != null) {
+            outState.putBundle(
+                    STATE_SHORTCUT_EDITOR,
+                    new Bundle(
+                            shortcutEditorDraft));
+        }
+
+        if (categoryEditorDraft != null) {
+            outState.putBundle(
+                    STATE_CATEGORY_EDITOR,
+                    new Bundle(
+                            categoryEditorDraft));
+        }
+
+        if (emojiPickerDraft != null) {
+            outState.putBundle(
+                    STATE_EMOJI_PICKER,
+                    new Bundle(
+                            emojiPickerDraft));
+        }
+
         super.onSaveInstanceState(
                 outState);
+    }
+
+    private void restoreEditorState(
+            Bundle savedInstanceState) {
+
+        Bundle shortcutState =
+                savedInstanceState.getBundle(
+                        STATE_SHORTCUT_EDITOR);
+
+        if (shortcutState != null) {
+
+            String shortcutId =
+                    ShortcutEditorDialog
+                            .getExistingId(
+                                    shortcutState);
+
+            ShortcutEntry shortcut =
+                    shortcutId == null
+                            ? null
+                            : findShortcutById(
+                                    shortcutId);
+
+            if (shortcutId == null
+                    || shortcut != null) {
+
+                showShortcutEditor(
+                        shortcut,
+                        shortcutState);
+            }
+        }
+
+        Bundle categoryState =
+                savedInstanceState.getBundle(
+                        STATE_CATEGORY_EDITOR);
+
+        boolean categoryRestored =
+                false;
+
+        if (categoryState != null) {
+
+            String categoryId =
+                    categoryState.getString(
+                            STATE_CATEGORY_ID);
+
+            CategoryEntry category =
+                    categoryId == null
+                            ? null
+                            : findCategoryById(
+                                    categoryId);
+
+            if (categoryId == null
+                    || category != null) {
+
+                showCategoryEditor(
+                        category,
+                        categoryState);
+
+                categoryRestored =
+                        true;
+            }
+        }
+
+        Bundle emojiState =
+                savedInstanceState.getBundle(
+                        STATE_EMOJI_PICKER);
+
+        if (categoryRestored
+                && emojiState != null
+                && activeCategorySymbolInput
+                        != null) {
+
+            showEmojiPicker(
+                    activeCategorySymbolInput,
+                    emojiState);
+        }
+    }
+
+    private ShortcutEntry findShortcutById(
+            String id) {
+
+        for (ShortcutEntry shortcut :
+                shortcutStore.getShortcuts()) {
+
+            if (shortcut.id.equals(id)) {
+                return shortcut;
+            }
+        }
+
+        return null;
+    }
+
+    private CategoryEntry findCategoryById(
+            String id) {
+
+        for (CategoryEntry category :
+                categoryStore.getCategories()) {
+
+            if (category.id.equals(id)) {
+                return category;
+            }
+        }
+
+        return null;
     }
 
     private void restorePage(
@@ -756,6 +907,8 @@ public class MainActivity extends Activity {
 
         appLoader.shutdownNow();
         backupExecutor.shutdown();
+        emojiLoader.shutdownNow();
+        emojiSearchExecutor.shutdownNow();
         super.onDestroy();
     }
 
@@ -1181,10 +1334,20 @@ public class MainActivity extends Activity {
     private void showShortcutEditor(
             ShortcutEntry shortcut) {
 
+        showShortcutEditor(
+                shortcut,
+                null);
+    }
+
+    private void showShortcutEditor(
+            ShortcutEntry shortcut,
+            Bundle restoredState) {
+
         ShortcutEditorDialog.show(
                 this,
                 categoryStore,
                 shortcut,
+                restoredState,
                 (name,
                  type,
                  target,
@@ -1211,7 +1374,26 @@ public class MainActivity extends Activity {
                     refreshShortcuts();
 
                     rebuildOverviewSections();
-                    overviewAdapter.setApps(apps);
+
+                    overviewAdapter.setApps(
+                            apps);
+                },
+                new ShortcutEditorDialog.DraftListener() {
+                    @Override
+                    public void onDraftChanged(
+                            Bundle draft) {
+
+                        shortcutEditorDraft =
+                                new Bundle(
+                                        draft);
+                    }
+
+                    @Override
+                    public void onClosed() {
+
+                        shortcutEditorDraft =
+                                null;
+                    }
                 });
     }
 
@@ -1262,10 +1444,56 @@ public class MainActivity extends Activity {
     }
 
     private void showAddCategoryDialog() {
+
+        showCategoryEditor(
+                null,
+                null);
+    }
+
+    private void showRenameCategoryDialog(
+            CategoryEntry category) {
+
+        showCategoryEditor(
+                category,
+                null);
+    }
+
+    private void showCategoryEditor(
+            CategoryEntry category,
+            Bundle restoredState) {
+
+        String categoryId =
+                category != null
+                        ? category.id
+                        : null;
+
+        String initialName =
+                category != null
+                        ? category.name
+                        : "";
+
+        String initialSymbol =
+                category != null
+                        ? category.symbol
+                        : CategoryStore.DEFAULT_SYMBOL;
+
+        if (restoredState != null) {
+
+            initialName =
+                    restoredState.getString(
+                            STATE_CATEGORY_NAME,
+                            initialName);
+
+            initialSymbol =
+                    restoredState.getString(
+                            STATE_CATEGORY_SYMBOL,
+                            initialSymbol);
+        }
+
         View editor =
                 createCategoryEditor(
-                        "",
-                        CategoryStore.DEFAULT_SYMBOL);
+                        initialName,
+                        initialSymbol);
 
         TextView symbolInput =
                 editor.findViewById(
@@ -1275,87 +1503,179 @@ public class MainActivity extends Activity {
                 editor.findViewById(
                         R.id.categoryNameInput);
 
+        activeCategorySymbolInput =
+                symbolInput;
+
+        captureCategoryEditorDraft(
+                categoryId,
+                nameInput,
+                symbolInput);
+
+        nameInput.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence text,
+                            int start,
+                            int count,
+                            int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence text,
+                            int start,
+                            int before,
+                            int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            Editable editable) {
+
+                        captureCategoryEditorDraft(
+                                categoryId,
+                                nameInput,
+                                symbolInput);
+                    }
+                });
+
+        symbolInput.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence text,
+                            int start,
+                            int count,
+                            int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence text,
+                            int start,
+                            int before,
+                            int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            Editable editable) {
+
+                        captureCategoryEditorDraft(
+                                categoryId,
+                                nameInput,
+                                symbolInput);
+                    }
+                });
+
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
                         .setTitle(
-                                R.string.category_add_title)
+                                category == null
+                                        ? R.string.category_add_title
+                                        : R.string.category_rename_title)
                         .setView(editor)
                         .setPositiveButton(
                                 R.string.action_save,
-                                (currentDialog, which) -> {
-                                    if (!categoryStore.addCategory(
-                                            nameInput.getText().toString(),
-                                            symbolInput.getText().toString())) {
+                                (currentDialog,
+                                 which) -> {
 
+                                    boolean saved;
+
+                                    if (categoryId
+                                            == null) {
+
+                                        saved =
+                                                categoryStore
+                                                        .addCategory(
+                                                                nameInput
+                                                                        .getText()
+                                                                        .toString(),
+                                                                symbolInput
+                                                                        .getText()
+                                                                        .toString());
+
+                                    } else {
+
+                                        saved =
+                                                categoryStore
+                                                        .renameCategory(
+                                                                categoryId,
+                                                                nameInput
+                                                                        .getText()
+                                                                        .toString(),
+                                                                symbolInput
+                                                                        .getText()
+                                                                        .toString());
+                                    }
+
+                                    if (!saved) {
                                         Toast.makeText(
                                                 this,
                                                 R.string.category_invalid_name,
-                                                Toast.LENGTH_SHORT).show();
+                                                Toast.LENGTH_SHORT)
+                                                .show();
                                     }
 
                                     refreshCategories();
+
                                     rebuildOverviewSections();
+
                                     overviewAdapter.setApps(
                                             apps);
                                 })
                         .setNegativeButton(
                                 R.string.action_cancel,
                                 null)
-                        .show();
+                        .create();
+
+        dialog.setOnDismissListener(
+                ignored -> {
+
+                    categoryEditorDraft =
+                            null;
+
+                    emojiPickerDraft =
+                            null;
+
+                    activeCategorySymbolInput =
+                            null;
+                });
+
+        dialog.show();
 
         styleCategoryDialog(
                 dialog,
                 false);
     }
 
-    private void showRenameCategoryDialog(
-            CategoryEntry category) {
+    private void captureCategoryEditorDraft(
+            String categoryId,
+            EditText nameInput,
+            TextView symbolInput) {
 
-        View editor =
-                createCategoryEditor(
-                        category.name,
-                        category.symbol);
+        Bundle draft =
+                new Bundle();
 
-        TextView symbolInput =
-                editor.findViewById(
-                        R.id.categorySymbolInput);
+        if (categoryId != null) {
+            draft.putString(
+                    STATE_CATEGORY_ID,
+                    categoryId);
+        }
 
-        EditText nameInput =
-                editor.findViewById(
-                        R.id.categoryNameInput);
+        draft.putString(
+                STATE_CATEGORY_NAME,
+                nameInput.getText()
+                        .toString());
 
-        AlertDialog dialog =
-                new AlertDialog.Builder(this)
-                        .setTitle(
-                                R.string.category_rename_title)
-                        .setView(editor)
-                        .setPositiveButton(
-                                R.string.action_save,
-                                (currentDialog, which) -> {
-                                    if (!categoryStore.renameCategory(
-                                            category.id,
-                                            nameInput.getText().toString(),
-                                            symbolInput.getText().toString())) {
+        draft.putString(
+                STATE_CATEGORY_SYMBOL,
+                symbolInput.getText()
+                        .toString());
 
-                                        Toast.makeText(
-                                                this,
-                                                R.string.category_invalid_name,
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-
-                                    refreshCategories();
-                                    rebuildOverviewSections();
-                                    overviewAdapter.setApps(
-                                            apps);
-                                })
-                        .setNegativeButton(
-                                R.string.action_cancel,
-                                null)
-                        .show();
-
-        styleCategoryDialog(
-                dialog,
-                false);
+        categoryEditorDraft =
+                draft;
     }
 
     private void showDeleteCategoryDialog(
@@ -1418,6 +1738,43 @@ public class MainActivity extends Activity {
 
     private void showEmojiPicker(
             TextView symbolInput) {
+
+        showEmojiPicker(
+                symbolInput,
+                null);
+    }
+
+    private void showEmojiPicker(
+            TextView symbolInput,
+            Bundle restoredState) {
+
+        Bundle draft =
+                restoredState == null
+                        ? new Bundle()
+                        : new Bundle(
+                                restoredState);
+
+        String restoredQuery =
+                draft.getString(
+                        STATE_EMOJI_QUERY,
+                        "");
+
+        int restoredPosition =
+                draft.getInt(
+                        STATE_EMOJI_POSITION,
+                        RecyclerView.NO_POSITION);
+
+        draft.putString(
+                STATE_EMOJI_QUERY,
+                restoredQuery);
+
+        draft.putInt(
+                STATE_EMOJI_POSITION,
+                restoredPosition);
+
+        emojiPickerDraft =
+                new Bundle(
+                        draft);
 
         View pickerContent =
                 getLayoutInflater()
@@ -1494,11 +1851,34 @@ public class MainActivity extends Activity {
         emojiGrid.setHasFixedSize(
                 true);
 
-        // Bei Suchwechseln werden große Teile des
-        // Datensatzes ersetzt. Animationen bringen hier
-        // keinen Nutzen und kosten nur Zeit.
         emojiGrid.setItemAnimator(
                 null);
+
+        emojiGrid.addOnScrollListener(
+                new RecyclerView.OnScrollListener() {
+                    @Override
+                    public void onScrolled(
+                            RecyclerView recyclerView,
+                            int dx,
+                            int dy) {
+
+                        int position =
+                                gridLayoutManager
+                                        .findFirstVisibleItemPosition();
+
+                        if (position
+                                != RecyclerView.NO_POSITION) {
+
+                            draft.putInt(
+                                    STATE_EMOJI_POSITION,
+                                    position);
+
+                            emojiPickerDraft =
+                                    new Bundle(
+                                            draft);
+                        }
+                    }
+                });
 
         final Runnable[] pendingSearch =
                 new Runnable[1];
@@ -1540,6 +1920,14 @@ public class MainActivity extends Activity {
                         String query =
                                 editable.toString()
                                         .trim();
+
+                        draft.putString(
+                                STATE_EMOJI_QUERY,
+                                editable.toString());
+
+                        emojiPickerDraft =
+                                new Bundle(
+                                        draft);
 
                         int generation =
                                 ++searchGeneration[0];
@@ -1616,6 +2004,7 @@ public class MainActivity extends Activity {
                                                                         matches);
 
                                                                 if (matches.isEmpty()) {
+
                                                                     emojiGrid.setVisibility(
                                                                             View.GONE);
 
@@ -1623,6 +2012,7 @@ public class MainActivity extends Activity {
                                                                             View.VISIBLE);
 
                                                                 } else {
+
                                                                     emojiGrid.setVisibility(
                                                                             View.VISIBLE);
 
@@ -1635,10 +2025,6 @@ public class MainActivity extends Activity {
                         pendingSearch[0] =
                                 searchTask;
 
-                        // Kurzes Debounce:
-                        // beim schnellen Tippen wird z.B.
-                        // nicht a -> au -> aut -> auto
-                        // einzeln berechnet.
                         searchInput.postDelayed(
                                 searchTask,
                                 80L);
@@ -1652,7 +2038,9 @@ public class MainActivity extends Activity {
 
                     pickerContent.requestFocus();
 
-                    if (dialog.getWindow() != null) {
+                    if (dialog.getWindow()
+                            != null) {
+
                         dialog.getWindow()
                                 .setSoftInputMode(
                                         android.view.WindowManager
@@ -1660,16 +2048,22 @@ public class MainActivity extends Activity {
                                                 .SOFT_INPUT_STATE_ALWAYS_HIDDEN);
                     }
 
-                    loadAllEmoji(
-                            adapter,
-                            emojiGrid,
-                            gridLayoutManager,
-                            categoryStrip,
-                            categoryBar,
-                            loading,
-                            searchEmpty,
-                            searchInput,
-                            dialog);
+                    if (searchInput.getText()
+                            .toString()
+                            .trim()
+                            .isEmpty()) {
+
+                        loadAllEmoji(
+                                adapter,
+                                emojiGrid,
+                                gridLayoutManager,
+                                categoryStrip,
+                                categoryBar,
+                                loading,
+                                searchEmpty,
+                                searchInput,
+                                dialog);
+                    }
                 });
 
         dialog.setOnDismissListener(
@@ -1686,9 +2080,82 @@ public class MainActivity extends Activity {
                         pendingSearch[0] =
                                 null;
                     }
+
+                    emojiPickerDraft =
+                            null;
                 });
 
+        if (!restoredQuery.isEmpty()) {
+            searchInput.setText(
+                    restoredQuery);
+
+            searchInput.setSelection(
+                    searchInput.length());
+        }
+
         dialog.show();
+
+        if (restoredPosition
+                != RecyclerView.NO_POSITION) {
+
+            restoreEmojiPositionWhenReady(
+                    dialog,
+                    emojiGrid,
+                    gridLayoutManager,
+                    restoredPosition,
+                    0);
+        }
+    }
+
+    private void restoreEmojiPositionWhenReady(
+            AlertDialog dialog,
+            RecyclerView emojiGrid,
+            GridLayoutManager layoutManager,
+            int position,
+            int attempt) {
+
+        if (!dialog.isShowing()) {
+            return;
+        }
+
+        RecyclerView.Adapter<?> adapter =
+                emojiGrid.getAdapter();
+
+        int itemCount =
+                adapter != null
+                        ? adapter.getItemCount()
+                        : 0;
+
+        if (itemCount > 0) {
+
+            int safePosition =
+                    Math.max(
+                            0,
+                            Math.min(
+                                    position,
+                                    itemCount - 1));
+
+            layoutManager
+                    .scrollToPositionWithOffset(
+                            safePosition,
+                            0);
+
+            return;
+        }
+
+        if (attempt >= 40) {
+            return;
+        }
+
+        emojiGrid.postDelayed(
+                () ->
+                        restoreEmojiPositionWhenReady(
+                                dialog,
+                                emojiGrid,
+                                layoutManager,
+                                position,
+                                attempt + 1),
+                50L);
     }
 
     private void loadAllEmoji(
