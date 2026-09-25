@@ -20,6 +20,6 @@
         android:strokeColor="@color/ui_text_primary"
         android:strokeLineCap="round"
         android:strokeWidth="1.8"
-        android:pathData="M10,7 L21,7 M10,12 L18,12 M10,17 L15,17" />
+        android:pathData="M10,7 L15.5,7 M10,12 L14,12 M10,17 L12.5,17" />
 
 </vector>
