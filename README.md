@@ -17,9 +17,9 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 
 ## Requirements
 
-- Android 8.0 or newer
-- minSdk 26
-- targetSdk 35
+- Android 13 or newer
+- minSdk 33
+- targetSdk 36
 
 ## Installation
 
@@ -71,11 +71,11 @@ Network access is used for configured websites and web apps.
 ## Development
 
 - Java 17
-- Gradle 8.9
-- Android Gradle Plugin 8.7.3
-- compileSdk 35
-- targetSdk 35
-- minSdk 26
+- Gradle 8.11.1
+- Android Gradle Plugin 8.10.1
+- compileSdk 36
+- targetSdk 36
+- minSdk 33
 
 ## Unicode emoji data
 
