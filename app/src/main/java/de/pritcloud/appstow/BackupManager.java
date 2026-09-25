@@ -545,7 +545,7 @@ final class BackupManager {
 
         validateBackup(
                 backup,
-                false);
+                true);
 
         return backup;
     }

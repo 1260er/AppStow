@@ -322,6 +322,108 @@ public class BackupManagerTest {
                 backup);
     }
 
+    @Test
+    public void paypalWebAppBackupRestores()
+            throws Exception {
+
+        JSONObject backup =
+                validBackup();
+
+        backup.getJSONArray(
+                        "shortcuts")
+                .put(
+                        shortcut(
+                                "paypal",
+                                "PayPal",
+                                ShortcutEntry.TYPE_WEB_APP,
+                                "https://www.paypal.com/de/home/",
+                                new JSONArray()
+                                        .put(
+                                                "cat-work")));
+
+        backup.getJSONObject(
+                        "sectionItemOrder")
+                .put(
+                        "shortcuts",
+                        new JSONArray()
+                                .put(
+                                        "shortcut:site")
+                                .put(
+                                        "shortcut:webapp")
+                                .put(
+                                        "shortcut:paypal"))
+                .put(
+                        "category:cat-work",
+                        new JSONArray()
+                                .put(
+                                        "app:com.example.app")
+                                .put(
+                                        "shortcut:site")
+                                .put(
+                                        "shortcut:paypal"));
+
+        BackupManager.restoreBackup(
+                context,
+                backup);
+
+        ShortcutStore shortcutStore =
+                new ShortcutStore(
+                        context);
+
+        List<ShortcutEntry> shortcuts =
+                shortcutStore.getShortcuts();
+
+        assertEquals(
+                5,
+                shortcuts.size());
+
+        ShortcutEntry paypal =
+                null;
+
+        for (ShortcutEntry shortcut :
+                shortcuts) {
+
+            if ("paypal".equals(
+                    shortcut.id)) {
+
+                paypal =
+                        shortcut;
+                break;
+            }
+        }
+
+        assertTrue(
+                paypal != null);
+
+        assertEquals(
+                ShortcutEntry.TYPE_WEB_APP,
+                paypal.type);
+
+        assertEquals(
+                "https://www.paypal.com/de/home/",
+                paypal.target);
+
+        assertTrue(
+                paypal.categoryIds.contains(
+                        "cat-work"));
+
+        SectionItemOrderStore orderStore =
+                new SectionItemOrderStore(
+                        context);
+
+        assertEquals(
+                Arrays.asList(
+                        "shortcut:site",
+                        "shortcut:webapp",
+                        "shortcut:paypal"),
+                orderStore.getOrderedIds(
+                        "shortcuts",
+                        Arrays.asList(
+                                "shortcut:site",
+                                "shortcut:webapp",
+                                "shortcut:paypal")));
+    }
+
     private void assertInvalid(
             JSONObject backup)
             throws Exception {

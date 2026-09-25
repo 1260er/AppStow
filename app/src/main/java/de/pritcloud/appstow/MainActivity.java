@@ -66,6 +66,8 @@ public class MainActivity extends Activity {
             "restore_result_pending";
     private static final String KEY_RESTORE_RESULT_SUCCESS =
             "restore_result_success";
+    private static final String KEY_RESTORE_RESULT_MESSAGE =
+            "restore_result_message";
     private static final String ACTION_RESTORE_FINISHED =
             MainActivity.class.getName()
                     + ".action.RESTORE_FINISHED";
@@ -3572,24 +3574,57 @@ public class MainActivity extends Activity {
                         KEY_RESTORE_RESULT_PENDING)
                 .remove(
                         KEY_RESTORE_RESULT_SUCCESS)
+                .remove(
+                        KEY_RESTORE_RESULT_MESSAGE)
                 .apply();
+    }
+
+    private static String getRestoreErrorMessage(
+            Exception exception) {
+
+        String message =
+                exception.getMessage();
+
+        if (message == null
+                || message.trim().isEmpty()) {
+
+            return exception.getClass()
+                    .getSimpleName();
+        }
+
+        return message;
     }
 
     private static void publishRestoreResult(
             Context context,
-            boolean success) {
+            boolean success,
+            String errorMessage) {
 
-        context.getSharedPreferences(
-                        BACKUP_RUNTIME_PREFS,
-                        Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean(
-                        KEY_RESTORE_RESULT_PENDING,
-                        true)
-                .putBoolean(
-                        KEY_RESTORE_RESULT_SUCCESS,
-                        success)
-                .apply();
+        SharedPreferences.Editor editor =
+                context.getSharedPreferences(
+                                BACKUP_RUNTIME_PREFS,
+                                Context.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean(
+                                KEY_RESTORE_RESULT_PENDING,
+                                true)
+                        .putBoolean(
+                                KEY_RESTORE_RESULT_SUCCESS,
+                                success);
+
+        if (errorMessage == null
+                || errorMessage.trim().isEmpty()) {
+
+            editor.remove(
+                    KEY_RESTORE_RESULT_MESSAGE);
+
+        } else {
+            editor.putString(
+                    KEY_RESTORE_RESULT_MESSAGE,
+                    errorMessage);
+        }
+
+        editor.commit();
 
         Intent intent =
                 new Intent(
@@ -3621,18 +3656,45 @@ public class MainActivity extends Activity {
                         KEY_RESTORE_RESULT_SUCCESS,
                         false);
 
+        String errorMessage =
+                preferences.getString(
+                        KEY_RESTORE_RESULT_MESSAGE,
+                        null);
+
         preferences.edit()
                 .remove(
                         KEY_RESTORE_RESULT_PENDING)
                 .remove(
                         KEY_RESTORE_RESULT_SUCCESS)
+                .remove(
+                        KEY_RESTORE_RESULT_MESSAGE)
                 .apply();
+
+        CharSequence resultMessage;
+
+        if (success) {
+            resultMessage =
+                    getString(
+                            R.string.backup_restored);
+
+        } else if (errorMessage == null
+                || errorMessage.trim().isEmpty()) {
+
+            resultMessage =
+                    getString(
+                            R.string.backup_restore_failed);
+
+        } else {
+            resultMessage =
+                    getString(
+                            R.string.backup_restore_failed)
+                            + "\n"
+                            + errorMessage;
+        }
 
         Toast.makeText(
                 this,
-                success
-                        ? R.string.backup_restored
-                        : R.string.backup_restore_failed,
+                resultMessage,
                 Toast.LENGTH_LONG)
                 .show();
 
@@ -3664,6 +3726,8 @@ public class MainActivity extends Activity {
 
                                     backupExecutor.execute(() -> {
                                         boolean success;
+                                        String errorMessage =
+                                                null;
 
                                         try {
                                             BackupManager.restoreBackup(
@@ -3674,11 +3738,15 @@ public class MainActivity extends Activity {
 
                                         } catch (Exception exception) {
                                             success = false;
+                                            errorMessage =
+                                                    getRestoreErrorMessage(
+                                                            exception);
                                         }
 
                                         publishRestoreResult(
                                                 appContext,
-                                                success);
+                                                success,
+                                                errorMessage);
                                     });
                                 })
                         .setNegativeButton(
@@ -3764,6 +3832,10 @@ public class MainActivity extends Activity {
                                     uri);
 
                 } catch (Exception exception) {
+                    String errorMessage =
+                            getRestoreErrorMessage(
+                                    exception);
+
                     runOnUiThread(() -> {
                         if (isFinishing()
                                 || isDestroyed()) {
@@ -3773,7 +3845,10 @@ public class MainActivity extends Activity {
 
                         Toast.makeText(
                                 this,
-                                R.string.backup_restore_failed,
+                                getString(
+                                        R.string.backup_restore_failed)
+                                        + "\n"
+                                        + errorMessage,
                                 Toast.LENGTH_LONG)
                                 .show();
                     });
