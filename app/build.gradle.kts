@@ -12,6 +12,11 @@ val releaseKeyAlias =
 val releaseKeyPassword =
     providers.environmentVariable("APPSTOW_KEY_PASSWORD").orNull
 
+val devReleaseBuild =
+    providers.gradleProperty("appstowDevRelease")
+        .orNull
+        ?.equals("true", ignoreCase = true) == true
+
 val releaseSigningConfigured = listOf(
     releaseStoreFile,
     releaseStorePassword,
@@ -80,6 +85,11 @@ android {
         }
 
         release {
+            if (devReleaseBuild) {
+                applicationIdSuffix = ".dev"
+                versionNameSuffix = "-dev"
+            }
+
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
