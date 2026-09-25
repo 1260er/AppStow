@@ -12,6 +12,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.webkit.CookieManager;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SslErrorHandler;
@@ -36,6 +38,20 @@ public class WebAppActivity extends Activity {
 
     private WebView webView;
     private AlertDialog errorDialog;
+
+    private final OnBackInvokedCallback webHistoryBackCallback =
+            () -> {
+                if (webView == null
+                        || !webView.canGoBack()) {
+                    return;
+                }
+
+                webView.goBack();
+                webView.post(
+                        this::updateWebHistoryBackCallback);
+            };
+
+    private boolean webHistoryBackCallbackRegistered;
 
     @Override
     protected void onCreate(
@@ -112,6 +128,8 @@ public class WebAppActivity extends Activity {
                         url);
             }
 
+            updateWebHistoryBackCallback();
+
         } catch (RuntimeException exception) {
 
             showFatalWebViewError(
@@ -153,6 +171,36 @@ public class WebAppActivity extends Activity {
                 contentRoot);
     }
 
+    private void updateWebHistoryBackCallback() {
+
+        boolean shouldRegister =
+                webView != null
+                        && webView.canGoBack();
+
+        OnBackInvokedDispatcher dispatcher =
+                getOnBackInvokedDispatcher();
+
+        if (shouldRegister
+                && !webHistoryBackCallbackRegistered) {
+
+            dispatcher.registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    webHistoryBackCallback);
+
+            webHistoryBackCallbackRegistered = true;
+            return;
+        }
+
+        if (!shouldRegister
+                && webHistoryBackCallbackRegistered) {
+
+            dispatcher.unregisterOnBackInvokedCallback(
+                    webHistoryBackCallback);
+
+            webHistoryBackCallbackRegistered = false;
+        }
+    }
+
     private void configureWebView() {
 
         WebSettings settings =
@@ -192,6 +240,20 @@ public class WebAppActivity extends Activity {
                     }
 
                     @Override
+                    public void doUpdateVisitedHistory(
+                            WebView view,
+                            String url,
+                            boolean isReload) {
+
+                        super.doUpdateVisitedHistory(
+                                view,
+                                url,
+                                isReload);
+
+                        updateWebHistoryBackCallback();
+                    }
+
+                    @Override
                     public void onPageFinished(
                             WebView view,
                             String url) {
@@ -199,6 +261,8 @@ public class WebAppActivity extends Activity {
                         super.onPageFinished(
                                 view,
                                 url);
+
+                        updateWebHistoryBackCallback();
 
                         try {
                             CookieManager.getInstance()
@@ -515,23 +579,6 @@ public class WebAppActivity extends Activity {
         super.onPause();
     }
 
-    // Legacy fallback for Android 8-12.
-    // Kept until the Activity back-navigation layer
-    // is migrated as a whole.
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onBackPressed() {
-
-        if (webView != null
-                && webView.canGoBack()) {
-
-            webView.goBack();
-            return;
-        }
-
-        super.onBackPressed();
-    }
-
     private void disposeWebView(
             WebView target) {
 
@@ -572,6 +619,14 @@ public class WebAppActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+
+        if (webHistoryBackCallbackRegistered) {
+            getOnBackInvokedDispatcher()
+                    .unregisterOnBackInvokedCallback(
+                            webHistoryBackCallback);
+
+            webHistoryBackCallbackRegistered = false;
+        }
 
         dismissErrorDialog();
 

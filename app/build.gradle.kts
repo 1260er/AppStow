@@ -42,7 +42,7 @@ android {
 
     defaultConfig {
         applicationId = "de.pritcloud.appstow"
-        minSdk = 26
+        minSdk = 33
         targetSdk = 36
         versionCode =
             providers.environmentVariable("APPSTOW_VERSION_CODE")

@@ -21,6 +21,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -119,6 +121,10 @@ public class MainActivity extends Activity {
     private boolean packageChangeSequenceInitialized;
     private int appContentGeneration;
     private String currentPage = PAGE_OVERVIEW;
+
+    private final OnBackInvokedCallback pageBackCallback =
+            this::showOverview;
+    private boolean pageBackCallbackRegistered;
 
     private boolean restoreReceiverRegistered;
     private boolean packageReceiverRegistered;
@@ -742,6 +748,14 @@ public class MainActivity extends Activity {
             }
 
             packageReceiverRegistered = false;
+        }
+
+        if (pageBackCallbackRegistered) {
+            getOnBackInvokedDispatcher()
+                    .unregisterOnBackInvokedCallback(
+                            pageBackCallback);
+
+            pageBackCallbackRegistered = false;
         }
 
         appLoader.shutdownNow();
@@ -2594,10 +2608,37 @@ public class MainActivity extends Activity {
                 Toast.LENGTH_SHORT).show();
     }
 
+    private void updatePageBackCallback() {
+
+        OnBackInvokedDispatcher dispatcher =
+                getOnBackInvokedDispatcher();
+
+        if (!showingOverview
+                && !pageBackCallbackRegistered) {
+
+            dispatcher.registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    pageBackCallback);
+
+            pageBackCallbackRegistered = true;
+            return;
+        }
+
+        if (showingOverview
+                && pageBackCallbackRegistered) {
+
+            dispatcher.unregisterOnBackInvokedCallback(
+                    pageBackCallback);
+
+            pageBackCallbackRegistered = false;
+        }
+    }
+
     private void setTopNavigation(
             boolean overview) {
 
         showingOverview = overview;
+        updatePageBackCallback();
 
         if (overview) {
             drawerLayout.setDrawerLockMode(
@@ -2634,30 +2675,6 @@ public class MainActivity extends Activity {
 
         topNavigationButton.setOnClickListener(v ->
                 showOverview());
-    }
-
-    // Legacy fallback for Android 8-12.
-    // A full Predictive Back migration is intentionally
-    // deferred until the Activity base class is modernized.
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onBackPressed() {
-
-        if (drawerLayout.isDrawerOpen(
-                GravityCompat.END)) {
-
-            drawerLayout.closeDrawer(
-                    GravityCompat.END);
-
-            return;
-        }
-
-        if (!showingOverview) {
-            showOverview();
-            return;
-        }
-
-        super.onBackPressed();
     }
 
     private String getAppVersionName() {

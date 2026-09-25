@@ -22,12 +22,14 @@
 
         <activity
             android:name=".WebAppActivity"
+            android:enableOnBackInvokedCallback="true"
             android:exported="false"
             android:process=":webapp"
             android:taskAffinity="${applicationId}.webapp" />
 
         <activity
             android:name=".MainActivity"
+            android:enableOnBackInvokedCallback="true"
             android:exported="true"
             android:theme="@style/AppTheme.Starting">
             <intent-filter>
