@@ -67,6 +67,7 @@ final class OverviewAdapter
 
     private final FavoritesStore favoritesStore;
     private final CategoryStore categoryStore;
+    private final AppIconLoader appIconLoader;
     private final ShortcutStore shortcutStore;
     private final SectionItemOrderStore sectionItemOrderStore;
 
@@ -83,6 +84,7 @@ final class OverviewAdapter
             List<OverviewSection> sections,
             FavoritesStore favoritesStore,
             CategoryStore categoryStore,
+            AppIconLoader appIconLoader,
             ShortcutStore shortcutStore,
             SectionItemOrderStore sectionItemOrderStore,
             OnAppClickListener appClickListener,
@@ -94,6 +96,7 @@ final class OverviewAdapter
         this.sections = sections;
         this.favoritesStore = favoritesStore;
         this.categoryStore = categoryStore;
+        this.appIconLoader = appIconLoader;
         this.shortcutStore = shortcutStore;
         this.sectionItemOrderStore = sectionItemOrderStore;
         this.appClickListener = appClickListener;
@@ -555,15 +558,9 @@ final class OverviewAdapter
                 section.id.equals(
                         itemSortSectionId);
 
-        holder.icon.setImageDrawable(
-                app.iconState != null
-                        ? app.iconState.newDrawable(
-                                holder.itemView
-                                        .getResources())
-                        : holder.itemView
-                                .getContext()
-                                .getPackageManager()
-                                .getDefaultActivityIcon());
+        appIconLoader.bind(
+                holder.icon,
+                app);
 
         holder.name.setText(
                 app.label);

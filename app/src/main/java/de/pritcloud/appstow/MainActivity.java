@@ -12,7 +12,6 @@ import android.content.res.ColorStateList;
 import android.content.pm.ChangedPackages;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
@@ -183,6 +182,7 @@ public class MainActivity extends Activity {
     private final ExecutorService emojiSearchExecutor =
             Executors.newSingleThreadExecutor();
 
+    private AppIconLoader appIconLoader;
     private AppAdapter appAdapter;
     private OverviewAdapter overviewAdapter;
     private FavoritesStore favoritesStore;
@@ -380,9 +380,14 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         selectBackupForRestore());
 
+        appIconLoader =
+                new AppIconLoader(
+                        getPackageManager());
+
         appAdapter = new AppAdapter(
                 favoritesStore,
                 categoryStore,
+                appIconLoader,
                 this::launchApp,
                 this::handleAppLongClick);
 
@@ -403,6 +408,7 @@ public class MainActivity extends Activity {
                         overviewSections,
                         favoritesStore,
                         categoryStore,
+                        appIconLoader,
                         shortcutStore,
                         sectionItemOrderStore,
                         this::launchApp,
@@ -609,14 +615,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (PAGE_APPS.equals(currentPage)
-                && appsLoaded) {
-
-            requestAppReload();
-            return;
-        }
-
         refreshAppsIfPackagesChanged();
     }
 
@@ -756,6 +754,10 @@ public class MainActivity extends Activity {
                             pageBackCallback);
 
             pageBackCallbackRegistered = false;
+        }
+
+        if (appIconLoader != null) {
+            appIconLoader.shutdown();
         }
 
         appLoader.shutdownNow();
@@ -2187,32 +2189,12 @@ public class MainActivity extends Activity {
                             ? labelSequence.toString()
                             : packageName;
 
-            Drawable icon;
-
-            try {
-                icon = resolveInfo.loadIcon(
-                        packageManager);
-
-            } catch (RuntimeException exception) {
-                icon = null;
-            }
-
-            if (icon == null) {
-                icon = packageManager
-                        .getDefaultActivityIcon();
-            }
-
-            Drawable.ConstantState iconState =
-                    icon != null
-                            ? icon.getConstantState()
-                            : null;
-
             loadedApps.add(
                     new AppEntry(
                             label,
                             packageName,
                             resolveInfo,
-                            iconState,
+                            null,
                             contentGeneration));
         }
 

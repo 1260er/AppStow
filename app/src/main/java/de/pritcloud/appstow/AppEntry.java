@@ -10,7 +10,7 @@ final class AppEntry {
     final String label;
     final String packageName;
     final ResolveInfo resolveInfo;
-    final Drawable.ConstantState iconState;
+    volatile Drawable.ConstantState iconState;
     final String searchLabel;
     final String searchPackageName;
     final int contentGeneration;

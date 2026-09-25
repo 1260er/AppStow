@@ -25,12 +25,14 @@ public class AppAdapter
 
     private final FavoritesStore favoritesStore;
     private final CategoryStore categoryStore;
+    private final AppIconLoader appIconLoader;
     private final OnAppClickListener clickListener;
     private final OnAppLongClickListener longClickListener;
 
     AppAdapter(
             FavoritesStore favoritesStore,
             CategoryStore categoryStore,
+            AppIconLoader appIconLoader,
             OnAppClickListener clickListener,
             OnAppLongClickListener longClickListener) {
 
@@ -38,6 +40,7 @@ public class AppAdapter
 
         this.favoritesStore = favoritesStore;
         this.categoryStore = categoryStore;
+        this.appIconLoader = appIconLoader;
         this.clickListener = clickListener;
         this.longClickListener = longClickListener;
     }
@@ -85,15 +88,9 @@ public class AppAdapter
 
         AppEntry app = getItem(position);
 
-        holder.icon.setImageDrawable(
-                app.iconState != null
-                        ? app.iconState.newDrawable(
-                                holder.itemView
-                                        .getResources())
-                        : holder.itemView
-                                .getContext()
-                                .getPackageManager()
-                                .getDefaultActivityIcon());
+        appIconLoader.bind(
+                holder.icon,
+                app);
 
         holder.name.setText(app.label);
 
