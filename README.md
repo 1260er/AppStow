@@ -23,14 +23,14 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 
 ## Installation
 
-The current stable release is **AppStow 0.1.0**.
+The current stable release is **AppStow 0.1.1**.
 
 https://github.com/1260er/AppStow/releases/latest
 
 Release files:
 
-- `AppStow-0.1.0.apk`
-- `AppStow-0.1.0.apk.sha256`
+- `AppStow-0.1.1.apk`
+- `AppStow-0.1.1.apk.sha256`
 
 Obtainium repository:
 
