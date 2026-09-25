@@ -7,3 +7,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "AppStow"
 include(":app")
+include(":baselineprofile")

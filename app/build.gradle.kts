@@ -1,4 +1,7 @@
-plugins { id("com.android.application") }
+plugins {
+    id("com.android.application")
+    id("androidx.baselineprofile")
+}
 
 val releaseStoreFile =
     providers.environmentVariable("APPSTOW_KEYSTORE_PATH").orNull
@@ -90,7 +93,17 @@ android {
     }
 }
 
+baselineProfile {
+    mergeIntoMain = true
+    saveInSrc = true
+    automaticGenerationDuringBuild = false
+}
+
 dependencies {
+    baselineProfile(project(":baselineprofile"))
+
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
+
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
 
