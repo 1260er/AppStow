@@ -261,8 +261,19 @@
 
             </LinearLayout>
 
-            <include layout="@layout/view_help" />
-            <include layout="@layout/view_about" />
+            <ViewStub
+                android:id="@+id/helpStub"
+                android:layout="@layout/view_help"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+            <ViewStub
+                android:id="@+id/aboutStub"
+                android:layout="@layout/view_about"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/pageMessage"

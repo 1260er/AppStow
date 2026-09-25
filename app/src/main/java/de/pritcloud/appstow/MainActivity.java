@@ -20,6 +20,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.widget.EditText;
@@ -99,8 +100,12 @@ public class MainActivity extends Activity {
     private View shortcutManagement;
     private TextView shortcutEmptyMessage;
     private View backupManagement;
+
+    private ViewStub helpStub;
     private ScrollView helpManagement;
     private View helpShortcutSection;
+
+    private ViewStub aboutStub;
     private ScrollView aboutManagement;
     private TextView aboutVersion;
     private TextView aboutPackage;
@@ -205,10 +210,6 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-        emojiLoader.execute(
-                () -> EmojiSearchIndex.all(
-                        getApplicationContext()));
-
         View contentRoot =
                 findViewById(
                         android.R.id.content);
@@ -253,20 +254,12 @@ public class MainActivity extends Activity {
         backupManagement =
                 findViewById(R.id.backupManagement);
 
-        helpManagement =
-                findViewById(R.id.helpManagement);
+        helpStub =
+                findViewById(R.id.helpStub);
 
-        helpShortcutSection =
-                findViewById(R.id.helpShortcutSection);
+        aboutStub =
+                findViewById(R.id.aboutStub);
 
-        aboutManagement =
-                findViewById(R.id.aboutManagement);
-
-        aboutVersion =
-                findViewById(R.id.aboutVersion);
-
-        aboutPackage =
-                findViewById(R.id.aboutPackage);
 
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
@@ -527,9 +520,6 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         showAbout());
 
-        findViewById(R.id.aboutGithubButton)
-                .setOnClickListener(v ->
-                        openGithub());
 
         appSearchClear.setOnClickListener(v -> {
             appSearch.setText("");
@@ -649,11 +639,15 @@ public class MainActivity extends Activity {
 
         outState.putInt(
                 STATE_HELP_SCROLL,
-                helpManagement.getScrollY());
+                helpManagement != null
+                        ? helpManagement.getScrollY()
+                        : 0);
 
         outState.putInt(
                 STATE_ABOUT_SCROLL,
-                aboutManagement.getScrollY());
+                aboutManagement != null
+                        ? aboutManagement.getScrollY()
+                        : 0);
 
         super.onSaveInstanceState(
                 outState);
@@ -982,8 +976,8 @@ public class MainActivity extends Activity {
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
-        helpManagement.setVisibility(View.GONE);
-        aboutManagement.setVisibility(View.GONE);
+        hideHelpPage();
+        hideAboutPage();
 
         setOverviewSortMode(false);
         overviewSortButton.setVisibility(View.VISIBLE);
@@ -1020,8 +1014,8 @@ public class MainActivity extends Activity {
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
-        helpManagement.setVisibility(View.GONE);
-        aboutManagement.setVisibility(View.GONE);
+        hideHelpPage();
+        hideAboutPage();
         overviewList.setVisibility(View.GONE);
 
         requestAppReload();
@@ -1051,8 +1045,8 @@ public class MainActivity extends Activity {
 
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
-        helpManagement.setVisibility(View.GONE);
-        aboutManagement.setVisibility(View.GONE);
+        hideHelpPage();
+        hideAboutPage();
 
         pageTitle.setText(R.string.nav_categories);
 
@@ -1130,11 +1124,9 @@ public class MainActivity extends Activity {
         backupManagement.setVisibility(
                 View.GONE);
 
-        helpManagement.setVisibility(
-                View.GONE);
+        hideHelpPage();
 
-        aboutManagement.setVisibility(
-                View.GONE);
+        hideAboutPage();
 
         overviewList.setVisibility(
                 View.GONE);
@@ -2686,9 +2678,68 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void ensureHelpInflated() {
+
+        if (helpManagement != null) {
+            return;
+        }
+
+        helpManagement =
+                (ScrollView) helpStub.inflate();
+
+        helpShortcutSection =
+                helpManagement.findViewById(
+                        R.id.helpShortcutSection);
+
+        helpStub = null;
+    }
+
+    private void ensureAboutInflated() {
+
+        if (aboutManagement != null) {
+            return;
+        }
+
+        aboutManagement =
+                (ScrollView) aboutStub.inflate();
+
+        aboutVersion =
+                aboutManagement.findViewById(
+                        R.id.aboutVersion);
+
+        aboutPackage =
+                aboutManagement.findViewById(
+                        R.id.aboutPackage);
+
+        aboutManagement.findViewById(
+                        R.id.aboutGithubButton)
+                .setOnClickListener(v ->
+                        openGithub());
+
+        aboutStub = null;
+    }
+
+    private void hideHelpPage() {
+
+        if (helpManagement != null) {
+            helpManagement.setVisibility(
+                    View.GONE);
+        }
+    }
+
+    private void hideAboutPage() {
+
+        if (aboutManagement != null) {
+            aboutManagement.setVisibility(
+                    View.GONE);
+        }
+    }
+
     private void showAbout() {
         currentPage = PAGE_ABOUT;
         setTopNavigation(false);
+
+        ensureAboutInflated();
 
         shortcutHelpButton.setVisibility(View.GONE);
         hideOverviewSortMode();
@@ -2696,7 +2747,7 @@ public class MainActivity extends Activity {
         categoryManagement.setVisibility(View.GONE);
         shortcutManagement.setVisibility(View.GONE);
         backupManagement.setVisibility(View.GONE);
-        helpManagement.setVisibility(View.GONE);
+        hideHelpPage();
 
         overviewList.setVisibility(View.GONE);
         appList.setVisibility(View.GONE);
@@ -2751,6 +2802,9 @@ public class MainActivity extends Activity {
 
         currentPage = PAGE_HELP;
         setTopNavigation(false);
+
+        ensureHelpInflated();
+        hideAboutPage();
 
         shortcutHelpButton.setVisibility(
                 View.GONE);
@@ -2818,11 +2872,9 @@ public class MainActivity extends Activity {
         shortcutManagement.setVisibility(
                 View.GONE);
 
-        helpManagement.setVisibility(
-                View.GONE);
+        hideHelpPage();
 
-        aboutManagement.setVisibility(
-                View.GONE);
+        hideAboutPage();
 
         overviewList.setVisibility(
                 View.GONE);
