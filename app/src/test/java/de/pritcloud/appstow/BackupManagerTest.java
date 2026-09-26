@@ -1,6 +1,7 @@
 package de.pritcloud.appstow;
 
 import android.content.Context;
+import android.net.Uri;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,6 +13,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -121,6 +123,74 @@ public class BackupManagerTest {
                                 "shortcut:site",
                                 "app:com.example.app",
                                 "app:new")));
+    }
+
+    @Test
+    public void categorySymbolsDisabledRestoresAsDisabled()
+            throws Exception {
+
+        JSONObject backup =
+                validBackup();
+
+        backup.put(
+                "categorySymbolsEnabled",
+                false);
+
+        BackupManager.restoreBackup(
+                context,
+                backup);
+
+        CategoryStore categoryStore =
+                new CategoryStore(
+                        context);
+
+        assertTrue(
+                !categoryStore.areSymbolsEnabled());
+    }
+
+    @Test
+    public void writtenBackupCanBeReadImmediatelyAndKeepsSymbolSetting()
+            throws Exception {
+
+        CategoryStore categoryStore =
+                new CategoryStore(
+                        context);
+
+        assertTrue(
+                categoryStore.addCategory(
+                        "Work",
+                        "💼"));
+
+        categoryStore.setSymbolsEnabled(
+                true);
+
+        File backupFile =
+                File.createTempFile(
+                        "appstow-backup-",
+                        ".json",
+                        context.getCacheDir());
+
+        try {
+            Uri uri =
+                    Uri.fromFile(
+                            backupFile);
+
+            BackupManager.writeBackup(
+                    context,
+                    uri);
+
+            JSONObject backup =
+                    BackupManager.readBackup(
+                            context,
+                            uri);
+
+            assertTrue(
+                    backup.getBoolean(
+                            "categorySymbolsEnabled"));
+
+        } finally {
+            backupFile.delete();
+        }
     }
 
     @Test

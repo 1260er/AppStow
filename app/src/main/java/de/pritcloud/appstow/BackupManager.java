@@ -33,6 +33,12 @@ final class BackupManager {
     private static final int MAX_BACKUP_BYTES =
             5 * 1024 * 1024;
 
+    private static final int WRITE_VERIFY_ATTEMPTS =
+            12;
+
+    private static final long WRITE_VERIFY_DELAY_MS =
+            250L;
+
     private BackupManager() {
     }
 
@@ -44,11 +50,16 @@ final class BackupManager {
         JSONObject backup =
                 createBackup(context);
 
+        byte[] data =
+                backup.toString(2)
+                        .getBytes(
+                                StandardCharsets.UTF_8);
+
         try (OutputStream stream =
                      context.getContentResolver()
                              .openOutputStream(
                                      uri,
-                                     "w")) {
+                                     "wt")) {
 
             if (stream == null) {
                 throw new IOException(
@@ -56,10 +67,151 @@ final class BackupManager {
             }
 
             stream.write(
-                    backup.toString(2)
-                            .getBytes(
-                                    StandardCharsets.UTF_8));
+                    data);
+
+            stream.flush();
         }
+
+        verifyWrittenBackup(
+                context,
+                uri,
+                backup);
+    }
+
+    private static void verifyWrittenBackup(
+            Context context,
+            Uri uri,
+            JSONObject expectedBackup)
+            throws IOException, JSONException {
+
+        long expectedCreatedAt =
+                expectedBackup.getLong(
+                        "createdAt");
+
+        boolean expectedSymbolsEnabled =
+                expectedBackup.optBoolean(
+                        "categorySymbolsEnabled",
+                        false);
+
+        Exception lastException =
+                null;
+
+        for (int attempt = 0;
+             attempt < WRITE_VERIFY_ATTEMPTS;
+             attempt++) {
+
+            try {
+                JSONObject storedBackup =
+                        readBackupForVerification(
+                                context,
+                                uri);
+
+                if (storedBackup.optLong(
+                        "createdAt",
+                        -1L) != expectedCreatedAt) {
+
+                    throw new IOException(
+                            "Das geschriebene Backup ist noch nicht aktuell.");
+                }
+
+                if (storedBackup.optBoolean(
+                        "categorySymbolsEnabled",
+                        false) != expectedSymbolsEnabled) {
+
+                    throw new IOException(
+                            "Die Kategorie-Symbol-Einstellung wurde nicht korrekt gespeichert.");
+                }
+
+                return;
+
+            } catch (IOException | JSONException exception) {
+                lastException =
+                        exception;
+            }
+
+            if (attempt
+                    + 1
+                    < WRITE_VERIFY_ATTEMPTS) {
+
+                try {
+                    Thread.sleep(
+                            WRITE_VERIFY_DELAY_MS);
+
+                } catch (InterruptedException exception) {
+                    Thread.currentThread()
+                            .interrupt();
+
+                    throw new IOException(
+                            "Backup-Verifikation wurde unterbrochen.",
+                            exception);
+                }
+            }
+        }
+
+        if (lastException instanceof JSONException) {
+            throw (JSONException) lastException;
+        }
+
+        if (lastException instanceof IOException) {
+            throw (IOException) lastException;
+        }
+
+        throw new IOException(
+                "Das geschriebene Backup konnte nicht verifiziert werden.");
+    }
+
+    private static JSONObject readBackupForVerification(
+            Context context,
+            Uri uri)
+            throws IOException, JSONException {
+
+        ByteArrayOutputStream output =
+                new ByteArrayOutputStream();
+
+        try (InputStream stream =
+                     context.getContentResolver()
+                             .openInputStream(
+                                     uri)) {
+
+            if (stream == null) {
+                throw new IOException(
+                        "Backup-Datei konnte nicht zur Verifikation geöffnet werden.");
+            }
+
+            byte[] buffer =
+                    new byte[8192];
+
+            int count;
+
+            while ((count =
+                    stream.read(
+                            buffer)) != -1) {
+
+                if (output.size()
+                        > MAX_BACKUP_BYTES
+                        - count) {
+
+                    throw new IOException(
+                            "Backup-Datei ist zu groß.");
+                }
+
+                output.write(
+                        buffer,
+                        0,
+                        count);
+            }
+        }
+
+        JSONObject backup =
+                new JSONObject(
+                        output.toString(
+                                StandardCharsets.UTF_8.name()));
+
+        validateBackup(
+                backup,
+                false);
+
+        return backup;
     }
 
     static JSONObject readBackup(
@@ -117,16 +269,6 @@ final class BackupManager {
         validateBackup(
                 backup,
                 true);
-
-        if (backup.has(
-                "categorySymbolsEnabled")
-                && !(backup.get(
-                        "categorySymbolsEnabled")
-                instanceof Boolean)) {
-
-            throw new JSONException(
-                    "Ungültige Symbol-Einstellung im Backup.");
-        }
 
         JSONArray categories =
                 backup.getJSONArray(
@@ -545,7 +687,7 @@ final class BackupManager {
 
         validateBackup(
                 backup,
-                true);
+                false);
 
         return backup;
     }
@@ -681,6 +823,16 @@ final class BackupManager {
         JSONObject sectionItemOrder =
                 backup.getJSONObject(
                         "sectionItemOrder");
+
+        if (backup.has(
+                "categorySymbolsEnabled")
+                && !(backup.get(
+                        "categorySymbolsEnabled")
+                instanceof Boolean)) {
+
+            throw new JSONException(
+                    "Ungültige Symbol-Einstellung im Backup.");
+        }
 
         Set<String> categoryIds =
                 new HashSet<>();
