@@ -3,6 +3,7 @@ package de.pritcloud.appstow;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,7 +12,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.SyncFailedException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,21 +56,32 @@ final class BackupManager {
                         .getBytes(
                                 StandardCharsets.UTF_8);
 
-        try (OutputStream stream =
-                     context.getContentResolver()
-                             .openOutputStream(
-                                     uri,
-                                     "wt")) {
+        ParcelFileDescriptor descriptor =
+                context.getContentResolver()
+                        .openFileDescriptor(
+                                uri,
+                                "rwt");
 
-            if (stream == null) {
-                throw new IOException(
-                        "Backup-Datei konnte nicht geöffnet werden.");
-            }
+        if (descriptor == null) {
+            throw new IOException(
+                    "Backup-Datei konnte nicht geöffnet werden.");
+        }
+
+        try (ParcelFileDescriptor.AutoCloseOutputStream stream =
+                     new ParcelFileDescriptor.AutoCloseOutputStream(
+                             descriptor)) {
 
             stream.write(
                     data);
 
             stream.flush();
+
+            try {
+                descriptor.getFileDescriptor()
+                        .sync();
+
+            } catch (SyncFailedException ignored) {
+            }
         }
     }
 
