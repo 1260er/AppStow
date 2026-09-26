@@ -35,10 +35,10 @@ final class BackupManager {
             5 * 1024 * 1024;
 
     private static final int READ_EMPTY_ATTEMPTS =
-            20;
+            5;
 
     private static final long READ_EMPTY_DELAY_MS =
-            500L;
+            250L;
 
     private BackupManager() {
     }
