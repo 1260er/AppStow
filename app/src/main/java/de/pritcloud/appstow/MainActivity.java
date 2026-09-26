@@ -276,6 +276,9 @@ public class MainActivity extends Activity {
                 findViewById(
                         R.id.categorySymbolsSwitch);
 
+        categorySymbolsSwitch.setSaveEnabled(
+                false);
+
         shortcutList =
                 findViewById(R.id.shortcutList);
         shortcutManagement =

@@ -33,11 +33,11 @@ final class BackupManager {
     private static final int MAX_BACKUP_BYTES =
             5 * 1024 * 1024;
 
-    private static final int WRITE_VERIFY_ATTEMPTS =
-            12;
+    private static final int READ_EMPTY_ATTEMPTS =
+            20;
 
-    private static final long WRITE_VERIFY_DELAY_MS =
-            250L;
+    private static final long READ_EMPTY_DELAY_MS =
+            500L;
 
     private BackupManager() {
     }
@@ -71,99 +71,12 @@ final class BackupManager {
 
             stream.flush();
         }
-
-        verifyWrittenBackup(
-                context,
-                uri,
-                backup);
     }
 
-    private static void verifyWrittenBackup(
-            Context context,
-            Uri uri,
-            JSONObject expectedBackup)
-            throws IOException, JSONException {
-
-        long expectedCreatedAt =
-                expectedBackup.getLong(
-                        "createdAt");
-
-        boolean expectedSymbolsEnabled =
-                expectedBackup.optBoolean(
-                        "categorySymbolsEnabled",
-                        false);
-
-        Exception lastException =
-                null;
-
-        for (int attempt = 0;
-             attempt < WRITE_VERIFY_ATTEMPTS;
-             attempt++) {
-
-            try {
-                JSONObject storedBackup =
-                        readBackupForVerification(
-                                context,
-                                uri);
-
-                if (storedBackup.optLong(
-                        "createdAt",
-                        -1L) != expectedCreatedAt) {
-
-                    throw new IOException(
-                            "Das geschriebene Backup ist noch nicht aktuell.");
-                }
-
-                if (storedBackup.optBoolean(
-                        "categorySymbolsEnabled",
-                        false) != expectedSymbolsEnabled) {
-
-                    throw new IOException(
-                            "Die Kategorie-Symbol-Einstellung wurde nicht korrekt gespeichert.");
-                }
-
-                return;
-
-            } catch (IOException | JSONException exception) {
-                lastException =
-                        exception;
-            }
-
-            if (attempt
-                    + 1
-                    < WRITE_VERIFY_ATTEMPTS) {
-
-                try {
-                    Thread.sleep(
-                            WRITE_VERIFY_DELAY_MS);
-
-                } catch (InterruptedException exception) {
-                    Thread.currentThread()
-                            .interrupt();
-
-                    throw new IOException(
-                            "Backup-Verifikation wurde unterbrochen.",
-                            exception);
-                }
-            }
-        }
-
-        if (lastException instanceof JSONException) {
-            throw (JSONException) lastException;
-        }
-
-        if (lastException instanceof IOException) {
-            throw (IOException) lastException;
-        }
-
-        throw new IOException(
-                "Das geschriebene Backup konnte nicht verifiziert werden.");
-    }
-
-    private static JSONObject readBackupForVerification(
+    private static byte[] readBackupData(
             Context context,
             Uri uri)
-            throws IOException, JSONException {
+            throws IOException {
 
         ByteArrayOutputStream output =
                 new ByteArrayOutputStream();
@@ -175,7 +88,7 @@ final class BackupManager {
 
             if (stream == null) {
                 throw new IOException(
-                        "Backup-Datei konnte nicht zur Verifikation geöffnet werden.");
+                        "Backup-Datei konnte nicht geöffnet werden.");
             }
 
             byte[] buffer =
@@ -202,16 +115,7 @@ final class BackupManager {
             }
         }
 
-        JSONObject backup =
-                new JSONObject(
-                        output.toString(
-                                StandardCharsets.UTF_8.name()));
-
-        validateBackup(
-                backup,
-                false);
-
-        return backup;
+        return output.toByteArray();
     }
 
     static JSONObject readBackup(
@@ -219,46 +123,72 @@ final class BackupManager {
             Uri uri)
             throws IOException, JSONException {
 
-        ByteArrayOutputStream output =
-                new ByteArrayOutputStream();
+        IOException lastReadException =
+                null;
 
-        try (InputStream stream =
-                     context.getContentResolver()
-                             .openInputStream(uri)) {
+        for (int attempt = 0;
+             attempt < READ_EMPTY_ATTEMPTS;
+             attempt++) {
 
-            if (stream == null) {
-                throw new IOException(
-                        "Backup-Datei konnte nicht geöffnet werden.");
-            }
+            byte[] data =
+                    null;
 
-            byte[] buffer = new byte[8192];
-            int count;
+            try {
+                data =
+                        readBackupData(
+                                context,
+                                uri);
 
-            while ((count = stream.read(buffer)) != -1) {
-                if (output.size()
-                        > MAX_BACKUP_BYTES - count) {
+                if (data.length == 0) {
+                    lastReadException =
+                            new IOException(
+                                    "Backup-Datei ist noch leer. "
+                                            + "Der Cloudspeicher hat sie möglicherweise "
+                                            + "noch nicht vollständig bereitgestellt.");
+                } else {
+                    JSONObject backup =
+                            new JSONObject(
+                                    new String(
+                                            data,
+                                            StandardCharsets.UTF_8));
 
-                    throw new IOException(
-                            "Backup-Datei ist zu groß.");
+                    validateBackup(
+                            backup,
+                            true);
+
+                    return backup;
                 }
 
-                output.write(
-                        buffer,
-                        0,
-                        count);
+            } catch (IOException exception) {
+                lastReadException =
+                        exception;
+            }
+
+            if (attempt
+                    + 1
+                    < READ_EMPTY_ATTEMPTS) {
+
+                try {
+                    Thread.sleep(
+                            READ_EMPTY_DELAY_MS);
+
+                } catch (InterruptedException exception) {
+                    Thread.currentThread()
+                            .interrupt();
+
+                    throw new IOException(
+                            "Backup-Lesevorgang wurde unterbrochen.",
+                            exception);
+                }
             }
         }
 
-        JSONObject backup =
-                new JSONObject(
-                        output.toString(
-                                StandardCharsets.UTF_8.name()));
+        if (lastReadException != null) {
+            throw lastReadException;
+        }
 
-        validateBackup(
-                backup,
-                true);
-
-        return backup;
+        throw new IOException(
+                "Backup-Datei konnte nicht gelesen werden.");
     }
 
     static void restoreBackup(

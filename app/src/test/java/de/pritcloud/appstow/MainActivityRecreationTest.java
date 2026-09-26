@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.test.core.app.ActivityScenario;
@@ -43,6 +44,63 @@ public class MainActivityRecreationTest {
 
         context.deleteSharedPreferences(
                 "shortcuts");
+    }
+
+    @Test
+    public void categorySymbolPreferenceWinsOverSavedViewState() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        CategoryStore store =
+                                getPrivateField(
+                                        activity,
+                                        "categoryStore",
+                                        CategoryStore.class);
+
+                        Switch symbolsSwitch =
+                                activity.findViewById(
+                                        R.id.categorySymbolsSwitch);
+
+                        assertTrue(
+                                !symbolsSwitch.isChecked());
+
+                        store.setSymbolsEnabled(
+                                true);
+
+                        assertTrue(
+                                store.areSymbolsEnabled());
+                    });
+
+            scenario.recreate();
+
+            scenario.onActivity(
+                    activity -> {
+
+                        CategoryStore store =
+                                getPrivateField(
+                                        activity,
+                                        "categoryStore",
+                                        CategoryStore.class);
+
+                        Switch symbolsSwitch =
+                                activity.findViewById(
+                                        R.id.categorySymbolsSwitch);
+
+                        assertTrue(
+                                store.areSymbolsEnabled());
+
+                        assertTrue(
+                                symbolsSwitch.isChecked());
+
+                        assertTrue(
+                                !symbolsSwitch.isSaveEnabled());
+                    });
+        }
     }
 
     @Test
