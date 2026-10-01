@@ -561,26 +561,14 @@ public class WebAppActivity extends Activity {
         intent.addFlags(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        String[] mimeTypes =
-                normalizeAcceptTypes(
-                        params.getAcceptTypes());
-
-        if (mimeTypes.length == 1) {
-
-            intent.setType(
-                    mimeTypes[0]);
-
-        } else {
-
-            intent.setType(
-                    "*/*");
-
-            if (mimeTypes.length > 1) {
-                intent.putExtra(
-                        Intent.EXTRA_MIME_TYPES,
-                        mimeTypes);
-            }
-        }
+        /*
+         * Web apps can report overly restrictive accept types in WebView.
+         * Keep capture handling separate, but let the normal document picker
+         * expose all openable files. The web app remains responsible for
+         * validating whether the selected file type is supported.
+         */
+        intent.setType(
+                "*/*");
 
         if (params.getMode()
                 == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
