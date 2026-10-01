@@ -545,6 +545,20 @@ public class WebAppActivity extends Activity {
     private static Intent createFileChooserIntent(
             WebChromeClient.FileChooserParams params) {
 
+        String[] mimeTypes =
+                normalizeAcceptTypes(
+                        params.getAcceptTypes());
+
+        if (params.getMode()
+                != WebChromeClient.FileChooserParams.MODE_SAVE
+                && isImageOnlyMimeTypes(
+                        mimeTypes)) {
+
+            return createPhotoPickerIntent(
+                    params,
+                    mimeTypes);
+        }
+
         String action =
                 params.getMode()
                         == WebChromeClient.FileChooserParams.MODE_SAVE
@@ -561,25 +575,59 @@ public class WebAppActivity extends Activity {
         intent.addFlags(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        String[] mimeTypes =
-                normalizeAcceptTypes(
-                        params.getAcceptTypes());
+        String primaryType =
+                null;
 
-        if (mimeTypes.length == 1) {
+        String[] extraMimeTypes =
+                null;
 
-            intent.setType(
-                    mimeTypes[0]);
+        try {
+            Intent webViewIntent =
+                    params.createIntent();
 
-        } else {
+            if (webViewIntent != null) {
 
-            intent.setType(
-                    "*/*");
+                primaryType =
+                        webViewIntent.getType();
 
-            if (mimeTypes.length > 1) {
-                intent.putExtra(
-                        Intent.EXTRA_MIME_TYPES,
-                        mimeTypes);
+                extraMimeTypes =
+                        webViewIntent.getStringArrayExtra(
+                                Intent.EXTRA_MIME_TYPES);
             }
+
+        } catch (RuntimeException ignored) {
+        }
+
+        if (primaryType == null
+                || primaryType.trim().isEmpty()) {
+
+            if (mimeTypes.length > 0) {
+
+                primaryType =
+                        mimeTypes[0];
+
+            } else {
+
+                primaryType =
+                        "*/*";
+            }
+        }
+
+        intent.setType(
+                primaryType);
+
+        if (extraMimeTypes != null
+                && extraMimeTypes.length > 0) {
+
+            intent.putExtra(
+                    Intent.EXTRA_MIME_TYPES,
+                    extraMimeTypes);
+
+        } else if (mimeTypes.length > 1) {
+
+            intent.putExtra(
+                    Intent.EXTRA_MIME_TYPES,
+                    mimeTypes);
         }
 
         if (params.getMode()
@@ -606,6 +654,68 @@ public class WebAppActivity extends Activity {
         }
 
         return intent;
+    }
+
+    private static Intent createPhotoPickerIntent(
+            WebChromeClient.FileChooserParams params,
+            String[] mimeTypes) {
+
+        Intent intent =
+                new Intent(
+                        MediaStore.ACTION_PICK_IMAGES);
+
+        if (mimeTypes.length == 1) {
+
+            intent.setType(
+                    mimeTypes[0]);
+
+        } else {
+
+            intent.setType(
+                    "image/*");
+        }
+
+        if (params.getMode()
+                == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
+
+            int maxImages =
+                    MediaStore.getPickImagesMaxLimit();
+
+            if (maxImages > 1) {
+
+                intent.putExtra(
+                        MediaStore.EXTRA_PICK_IMAGES_MAX,
+                        maxImages);
+            }
+        }
+
+        return intent;
+    }
+
+    private static boolean isImageOnlyMimeTypes(
+            String[] mimeTypes) {
+
+        if (mimeTypes == null
+                || mimeTypes.length == 0) {
+
+            return false;
+        }
+
+        for (String mimeType : mimeTypes) {
+
+            if (mimeType == null
+                    || !mimeType.regionMatches(
+                            true,
+                            0,
+                            "image/",
+                            0,
+                            6)) {
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static String[] normalizeAcceptTypes(

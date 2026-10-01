@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -146,16 +147,56 @@ public class WebAppActivityTest {
     }
 
     @Test
-    public void documentPickerSupportsImagesAndDocuments()
+    public void imageRequestUsesPhotoPicker()
             throws Exception {
 
         WebChromeClient.FileChooserParams params =
                 new TestFileChooserParams(
                         new String[]{
-                                "image/*",
-                                "application/pdf"
+                                "image/*"
                         },
-                        WebChromeClient.FileChooserParams.MODE_OPEN);
+                        WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE);
+
+        Method method =
+                WebAppActivity.class
+                        .getDeclaredMethod(
+                                "createFileChooserIntent",
+                                WebChromeClient.FileChooserParams.class);
+
+        method.setAccessible(
+                true);
+
+        Intent intent =
+                (Intent) method.invoke(
+                        null,
+                        params);
+
+        assertEquals(
+                MediaStore.ACTION_PICK_IMAGES,
+                intent.getAction());
+
+        assertEquals(
+                "image/*",
+                intent.getType());
+
+        assertTrue(
+                intent.getIntExtra(
+                        MediaStore.EXTRA_PICK_IMAGES_MAX,
+                        0)
+                        > 1);
+    }
+
+    @Test
+    public void documentRequestUsesDocumentPickerAndFilters()
+            throws Exception {
+
+        WebChromeClient.FileChooserParams params =
+                new TestFileChooserParams(
+                        new String[]{
+                                "application/pdf",
+                                "text/plain"
+                        },
+                        WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE);
 
         Method method =
                 WebAppActivity.class
@@ -176,16 +217,21 @@ public class WebAppActivityTest {
                 intent.getAction());
 
         assertEquals(
-                "*/*",
+                "application/pdf",
                 intent.getType());
 
         assertArrayEquals(
                 new String[]{
-                        "image/*",
-                        "application/pdf"
+                        "application/pdf",
+                        "text/plain"
                 },
                 intent.getStringArrayExtra(
                         Intent.EXTRA_MIME_TYPES));
+
+        assertTrue(
+                intent.getBooleanExtra(
+                        Intent.EXTRA_ALLOW_MULTIPLE,
+                        false));
 
         assertTrue(
                 intent.getCategories()
@@ -279,7 +325,30 @@ public class WebAppActivityTest {
 
         @Override
         public Intent createIntent() {
-            return new Intent();
+
+            Intent intent =
+                    new Intent(
+                            Intent.ACTION_GET_CONTENT);
+
+            if (acceptTypes.length > 0) {
+
+                intent.setType(
+                        acceptTypes[0]);
+
+                intent.putExtra(
+                        Intent.EXTRA_MIME_TYPES,
+                        acceptTypes);
+            }
+
+            if (mode
+                    == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
+
+                intent.putExtra(
+                        Intent.EXTRA_ALLOW_MULTIPLE,
+                        true);
+            }
+
+            return intent;
         }
 
         @Override
