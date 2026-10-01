@@ -3,6 +3,7 @@ package de.pritcloud.appstow;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -23,6 +24,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -231,6 +235,126 @@ final class WebAppBlobDownloadBridge
         return name;
     }
 
+    static String firstAvailableFileName(
+            String requested,
+            Set<String> existingNames) {
+
+        Set<String> taken =
+                new HashSet<>();
+
+        for (String name : existingNames) {
+            if (name != null) {
+                taken.add(
+                        name.toLowerCase(
+                                Locale.ROOT));
+            }
+        }
+
+        if (!taken.contains(
+                requested.toLowerCase(
+                        Locale.ROOT))) {
+
+            return requested;
+        }
+
+        int dot =
+                requested.lastIndexOf(".");
+
+        String base =
+                dot > 0
+                        ? requested.substring(0, dot)
+                        : requested;
+
+        String extension =
+                dot > 0
+                        ? requested.substring(dot)
+                        : "";
+
+        for (int number = 1;
+             number <= 10000;
+             number++) {
+
+            String suffix =
+                    " (" + number + ")";
+
+            int maxBaseLength =
+                    Math.max(
+                            1,
+                            180 - suffix.length()
+                                    - extension.length());
+
+            String candidateBase =
+                    base.length() > maxBaseLength
+                            ? base.substring(
+                                    0,
+                                    maxBaseLength)
+                            : base;
+
+            String candidate =
+                    candidateBase
+                            + suffix
+                            + extension;
+
+            if (!taken.contains(
+                    candidate.toLowerCase(
+                            Locale.ROOT))) {
+
+                return candidate;
+            }
+        }
+
+        return requested;
+    }
+
+    private static String chooseDownloadFileName(
+            ContentResolver resolver,
+            String requested) {
+
+        Set<String> existing =
+                new HashSet<>();
+
+        try (Cursor cursor =
+                     resolver.query(
+                             MediaStore.Downloads
+                                     .EXTERNAL_CONTENT_URI,
+                             new String[]{
+                                     MediaStore.MediaColumns
+                                             .DISPLAY_NAME
+                             },
+                             MediaStore.MediaColumns
+                                     .RELATIVE_PATH + " = ?",
+                             new String[]{
+                                     Environment.DIRECTORY_DOWNLOADS
+                                             + "/"
+                             },
+                             null)) {
+
+            if (cursor == null) {
+                return requested;
+            }
+
+            while (cursor.moveToNext()) {
+
+                String name =
+                        cursor.getString(0);
+
+                if (name != null) {
+                    existing.add(name);
+                }
+            }
+
+        } catch (RuntimeException ignored) {
+
+            // Bei einem nicht unterstützten Provider
+            // bleibt das bisherige Downloadverhalten erhalten.
+            return requested;
+        }
+
+        return firstAvailableFileName(
+                requested,
+                existing);
+    }
+
     private static String sanitizeMimeType(
             String input) {
 
@@ -381,7 +505,9 @@ final class WebAppBlobDownloadBridge
 
             values.put(
                     MediaStore.MediaColumns.DISPLAY_NAME,
-                    name);
+                    chooseDownloadFileName(
+                            resolver,
+                            name));
 
             values.put(
                     MediaStore.MediaColumns.MIME_TYPE,

@@ -143,6 +143,66 @@ public class WebAppActivityTest {
     }
 
     @Test
+    public void blobDownloadKeepsExtensionForDuplicateFiles() {
+
+        assertEquals(
+                "datei.pdf",
+                WebAppBlobDownloadBridge.firstAvailableFileName(
+                        "datei.pdf",
+                        java.util.Collections.emptySet()));
+
+        assertEquals(
+                "datei (1).pdf",
+                WebAppBlobDownloadBridge.firstAvailableFileName(
+                        "datei.pdf",
+                        new java.util.HashSet<>(
+                                Arrays.asList(
+                                        "datei.pdf"))));
+
+        assertEquals(
+                "datei (2).pdf",
+                WebAppBlobDownloadBridge.firstAvailableFileName(
+                        "datei.pdf",
+                        new java.util.HashSet<>(
+                                Arrays.asList(
+                                        "datei.pdf",
+                                        "datei.pdf (1)",
+                                        "datei (1).pdf"))));
+
+        assertEquals(
+                "archiv.tar (1).gz",
+                WebAppBlobDownloadBridge.firstAvailableFileName(
+                        "archiv.tar.gz",
+                        new java.util.HashSet<>(
+                                Arrays.asList(
+                                        "archiv.tar.gz"))));
+
+        assertEquals(
+                "datei (1)",
+                WebAppBlobDownloadBridge.firstAvailableFileName(
+                        "datei",
+                        new java.util.HashSet<>(
+                                Arrays.asList(
+                                        "datei"))));
+
+        assertEquals(
+                ".config (1)",
+                WebAppBlobDownloadBridge.firstAvailableFileName(
+                        ".config",
+                        new java.util.HashSet<>(
+                                Arrays.asList(
+                                        ".config"))));
+
+        assertEquals(
+                "datei (1).pdf",
+                WebAppBlobDownloadBridge.firstAvailableFileName(
+                        "datei.pdf",
+                        new java.util.HashSet<>(
+                                Arrays.asList(
+                                        "DATEI.PDF"))));
+    }
+
+    @Test
     public void blobDownloadScriptIsPackaged()
             throws Exception {
 
