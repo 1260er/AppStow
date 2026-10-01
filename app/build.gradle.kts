@@ -114,6 +114,7 @@ dependencies {
     baselineProfile(project(":baselineprofile"))
 
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
+    implementation("androidx.webkit:webkit:1.17.1")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")

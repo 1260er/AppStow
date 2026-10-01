@@ -86,6 +86,8 @@
     <string name="shortcut_launch_failed">Shortcut konnte nicht geöffnet werden.</string>
     <string name="webview_start_failed_title">WebView konnte nicht gestartet werden</string>
     <string name="webapp_load_failed_title">Web-App konnte nicht geladen werden</string>
+    <string name="webapp_download_started">Download gestartet.</string>
+    <string name="webapp_download_failed">Download konnte nicht gestartet werden.</string>
     <string name="webview_load_error_title">WebView-Ladefehler</string>
     <string name="webview_load_error_details">Fehlercode: %1$d
 

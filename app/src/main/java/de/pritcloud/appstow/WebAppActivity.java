@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.Intent;
@@ -14,13 +15,17 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.webkit.CookieManager;
+import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SslErrorHandler;
@@ -39,6 +44,9 @@ import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
+import androidx.webkit.URLUtilCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,20 +63,35 @@ public class WebAppActivity extends Activity {
     private static final int REQUEST_FILE_CHOOSER = 1001;
     private static final int REQUEST_FILE_CAMERA_PERMISSION = 1002;
     private static final int REQUEST_WEB_CAMERA_PERMISSION = 1003;
+    private static final int REQUEST_WEB_MEDIA_PERMISSION = 1004;
+    private static final int REQUEST_WEB_GEOLOCATION_PERMISSION = 1005;
 
     private WebView webView;
     private AlertDialog errorDialog;
+    private View customFullscreenView;
+    private WebChromeClient.CustomViewCallback customFullscreenCallback;
 
     private ValueCallback<Uri[]> filePathCallback;
     private WebChromeClient.FileChooserParams pendingFileChooserParams;
     private Uri pendingCameraCaptureUri;
     private File pendingCameraCaptureFile;
     private PermissionRequest pendingWebPermissionRequest;
+    private String pendingGeolocationOrigin;
+    private GeolocationPermissions.Callback pendingGeolocationCallback;
 
     private final OnBackInvokedCallback webHistoryBackCallback =
             () -> {
+
+                if (customFullscreenView
+                        != null) {
+
+                    hideCustomFullscreenView();
+                    return;
+                }
+
                 if (webView == null
                         || !webView.canGoBack()) {
+
                     return;
                 }
 
@@ -200,8 +223,9 @@ public class WebAppActivity extends Activity {
     private void updateWebHistoryBackCallback() {
 
         boolean shouldRegister =
-                webView != null
-                        && webView.canGoBack();
+                customFullscreenView != null
+                        || (webView != null
+                        && webView.canGoBack());
 
         OnBackInvokedDispatcher dispatcher =
                 getOnBackInvokedDispatcher();
@@ -236,6 +260,19 @@ public class WebAppActivity extends Activity {
         settings.setDomStorageEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
+        settings.setSupportZoom(true);
+        settings.setBuiltInZoomControls(true);
+        settings.setDisplayZoomControls(false);
+        settings.setGeolocationEnabled(true);
+
+        if (WebViewFeature.isFeatureSupported(
+                WebViewFeature.WEB_AUTHENTICATION)) {
+
+            WebSettingsCompat.setWebAuthenticationSupport(
+                    settings,
+                    WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP);
+        }
+
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(true);
         settings.setMixedContentMode(
@@ -265,6 +302,22 @@ public class WebAppActivity extends Activity {
                     }
 
                     @Override
+                    public void onShowCustomView(
+                            View view,
+                            CustomViewCallback callback) {
+
+                        showCustomFullscreenView(
+                                view,
+                                callback);
+                    }
+
+                    @Override
+                    public void onHideCustomView() {
+
+                        hideCustomFullscreenView();
+                    }
+
+                    @Override
                     public void onPermissionRequest(
                             PermissionRequest request) {
 
@@ -283,7 +336,26 @@ public class WebAppActivity extends Activity {
                                     null;
                         }
                     }
+
+                    @Override
+                    public void onGeolocationPermissionsShowPrompt(
+                            String origin,
+                            GeolocationPermissions.Callback callback) {
+
+                        handleGeolocationPermissionRequest(
+                                origin,
+                                callback);
+                    }
+
+                    @Override
+                    public void onGeolocationPermissionsHidePrompt() {
+
+                        denyPendingGeolocationRequest();
+                    }
                 });
+
+        webView.setDownloadListener(
+                this::handleDownload);
 
         webView.setWebViewClient(
                 new WebViewClient() {
@@ -415,6 +487,269 @@ public class WebAppActivity extends Activity {
                         return true;
                     }
                 });
+    }
+
+    private void showCustomFullscreenView(
+            View view,
+            WebChromeClient.CustomViewCallback callback) {
+
+        if (view == null
+                || callback == null) {
+
+            return;
+        }
+
+        if (customFullscreenView != null) {
+
+            try {
+                callback.onCustomViewHidden();
+            } catch (RuntimeException ignored) {
+            }
+
+            return;
+        }
+
+        View decorView =
+                getWindow()
+                        .getDecorView();
+
+        if (!(decorView instanceof ViewGroup)) {
+            return;
+        }
+
+        customFullscreenView =
+                view;
+
+        customFullscreenCallback =
+                callback;
+
+        ((ViewGroup) decorView)
+                .addView(
+                        view,
+                        new ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        if (webView != null) {
+            webView.setVisibility(
+                    View.INVISIBLE);
+        }
+
+        WindowInsetsController controller =
+                getWindow()
+                        .getInsetsController();
+
+        if (controller != null) {
+
+            controller.hide(
+                    WindowInsets.Type.systemBars());
+
+            controller.setSystemBarsBehavior(
+                    WindowInsetsController
+                            .BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        }
+
+        updateWebHistoryBackCallback();
+    }
+
+    private void hideCustomFullscreenView() {
+
+        View view =
+                customFullscreenView;
+
+        WebChromeClient.CustomViewCallback callback =
+                customFullscreenCallback;
+
+        customFullscreenView =
+                null;
+
+        customFullscreenCallback =
+                null;
+
+        if (view != null
+                && view.getParent()
+                instanceof ViewGroup) {
+
+            try {
+                ((ViewGroup) view.getParent())
+                        .removeView(
+                                view);
+
+            } catch (RuntimeException ignored) {
+            }
+        }
+
+        if (webView != null) {
+
+            webView.setVisibility(
+                    View.VISIBLE);
+        }
+
+        WindowInsetsController controller =
+                getWindow()
+                        .getInsetsController();
+
+        if (controller != null) {
+
+            controller.show(
+                    WindowInsets.Type.systemBars());
+        }
+
+        if (callback != null) {
+
+            try {
+                callback.onCustomViewHidden();
+            } catch (RuntimeException ignored) {
+            }
+        }
+
+        updateWebHistoryBackCallback();
+    }
+
+    private static boolean isSupportedDownloadUri(
+            Uri uri) {
+
+        return isHttpsUri(
+                uri);
+    }
+
+    private void handleDownload(
+            String url,
+            String userAgent,
+            String contentDisposition,
+            String mimeType,
+            long contentLength) {
+
+        if (url == null) {
+            return;
+        }
+
+        Uri uri;
+
+        try {
+            uri =
+                    Uri.parse(
+                            url);
+
+        } catch (RuntimeException exception) {
+
+            showDownloadFailedToast();
+            return;
+        }
+
+        if (!isSupportedDownloadUri(
+                uri)) {
+
+            return;
+        }
+
+        try {
+            String fileName =
+                    URLUtilCompat.guessFileName(
+                            url,
+                            contentDisposition,
+                            mimeType);
+
+            fileName =
+                    fileName
+                            .replace(
+                                    "/",
+                                    "_")
+                            .replace(
+                                    "\\",
+                                    "_");
+
+            DownloadManager.Request request =
+                    new DownloadManager.Request(
+                            uri);
+
+            request.setTitle(
+                    fileName);
+
+            request.setNotificationVisibility(
+                    DownloadManager.Request
+                            .VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+
+            request.setDestinationInExternalPublicDir(
+                    Environment.DIRECTORY_DOWNLOADS,
+                    fileName);
+
+            if (mimeType != null
+                    && !mimeType.trim().isEmpty()) {
+
+                request.setMimeType(
+                        mimeType);
+            }
+
+            if (userAgent != null
+                    && !userAgent.trim().isEmpty()) {
+
+                request.addRequestHeader(
+                        "User-Agent",
+                        userAgent);
+            }
+
+            String cookies =
+                    CookieManager.getInstance()
+                            .getCookie(
+                                    url);
+
+            if (cookies != null
+                    && !cookies.trim().isEmpty()) {
+
+                request.addRequestHeader(
+                        "Cookie",
+                        cookies);
+            }
+
+            if (webView != null) {
+
+                String currentUrl =
+                        webView.getUrl();
+
+                if (currentUrl != null
+                        && isHttpsUri(
+                                Uri.parse(
+                                        currentUrl))) {
+
+                    request.addRequestHeader(
+                            "Referer",
+                            currentUrl);
+                }
+            }
+
+            DownloadManager manager =
+                    (DownloadManager) getSystemService(
+                            DOWNLOAD_SERVICE);
+
+            if (manager == null) {
+
+                throw new IllegalStateException(
+                        "DownloadManager unavailable.");
+            }
+
+            manager.enqueue(
+                    request);
+
+            Toast.makeText(
+                    this,
+                    R.string.webapp_download_started,
+                    Toast.LENGTH_SHORT)
+                    .show();
+
+        } catch (RuntimeException exception) {
+
+            showDownloadFailedToast();
+        }
+    }
+
+    private void showDownloadFailedToast() {
+
+        Toast.makeText(
+                this,
+                R.string.webapp_download_failed,
+                Toast.LENGTH_SHORT)
+                .show();
     }
 
     private boolean handleFileChooser(
@@ -1013,8 +1348,340 @@ public class WebAppActivity extends Activity {
                 new Uri[0]);
     }
 
+    private void handleGeolocationPermissionRequest(
+            String origin,
+            GeolocationPermissions.Callback callback) {
+
+        if (callback == null
+                || !isSecureCurrentWebOrigin(
+                        origin)) {
+
+            if (callback != null
+                    && origin != null) {
+
+                try {
+                    callback.invoke(
+                            origin,
+                            false,
+                            false);
+
+                } catch (RuntimeException ignored) {
+                }
+            }
+
+            return;
+        }
+
+        boolean locationGranted =
+                checkSelfPermission(
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED
+                        || checkSelfPermission(
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED;
+
+        if (locationGranted) {
+
+            callback.invoke(
+                    origin,
+                    true,
+                    false);
+
+            return;
+        }
+
+        denyPendingGeolocationRequest();
+
+        pendingGeolocationOrigin =
+                origin;
+
+        pendingGeolocationCallback =
+                callback;
+
+        requestPermissions(
+                new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                },
+                REQUEST_WEB_GEOLOCATION_PERMISSION);
+    }
+
+    private boolean isSecureCurrentWebOrigin(
+            String origin) {
+
+        if (origin == null
+                || webView == null) {
+
+            return false;
+        }
+
+        Uri originUri =
+                Uri.parse(
+                        origin);
+
+        if (!isHttpsUri(
+                originUri)) {
+
+            return false;
+        }
+
+        String currentUrl =
+                webView.getUrl();
+
+        if (currentUrl == null) {
+            return false;
+        }
+
+        return isSameHttpsOrigin(
+                Uri.parse(
+                        currentUrl),
+                originUri);
+    }
+
+    private void denyPendingGeolocationRequest() {
+
+        String origin =
+                pendingGeolocationOrigin;
+
+        GeolocationPermissions.Callback callback =
+                pendingGeolocationCallback;
+
+        pendingGeolocationOrigin =
+                null;
+
+        pendingGeolocationCallback =
+                null;
+
+        if (origin == null
+                || callback == null) {
+
+            return;
+        }
+
+        try {
+            callback.invoke(
+                    origin,
+                    false,
+                    false);
+
+        } catch (RuntimeException ignored) {
+        }
+    }
+
+    private static boolean requestsAudioCapture(
+            PermissionRequest request) {
+
+        if (request == null
+                || request.getResources() == null) {
+
+            return false;
+        }
+
+        for (String resource :
+                request.getResources()) {
+
+            if (PermissionRequest.RESOURCE_AUDIO_CAPTURE
+                    .equals(resource)) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isSecureMediaPermissionRequest(
+            PermissionRequest request) {
+
+        if (request == null
+                || webView == null
+                || !isHttpsUri(
+                        request.getOrigin())) {
+
+            return false;
+        }
+
+        String currentUrl =
+                webView.getUrl();
+
+        return currentUrl != null
+                && isSameHttpsOrigin(
+                        Uri.parse(
+                                currentUrl),
+                        request.getOrigin());
+    }
+
+    private boolean grantWebMediaRequestIfAllowed(
+            PermissionRequest request) {
+
+        if (!isSecureMediaPermissionRequest(
+                request)) {
+
+            return false;
+        }
+
+        String[] resources =
+                request.getResources();
+
+        if (resources == null
+                || resources.length == 0) {
+
+            return false;
+        }
+
+        ArrayList<String> allowedResources =
+                new ArrayList<>();
+
+        for (String resource : resources) {
+
+            if (PermissionRequest.RESOURCE_AUDIO_CAPTURE
+                    .equals(resource)) {
+
+                if (checkSelfPermission(
+                        Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    return false;
+                }
+
+                if (!allowedResources.contains(
+                        resource)) {
+
+                    allowedResources.add(
+                            resource);
+                }
+
+            } else if (PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                    .equals(resource)) {
+
+                if (checkSelfPermission(
+                        Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    return false;
+                }
+
+                if (!allowedResources.contains(
+                        resource)) {
+
+                    allowedResources.add(
+                            resource);
+                }
+
+            } else {
+
+                return false;
+            }
+        }
+
+        if (allowedResources.isEmpty()) {
+            return false;
+        }
+
+        try {
+            request.grant(
+                    allowedResources.toArray(
+                            new String[0]));
+
+            return true;
+
+        } catch (RuntimeException ignored) {
+
+            return false;
+        }
+    }
+
+    private void handleWebMediaPermissionRequest(
+            PermissionRequest request) {
+
+        if (!isSecureMediaPermissionRequest(
+                request)) {
+
+            request.deny();
+            return;
+        }
+
+        String[] resources =
+                request.getResources();
+
+        if (resources == null
+                || resources.length == 0) {
+
+            request.deny();
+            return;
+        }
+
+        ArrayList<String> missingPermissions =
+                new ArrayList<>();
+
+        for (String resource : resources) {
+
+            if (PermissionRequest.RESOURCE_AUDIO_CAPTURE
+                    .equals(resource)) {
+
+                if (checkSelfPermission(
+                        Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED
+                        && !missingPermissions.contains(
+                        Manifest.permission.RECORD_AUDIO)) {
+
+                    missingPermissions.add(
+                            Manifest.permission.RECORD_AUDIO);
+                }
+
+            } else if (PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                    .equals(resource)) {
+
+                if (checkSelfPermission(
+                        Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED
+                        && !missingPermissions.contains(
+                        Manifest.permission.CAMERA)) {
+
+                    missingPermissions.add(
+                            Manifest.permission.CAMERA);
+                }
+
+            } else {
+
+                request.deny();
+                return;
+            }
+        }
+
+        if (missingPermissions.isEmpty()) {
+
+            if (!grantWebMediaRequestIfAllowed(
+                    request)) {
+
+                request.deny();
+            }
+
+            return;
+        }
+
+        denyPendingWebPermissionRequest();
+
+        pendingWebPermissionRequest =
+                request;
+
+        requestPermissions(
+                missingPermissions.toArray(
+                        new String[0]),
+                REQUEST_WEB_MEDIA_PERMISSION);
+    }
+
     private void handleWebPermissionRequest(
             PermissionRequest request) {
+
+        if (requestsAudioCapture(
+                request)) {
+
+            handleWebMediaPermissionRequest(
+                    request);
+
+            return;
+        }
 
         if (!isSecureVideoPermissionRequest(
                 request)) {
@@ -1239,6 +1906,74 @@ public class WebAppActivity extends Activity {
 
             } else {
                 request.deny();
+            }
+
+            return;
+        }
+
+        if (requestCode
+                == REQUEST_WEB_MEDIA_PERMISSION) {
+
+            PermissionRequest request =
+                    pendingWebPermissionRequest;
+
+            pendingWebPermissionRequest =
+                    null;
+
+            if (request == null) {
+                return;
+            }
+
+            if (!grantWebMediaRequestIfAllowed(
+                    request)) {
+
+                request.deny();
+            }
+
+            return;
+        }
+
+        if (requestCode
+                == REQUEST_WEB_GEOLOCATION_PERMISSION) {
+
+            String origin =
+                    pendingGeolocationOrigin;
+
+            GeolocationPermissions.Callback callback =
+                    pendingGeolocationCallback;
+
+            pendingGeolocationOrigin =
+                    null;
+
+            pendingGeolocationCallback =
+                    null;
+
+            if (origin == null
+                    || callback == null) {
+
+                return;
+            }
+
+            boolean locationGranted =
+                    checkSelfPermission(
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED
+                            || checkSelfPermission(
+                            Manifest.permission.ACCESS_COARSE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED;
+
+            boolean allow =
+                    locationGranted
+                            && isSecureCurrentWebOrigin(
+                                    origin);
+
+            try {
+                callback.invoke(
+                        origin,
+                        allow,
+                        false);
+
+            } catch (RuntimeException ignored) {
             }
 
             return;
@@ -1521,10 +2256,14 @@ public class WebAppActivity extends Activity {
 
         dismissErrorDialog();
 
+        hideCustomFullscreenView();
+
         completeFileChooser(
                 null);
 
         denyPendingWebPermissionRequest();
+
+        denyPendingGeolocationRequest();
 
         disposeWebView(
                 webView);

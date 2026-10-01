@@ -58,6 +58,80 @@ public class WebAppActivityTest {
     }
 
     @Test
+    public void manifestDeclaresPwaRuntimePermissions()
+            throws Exception {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        PackageInfo packageInfo =
+                context.getPackageManager()
+                        .getPackageInfo(
+                                context.getPackageName(),
+                                PackageManager.GET_PERMISSIONS);
+
+        assertNotNull(
+                packageInfo.requestedPermissions);
+
+        assertTrue(
+                Arrays.asList(
+                                packageInfo.requestedPermissions)
+                        .contains(
+                                Manifest.permission.RECORD_AUDIO));
+
+        assertTrue(
+                Arrays.asList(
+                                packageInfo.requestedPermissions)
+                        .contains(
+                                Manifest.permission.ACCESS_COARSE_LOCATION));
+
+        assertTrue(
+                Arrays.asList(
+                                packageInfo.requestedPermissions)
+                        .contains(
+                                Manifest.permission.ACCESS_FINE_LOCATION));
+    }
+
+    @Test
+    public void regularDownloadRequiresHttps()
+            throws Exception {
+
+        Method method =
+                WebAppActivity.class
+                        .getDeclaredMethod(
+                                "isSupportedDownloadUri",
+                                Uri.class);
+
+        method.setAccessible(
+                true);
+
+        assertTrue(
+                (Boolean) method.invoke(
+                        null,
+                        Uri.parse(
+                                "https://example.com/file.pdf")));
+
+        assertFalse(
+                (Boolean) method.invoke(
+                        null,
+                        Uri.parse(
+                                "http://example.com/file.pdf")));
+
+        assertFalse(
+                (Boolean) method.invoke(
+                        null,
+                        Uri.parse(
+                                "blob:https://example.com/123")));
+
+        assertFalse(
+                (Boolean) method.invoke(
+                        null,
+                        Uri.parse(
+                                "file:///tmp/file.pdf")));
+    }
+
+    @Test
     public void webCameraOriginMustMatchCurrentPage() throws Exception {
 
         Method method =
@@ -141,6 +215,19 @@ public class WebAppActivityTest {
                         assertFalse(
                                 webView.getSettings()
                                         .getAllowFileAccess());
+
+                        assertTrue(
+                                webView.getSettings()
+                                        .supportZoom());
+
+                        assertTrue(
+                                webView.getSettings()
+                                        .getBuiltInZoomControls());
+
+                        assertFalse(
+                                webView.getSettings()
+                                        .getDisplayZoomControls());
+
                     });
         }
     }
