@@ -1,34 +1,45 @@
 package de.pritcloud.appstow;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.ViewGroup;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.webkit.CookieManager;
+import android.webkit.PermissionRequest;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 
 @SuppressLint({"SetJavaScriptEnabled", "WebViewApiAvailability", "ObsoleteSdkInt"})
 public class WebAppActivity extends Activity {
@@ -36,8 +47,18 @@ public class WebAppActivity extends Activity {
     static final String EXTRA_URL =
             "web_app_url";
 
+    private static final int REQUEST_FILE_CHOOSER = 1001;
+    private static final int REQUEST_FILE_CAMERA_PERMISSION = 1002;
+    private static final int REQUEST_WEB_CAMERA_PERMISSION = 1003;
+
     private WebView webView;
     private AlertDialog errorDialog;
+
+    private ValueCallback<Uri[]> filePathCallback;
+    private WebChromeClient.FileChooserParams pendingFileChooserParams;
+    private Uri pendingCameraCaptureUri;
+    private File pendingCameraCaptureFile;
+    private PermissionRequest pendingWebPermissionRequest;
 
     private final OnBackInvokedCallback webHistoryBackCallback =
             () -> {
@@ -225,7 +246,39 @@ public class WebAppActivity extends Activity {
                 true);
 
         webView.setWebChromeClient(
-                new WebChromeClient());
+                new WebChromeClient() {
+
+                    @Override
+                    public boolean onShowFileChooser(
+                            WebView view,
+                            ValueCallback<Uri[]> callback,
+                            FileChooserParams params) {
+
+                        return handleFileChooser(
+                                callback,
+                                params);
+                    }
+
+                    @Override
+                    public void onPermissionRequest(
+                            PermissionRequest request) {
+
+                        handleWebPermissionRequest(
+                                request);
+                    }
+
+                    @Override
+                    public void onPermissionRequestCanceled(
+                            PermissionRequest request) {
+
+                        if (pendingWebPermissionRequest
+                                == request) {
+
+                            pendingWebPermissionRequest =
+                                    null;
+                        }
+                    }
+                });
 
         webView.setWebViewClient(
                 new WebViewClient() {
@@ -357,6 +410,501 @@ public class WebAppActivity extends Activity {
                         return true;
                     }
                 });
+    }
+
+    private boolean handleFileChooser(
+            ValueCallback<Uri[]> callback,
+            WebChromeClient.FileChooserParams params) {
+
+        if (callback == null) {
+            return false;
+        }
+
+        completeFileChooser(
+                null);
+
+        filePathCallback =
+                callback;
+
+        pendingFileChooserParams =
+                params;
+
+        if (params == null) {
+            completeFileChooser(
+                    null);
+
+            return true;
+        }
+
+        if (isImageCaptureRequest(
+                params)) {
+
+            if (checkSelfPermission(
+                    Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(
+                        new String[]{
+                                Manifest.permission.CAMERA
+                        },
+                        REQUEST_FILE_CAMERA_PERMISSION);
+
+                return true;
+            }
+
+            launchCameraCapture();
+            return true;
+        }
+
+        launchFileChooser();
+        return true;
+    }
+
+    private static boolean isImageCaptureRequest(
+            WebChromeClient.FileChooserParams params) {
+
+        if (params == null
+                || !params.isCaptureEnabled()) {
+
+            return false;
+        }
+
+        String[] acceptTypes =
+                params.getAcceptTypes();
+
+        if (acceptTypes == null
+                || acceptTypes.length == 0) {
+
+            return true;
+        }
+
+        boolean hasType =
+                false;
+
+        for (String type : acceptTypes) {
+
+            if (type == null
+                    || type.trim().isEmpty()) {
+
+                continue;
+            }
+
+            hasType =
+                    true;
+
+            String normalized =
+                    type.trim();
+
+            if ("*/*".equals(
+                    normalized)
+                    || normalized.regionMatches(
+                            true,
+                            0,
+                            "image/",
+                            0,
+                            6)) {
+
+                return true;
+            }
+        }
+
+        return !hasType;
+    }
+
+    private void launchFileChooser() {
+
+        if (filePathCallback == null
+                || pendingFileChooserParams == null) {
+
+            return;
+        }
+
+        pendingCameraCaptureUri =
+                null;
+
+        pendingCameraCaptureFile =
+                null;
+
+        try {
+            Intent intent =
+                    pendingFileChooserParams
+                            .createIntent();
+
+            startActivityForResult(
+                    intent,
+                    REQUEST_FILE_CHOOSER);
+
+        } catch (RuntimeException exception) {
+
+            completeFileChooser(
+                    null);
+        }
+    }
+
+    private void launchCameraCapture() {
+
+        if (filePathCallback == null) {
+            return;
+        }
+
+        try {
+            File cameraDirectory =
+                    new File(
+                            getCacheDir(),
+                            "webapp-camera");
+
+            if (!cameraDirectory.exists()
+                    && !cameraDirectory.mkdirs()) {
+
+                throw new IOException(
+                        "Could not create camera cache directory.");
+            }
+
+            pendingCameraCaptureFile =
+                    File.createTempFile(
+                            "capture-",
+                            ".jpg",
+                            cameraDirectory);
+
+            pendingCameraCaptureUri =
+                    FileProvider.getUriForFile(
+                            this,
+                            getPackageName()
+                                    + ".fileprovider",
+                            pendingCameraCaptureFile);
+
+            Intent cameraIntent =
+                    new Intent(
+                            MediaStore.ACTION_IMAGE_CAPTURE);
+
+            cameraIntent.putExtra(
+                    MediaStore.EXTRA_OUTPUT,
+                    pendingCameraCaptureUri);
+
+            cameraIntent.setClipData(
+                    ClipData.newRawUri(
+                            "webapp-camera",
+                            pendingCameraCaptureUri));
+
+            cameraIntent.addFlags(
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            startActivityForResult(
+                    cameraIntent,
+                    REQUEST_FILE_CHOOSER);
+
+        } catch (IOException
+                 | RuntimeException exception) {
+
+            completeFileChooser(
+                    null);
+        }
+    }
+
+    private void completeFileChooser(
+            Uri[] results) {
+
+        ValueCallback<Uri[]> callback =
+                filePathCallback;
+
+        File cameraFile =
+                pendingCameraCaptureFile;
+
+        filePathCallback =
+                null;
+
+        pendingFileChooserParams =
+                null;
+
+        pendingCameraCaptureUri =
+                null;
+
+        pendingCameraCaptureFile =
+                null;
+
+        if ((results == null
+                || results.length == 0)
+                && cameraFile != null) {
+
+            try {
+                cameraFile.delete();
+            } catch (RuntimeException ignored) {
+            }
+        }
+
+        if (callback != null) {
+            callback.onReceiveValue(
+                    results);
+        }
+    }
+
+    private static Uri[] filterFileChooserResults(
+            Uri[] results) {
+
+        if (results == null
+                || results.length == 0) {
+
+            return null;
+        }
+
+        ArrayList<Uri> allowed =
+                new ArrayList<>();
+
+        for (Uri uri : results) {
+
+            if (uri == null) {
+                continue;
+            }
+
+            if ("content".equalsIgnoreCase(
+                    uri.getScheme())) {
+
+                allowed.add(
+                        uri);
+            }
+        }
+
+        if (allowed.isEmpty()) {
+            return null;
+        }
+
+        return allowed.toArray(
+                new Uri[0]);
+    }
+
+    private void handleWebPermissionRequest(
+            PermissionRequest request) {
+
+        if (!isSecureVideoPermissionRequest(
+                request)) {
+
+            request.deny();
+            return;
+        }
+
+        if (checkSelfPermission(
+                Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            request.grant(
+                    new String[]{
+                            PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                    });
+
+            return;
+        }
+
+        denyPendingWebPermissionRequest();
+
+        pendingWebPermissionRequest =
+                request;
+
+        requestPermissions(
+                new String[]{
+                        Manifest.permission.CAMERA
+                },
+                REQUEST_WEB_CAMERA_PERMISSION);
+    }
+
+    private boolean isSecureVideoPermissionRequest(
+            PermissionRequest request) {
+
+        if (request == null
+                || webView == null
+                || !isHttpsUri(
+                        request.getOrigin())) {
+
+            return false;
+        }
+
+        String currentUrl =
+                webView.getUrl();
+
+        if (currentUrl == null
+                || !isSameHttpsOrigin(
+                        Uri.parse(currentUrl),
+                        request.getOrigin())) {
+
+            return false;
+        }
+
+        String[] resources =
+                request.getResources();
+
+        if (resources == null) {
+            return false;
+        }
+
+        for (String resource : resources) {
+
+            if (PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                    .equals(resource)) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isSameHttpsOrigin(
+            Uri first,
+            Uri second) {
+
+        if (!isHttpsUri(first)
+                || !isHttpsUri(second)) {
+
+            return false;
+        }
+
+        if (!first.getHost()
+                .equalsIgnoreCase(
+                        second.getHost())) {
+
+            return false;
+        }
+
+        return normalizedHttpsPort(first)
+                == normalizedHttpsPort(second);
+    }
+
+    private static int normalizedHttpsPort(
+            Uri uri) {
+
+        int port =
+                uri.getPort();
+
+        return port == -1
+                ? 443
+                : port;
+    }
+
+    private void denyPendingWebPermissionRequest() {
+
+        PermissionRequest request =
+                pendingWebPermissionRequest;
+
+        pendingWebPermissionRequest =
+                null;
+
+        if (request == null) {
+            return;
+        }
+
+        try {
+            request.deny();
+        } catch (RuntimeException ignored) {
+        }
+    }
+
+    @Override
+    protected void onActivityResult(
+            int requestCode,
+            int resultCode,
+            Intent data) {
+
+        if (requestCode
+                == REQUEST_FILE_CHOOSER) {
+
+            Uri[] results =
+                    null;
+
+            if (resultCode
+                    == RESULT_OK) {
+
+                if (pendingCameraCaptureUri
+                        != null) {
+
+                    results =
+                            new Uri[]{
+                                    pendingCameraCaptureUri
+                            };
+
+                } else {
+                    results =
+                            WebChromeClient.FileChooserParams
+                                    .parseResult(
+                                            resultCode,
+                                            data);
+                }
+            }
+
+            completeFileChooser(
+                    filterFileChooserResults(
+                            results));
+
+            return;
+        }
+
+        super.onActivityResult(
+                requestCode,
+                resultCode,
+                data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String[] permissions,
+            int[] grantResults) {
+
+        boolean granted =
+                grantResults.length > 0
+                        && grantResults[0]
+                        == PackageManager.PERMISSION_GRANTED;
+
+        if (requestCode
+                == REQUEST_FILE_CAMERA_PERMISSION) {
+
+            if (granted
+                    && filePathCallback != null
+                    && isImageCaptureRequest(
+                            pendingFileChooserParams)) {
+
+                launchCameraCapture();
+
+            } else {
+                completeFileChooser(
+                        null);
+            }
+
+            return;
+        }
+
+        if (requestCode
+                == REQUEST_WEB_CAMERA_PERMISSION) {
+
+            PermissionRequest request =
+                    pendingWebPermissionRequest;
+
+            pendingWebPermissionRequest =
+                    null;
+
+            if (request == null) {
+                return;
+            }
+
+            if (granted
+                    && isSecureVideoPermissionRequest(
+                            request)) {
+
+                request.grant(
+                        new String[]{
+                                PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                        });
+
+            } else {
+                request.deny();
+            }
+
+            return;
+        }
+
+        super.onRequestPermissionsResult(
+                requestCode,
+                permissions,
+                grantResults);
     }
 
     private static boolean isHttpsUri(
@@ -629,6 +1177,11 @@ public class WebAppActivity extends Activity {
         }
 
         dismissErrorDialog();
+
+        completeFileChooser(
+                null);
+
+        denyPendingWebPermissionRequest();
 
         disposeWebView(
                 webView);
