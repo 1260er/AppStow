@@ -232,7 +232,7 @@ public class WebAppActivity extends Activity {
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
         settings.setAllowFileAccess(false);
-        settings.setAllowContentAccess(false);
+        settings.setAllowContentAccess(true);
         settings.setMixedContentMode(
                 WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 

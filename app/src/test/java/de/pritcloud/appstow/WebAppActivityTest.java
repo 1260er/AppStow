@@ -103,6 +103,47 @@ public class WebAppActivityTest {
 
 
     @Test
+    public void webViewAllowsSelectedContentButKeepsFileAccessDisabled() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        Intent intent =
+                new Intent(
+                        context,
+                        WebAppActivity.class);
+
+        intent.putExtra(
+                WebAppActivity.EXTRA_URL,
+                "https://example.com");
+
+        try (ActivityScenario<WebAppActivity> scenario =
+                     ActivityScenario.launch(
+                             intent)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        WebView webView =
+                                activity.findViewById(
+                                        R.id.webAppView);
+
+                        assertNotNull(
+                                webView);
+
+                        assertTrue(
+                                webView.getSettings()
+                                        .getAllowContentAccess());
+
+                        assertFalse(
+                                webView.getSettings()
+                                        .getAllowFileAccess());
+                    });
+        }
+    }
+
+    @Test
     public void webChromeClientHandlesFilesAndCameraPermissions()
             throws Exception {
 
