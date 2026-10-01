@@ -196,6 +196,151 @@ public class WebAppActivityTest {
     }
 
     @Test
+    public void httpsDownloaderRejectsUnsafeUrls() {
+
+        assertTrue(
+                WebAppHttpsDownloader.isAllowedHttpsUri(
+                        Uri.parse(
+                                "https://example.com/file.pdf")));
+
+        assertFalse(
+                WebAppHttpsDownloader.isAllowedHttpsUri(
+                        Uri.parse(
+                                "http://example.com/file.pdf")));
+
+        assertFalse(
+                WebAppHttpsDownloader.isAllowedHttpsUri(
+                        Uri.parse(
+                                "https://user:secret@example.com/file")));
+
+        assertFalse(
+                WebAppHttpsDownloader.isAllowedHttpsUri(
+                        Uri.parse(
+                                "https://example.com:99999/file")));
+
+        assertFalse(
+                WebAppHttpsDownloader.isAllowedHttpsUri(
+                        Uri.parse(
+                                "file:///tmp/file.pdf")));
+    }
+
+    @Test
+    public void httpsDownloaderRestrictsCredentialsToAppOrigin() {
+
+        Uri configured =
+                Uri.parse("https://papra.example.com");
+
+        assertTrue(
+                WebAppHttpsDownloader.maySendCredentials(
+                        configured,
+                        Uri.parse(
+                                "https://papra.example.com/docs"),
+                        Uri.parse(
+                                "https://papra.example.com/download")));
+
+        assertFalse(
+                WebAppHttpsDownloader.maySendCredentials(
+                        configured,
+                        Uri.parse(
+                                "https://login.example.com"),
+                        Uri.parse(
+                                "https://login.example.com/download")));
+
+        assertFalse(
+                WebAppHttpsDownloader.maySendCredentials(
+                        configured,
+                        configured,
+                        Uri.parse(
+                                "https://cdn.example.com/download")));
+    }
+
+    @Test
+    public void httpsDownloaderValidatesRedirects() {
+
+        Uri original =
+                Uri.parse(
+                        "https://papra.example.com/docs/123");
+
+        Uri sameOrigin =
+                WebAppHttpsDownloader.resolveRedirect(
+                        original,
+                        "/files/document.pdf");
+
+        assertNotNull(sameOrigin);
+
+        assertTrue(
+                WebAppHttpsDownloader.sameHttpsOrigin(
+                        original,
+                        sameOrigin));
+
+        Uri external =
+                WebAppHttpsDownloader.resolveRedirect(
+                        original,
+                        "https://cdn.example.com/file.pdf");
+
+        assertNotNull(external);
+
+        assertFalse(
+                WebAppHttpsDownloader.sameHttpsOrigin(
+                        original,
+                        external));
+
+        assertEquals(
+                null,
+                WebAppHttpsDownloader.resolveRedirect(
+                        original,
+                        "http://cdn.example.com/file.pdf"));
+
+        assertEquals(
+                null,
+                WebAppHttpsDownloader.resolveRedirect(
+                        original,
+                        "javascript:alert(1)"));
+
+        assertEquals(
+                null,
+                WebAppHttpsDownloader.resolveRedirect(
+                        original,
+                        "https://user:pass@example.com/file"));
+    }
+
+    @Test
+    public void httpsDownloaderSanitizesFileNames() {
+
+        assertEquals(
+                "report_2026.pdf",
+                WebAppHttpsDownloader.sanitizeFileName(
+                        "report/2026.pdf"));
+
+        assertEquals(
+                "download",
+                WebAppHttpsDownloader.sanitizeFileName(
+                        ".."));
+    }
+
+    @Test
+    public void httpsDownloaderDetectsUnexpectedLoginPages() {
+
+        assertTrue(
+                WebAppHttpsDownloader.isUnexpectedHtml(
+                        "text/html; charset=UTF-8",
+                        "application/pdf",
+                        "document.pdf"));
+
+        assertFalse(
+                WebAppHttpsDownloader.isUnexpectedHtml(
+                        "application/pdf",
+                        "application/pdf",
+                        "document.pdf"));
+
+        assertFalse(
+                WebAppHttpsDownloader.isUnexpectedHtml(
+                        "text/html",
+                        "text/html",
+                        "page.html"));
+    }
+
+    @Test
     public void webPermissionsStayOnConfiguredAppOrigin()
             throws Exception {
 

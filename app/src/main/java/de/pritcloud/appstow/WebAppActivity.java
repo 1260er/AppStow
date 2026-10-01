@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.Intent;
@@ -16,7 +15,6 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.view.View;
@@ -47,7 +45,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
-import androidx.webkit.URLUtilCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,6 +70,7 @@ public class WebAppActivity extends Activity {
     private View customFullscreenView;
     private WebChromeClient.CustomViewCallback customFullscreenCallback;
     private WebAppBlobDownloadBridge blobDownloadBridge;
+    private WebAppHttpsDownloader httpsDownloader;
 
     private ValueCallback<Uri[]> filePathCallback;
     private WebChromeClient.FileChooserParams pendingFileChooserParams;
@@ -288,6 +286,9 @@ public class WebAppActivity extends Activity {
                         this,
                         webView,
                         initialUri);
+
+        httpsDownloader =
+                new WebAppHttpsDownloader(this);
 
         CookieManager cookieManager =
                 CookieManager.getInstance();
@@ -654,9 +655,7 @@ public class WebAppActivity extends Activity {
         Uri uri;
 
         try {
-            uri =
-                    Uri.parse(
-                            url);
+            uri = Uri.parse(url);
 
         } catch (RuntimeException exception) {
 
@@ -664,110 +663,58 @@ public class WebAppActivity extends Activity {
             return;
         }
 
-        if (!isSupportedDownloadUri(
-                uri)) {
-
+        if (!isSupportedDownloadUri(uri)) {
             return;
         }
 
-        try {
-            String fileName =
-                    URLUtilCompat.guessFileName(
-                            url,
-                            contentDisposition,
-                            mimeType);
+        if (httpsDownloader == null) {
 
-            fileName =
-                    fileName
-                            .replace(
-                                    "/",
-                                    "_")
-                            .replace(
-                                    "\\",
-                                    "_");
+            showDownloadFailedToast();
+            return;
+        }
 
-            DownloadManager.Request request =
-                    new DownloadManager.Request(
-                            uri);
+        String cookies = null;
+        String referer = null;
 
-            request.setTitle(
-                    fileName);
+        if (webView != null
+                && webView.getUrl() != null) {
 
-            request.setNotificationVisibility(
-                    DownloadManager.Request
-                            .VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            String currentUrl =
+                    webView.getUrl();
 
-            request.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    fileName);
+            Uri currentUri =
+                    Uri.parse(currentUrl);
 
-            if (mimeType != null
-                    && !mimeType.trim().isEmpty()) {
+            if (WebAppHttpsDownloader.maySendCredentials(
+                    webAppInitialOrigin,
+                    currentUri,
+                    uri)) {
 
-                request.setMimeType(
-                        mimeType);
-            }
+                try {
+                    cookies =
+                            CookieManager.getInstance()
+                                    .getCookie(url);
 
-            if (userAgent != null
-                    && !userAgent.trim().isEmpty()) {
+                    referer =
+                            currentUri.buildUpon()
+                                    .fragment(null)
+                                    .build()
+                                    .toString();
 
-                request.addRequestHeader(
-                        "User-Agent",
-                        userAgent);
-            }
-
-            String cookies =
-                    CookieManager.getInstance()
-                            .getCookie(
-                                    url);
-
-            if (cookies != null
-                    && !cookies.trim().isEmpty()) {
-
-                request.addRequestHeader(
-                        "Cookie",
-                        cookies);
-            }
-
-            if (webView != null) {
-
-                String currentUrl =
-                        webView.getUrl();
-
-                if (currentUrl != null
-                        && isSameHttpsOrigin(
-                                Uri.parse(currentUrl),
-                                uri)) {
-
-                    request.addRequestHeader(
-                            "Referer",
-                            currentUrl);
+                } catch (RuntimeException ignored) {
+                    cookies = null;
+                    referer = null;
                 }
             }
-
-            DownloadManager manager =
-                    (DownloadManager) getSystemService(
-                            DOWNLOAD_SERVICE);
-
-            if (manager == null) {
-
-                throw new IllegalStateException(
-                        "DownloadManager unavailable.");
-            }
-
-            manager.enqueue(
-                    request);
-
-            Toast.makeText(
-                    this,
-                    R.string.webapp_download_started,
-                    Toast.LENGTH_SHORT)
-                    .show();
-
-        } catch (RuntimeException exception) {
-
-            showDownloadFailedToast();
         }
+
+        httpsDownloader.enqueue(
+                uri,
+                userAgent,
+                contentDisposition,
+                mimeType,
+                cookies,
+                referer);
     }
 
     private void showDownloadFailedToast() {
@@ -2312,6 +2259,15 @@ public class WebAppActivity extends Activity {
 
         if (bridge != null) {
             bridge.close();
+        }
+
+        WebAppHttpsDownloader downloader =
+                httpsDownloader;
+
+        httpsDownloader = null;
+
+        if (downloader != null) {
+            downloader.close();
         }
 
         if (webHistoryBackCallbackRegistered) {
