@@ -27,6 +27,7 @@ import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.ValueCallback;
+import android.webkit.MimeTypeMap;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -527,8 +528,8 @@ public class WebAppActivity extends Activity {
 
         try {
             Intent intent =
-                    pendingFileChooserParams
-                            .createIntent();
+                    createFileChooserIntent(
+                            pendingFileChooserParams);
 
             startActivityForResult(
                     intent,
@@ -539,6 +540,194 @@ public class WebAppActivity extends Activity {
             completeFileChooser(
                     null);
         }
+    }
+
+    private static Intent createFileChooserIntent(
+            WebChromeClient.FileChooserParams params) {
+
+        String action =
+                params.getMode()
+                        == WebChromeClient.FileChooserParams.MODE_SAVE
+                        ? Intent.ACTION_CREATE_DOCUMENT
+                        : Intent.ACTION_OPEN_DOCUMENT;
+
+        Intent intent =
+                new Intent(
+                        action);
+
+        intent.addCategory(
+                Intent.CATEGORY_OPENABLE);
+
+        intent.addFlags(
+                Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        String[] mimeTypes =
+                normalizeAcceptTypes(
+                        params.getAcceptTypes());
+
+        if (mimeTypes.length == 1) {
+
+            intent.setType(
+                    mimeTypes[0]);
+
+        } else {
+
+            intent.setType(
+                    "*/*");
+
+            if (mimeTypes.length > 1) {
+                intent.putExtra(
+                        Intent.EXTRA_MIME_TYPES,
+                        mimeTypes);
+            }
+        }
+
+        if (params.getMode()
+                == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
+
+            intent.putExtra(
+                    Intent.EXTRA_ALLOW_MULTIPLE,
+                    true);
+        }
+
+        if (Intent.ACTION_CREATE_DOCUMENT.equals(
+                action)) {
+
+            String filenameHint =
+                    params.getFilenameHint();
+
+            if (filenameHint != null
+                    && !filenameHint.trim().isEmpty()) {
+
+                intent.putExtra(
+                        Intent.EXTRA_TITLE,
+                        filenameHint);
+            }
+        }
+
+        return intent;
+    }
+
+    private static String[] normalizeAcceptTypes(
+            String[] acceptTypes) {
+
+        ArrayList<String> mimeTypes =
+                new ArrayList<>();
+
+        if (acceptTypes == null) {
+            return new String[0];
+        }
+
+        for (String rawType : acceptTypes) {
+
+            if (rawType == null) {
+                continue;
+            }
+
+            String[] parts =
+                    rawType.split(",");
+
+            for (String part : parts) {
+
+                String value =
+                        part.trim();
+
+                if (value.isEmpty()) {
+                    continue;
+                }
+
+                if ("*/*".equals(
+                        value)) {
+
+                    return new String[]{
+                            "*/*"
+                    };
+                }
+
+                String mimeType =
+                        null;
+
+                if (value.startsWith(".")) {
+
+                    String extension =
+                            value.substring(1);
+
+                    mimeType =
+                            MimeTypeMap.getSingleton()
+                                    .getMimeTypeFromExtension(
+                                            extension);
+
+                } else if (value.contains("/")) {
+
+                    mimeType =
+                            value;
+                }
+
+                if (mimeType != null
+                        && !mimeTypes.contains(
+                                mimeType)) {
+
+                    mimeTypes.add(
+                            mimeType);
+                }
+            }
+        }
+
+        return mimeTypes.toArray(
+                new String[0]);
+    }
+
+    private static Uri[] extractFileChooserResults(
+            Intent data) {
+
+        if (data == null) {
+            return null;
+        }
+
+        ArrayList<Uri> results =
+                new ArrayList<>();
+
+        ClipData clipData =
+                data.getClipData();
+
+        if (clipData != null) {
+
+            for (int index = 0;
+                 index < clipData.getItemCount();
+                 index++) {
+
+                Uri uri =
+                        clipData.getItemAt(
+                                        index)
+                                .getUri();
+
+                if (uri != null
+                        && !results.contains(
+                                uri)) {
+
+                    results.add(
+                            uri);
+                }
+            }
+        }
+
+        Uri dataUri =
+                data.getData();
+
+        if (dataUri != null
+                && !results.contains(
+                        dataUri)) {
+
+            results.add(
+                    dataUri);
+        }
+
+        if (results.isEmpty()) {
+            return null;
+        }
+
+        return results.toArray(
+                new Uri[0]);
     }
 
     private void launchCameraCapture() {
@@ -823,10 +1012,8 @@ public class WebAppActivity extends Activity {
 
                 } else {
                     results =
-                            WebChromeClient.FileChooserParams
-                                    .parseResult(
-                                            resultCode,
-                                            data);
+                            extractFileChooserResults(
+                                    data);
                 }
             }
 

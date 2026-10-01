@@ -1,5 +1,7 @@
 package de.pritcloud.appstow;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -144,6 +146,54 @@ public class WebAppActivityTest {
     }
 
     @Test
+    public void documentPickerSupportsImagesAndDocuments()
+            throws Exception {
+
+        WebChromeClient.FileChooserParams params =
+                new TestFileChooserParams(
+                        new String[]{
+                                "image/*",
+                                "application/pdf"
+                        },
+                        WebChromeClient.FileChooserParams.MODE_OPEN);
+
+        Method method =
+                WebAppActivity.class
+                        .getDeclaredMethod(
+                                "createFileChooserIntent",
+                                WebChromeClient.FileChooserParams.class);
+
+        method.setAccessible(
+                true);
+
+        Intent intent =
+                (Intent) method.invoke(
+                        null,
+                        params);
+
+        assertEquals(
+                Intent.ACTION_OPEN_DOCUMENT,
+                intent.getAction());
+
+        assertEquals(
+                "*/*",
+                intent.getType());
+
+        assertArrayEquals(
+                new String[]{
+                        "image/*",
+                        "application/pdf"
+                },
+                intent.getStringArrayExtra(
+                        Intent.EXTRA_MIME_TYPES));
+
+        assertTrue(
+                intent.getCategories()
+                        .contains(
+                                Intent.CATEGORY_OPENABLE));
+    }
+
+    @Test
     public void webChromeClientHandlesFilesAndCameraPermissions()
             throws Exception {
 
@@ -209,5 +259,52 @@ public class WebAppActivityTest {
         assertNotEquals(
                 WebChromeClient.class,
                 permissionRequest.getDeclaringClass());
+    }
+    private static final class TestFileChooserParams
+            extends WebChromeClient.FileChooserParams {
+
+        private final String[] acceptTypes;
+        private final int mode;
+
+        TestFileChooserParams(
+                String[] acceptTypes,
+                int mode) {
+
+            this.acceptTypes =
+                    acceptTypes;
+
+            this.mode =
+                    mode;
+        }
+
+        @Override
+        public Intent createIntent() {
+            return new Intent();
+        }
+
+        @Override
+        public String[] getAcceptTypes() {
+            return acceptTypes;
+        }
+
+        @Override
+        public String getFilenameHint() {
+            return null;
+        }
+
+        @Override
+        public int getMode() {
+            return mode;
+        }
+
+        @Override
+        public CharSequence getTitle() {
+            return null;
+        }
+
+        @Override
+        public boolean isCaptureEnabled() {
+            return false;
+        }
     }
 }
