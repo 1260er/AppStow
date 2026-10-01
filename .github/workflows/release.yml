@@ -135,7 +135,7 @@ jobs:
           echo "apk=$APK_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Upload signed APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: AppStow-${{ steps.prepare.outputs.version }}-signed
           path: |

@@ -4,30 +4,35 @@ Stand: 1. Oktober 2026
 
 ## Stabiler Release
 
-- Version: 0.1.2
-- Tag: v0.1.2
+- Version: 0.1.3
+- Tag: v0.1.3
+- Release-Commit: 9b86b95
 - Hauptbranch: main
-- Release-Tag-Commit: 5cf6c68
-
-## Version 0.1.3
-
-- Status: Release-Vorbereitung
-- Entwicklungsbranch: dev/papra-pdf-support
-- Erfolgreich getesteter Dev-Release: dev-136
-- Gerätetest auf GrapheneOS erfolgreich
+- Signierte APK und SHA-256-Prüfsumme veröffentlicht und geprüft.
 
 ## Qualitätssicherung
 
-- Debug- und Release-Builds erfolgreich.
+- Vollständige Debug- und Release-Prüfung erfolgreich.
 - Unit-Tests und Android Lint erfolgreich.
-- Signierter Dev-Release mit R8-Optimierung.
-- Aktualisierte CI mit dev-137 erfolgreich geprüft.
-- Weitere Geräte und WebView-Versionen nicht vollständig getestet.
+- R8-Optimierung und Baseline Profile geprüft.
+- Dev-136 auf GrapheneOS erfolgreich getestet.
+- Aktualisierte CI mit Dev-137 erfolgreich geprüft.
+- Stable-Update auf GrapheneOS getestet.
+- 2FA-Anmeldung, Downloads und ChatGPT erfolgreich getestet.
 
-## Noch ausstehend
+## Offener Prüfpunkt
 
-- Release-Hinweise nach Veröffentlichung finalisieren.
-- Abschließende Debug- und Release-Prüfung.
-- Entwicklungsstand nach main übernehmen.
-- Stabilen Release 0.1.3 veröffentlichen und prüfen.
-- Entwicklungsreste anschließend bereinigen.
+Die Authelia-Passkey-Anfrage wird sofort abgebrochen.
+Das Verhalten tritt auch im normalen Browser auf.
+Die Ursache ist noch ungeklärt.
+Die Anmeldung mit 2FA funktioniert.
+
+Andere Herstellergeräte und WebView-Versionen wurden
+nicht vollständig getestet.
+
+## Nacharbeiten
+
+Die CI-Action upload-artifact wurde auf v6 vorbereitet.
+Der aktualisierte Workflow muss noch geprüft werden.
+Anschließend werden alte Dev-Releases und der
+abgeschlossene Entwicklungsbranch bereinigt.

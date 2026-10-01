@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.3 – In Vorbereitung
+## 0.1.3 – 1. Oktober 2026
 
 - Erweiterte HTTPS-Web-App-Unterstützung.
 - Verbesserte Datei-, Foto- und Kamera-Uploads.
