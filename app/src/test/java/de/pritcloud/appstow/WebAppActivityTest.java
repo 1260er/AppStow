@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -147,7 +146,7 @@ public class WebAppActivityTest {
     }
 
     @Test
-    public void imageRequestUsesPhotoPicker()
+    public void imageRequestUsesBrowserChooser()
             throws Exception {
 
         WebChromeClient.FileChooserParams params =
@@ -166,28 +165,38 @@ public class WebAppActivityTest {
         method.setAccessible(
                 true);
 
-        Intent intent =
+        Intent chooser =
                 (Intent) method.invoke(
                         null,
                         params);
 
         assertEquals(
-                MediaStore.ACTION_PICK_IMAGES,
-                intent.getAction());
+                Intent.ACTION_CHOOSER,
+                chooser.getAction());
+
+        Intent inner =
+                chooser.getParcelableExtra(
+                        Intent.EXTRA_INTENT);
+
+        assertNotNull(
+                inner);
+
+        assertEquals(
+                Intent.ACTION_GET_CONTENT,
+                inner.getAction());
 
         assertEquals(
                 "image/*",
-                intent.getType());
+                inner.getType());
 
         assertTrue(
-                intent.getIntExtra(
-                        MediaStore.EXTRA_PICK_IMAGES_MAX,
-                        0)
-                        > 1);
+                inner.getBooleanExtra(
+                        Intent.EXTRA_ALLOW_MULTIPLE,
+                        false));
     }
 
     @Test
-    public void documentRequestUsesDocumentPickerAndFilters()
+    public void documentRequestPreservesWebViewFilters()
             throws Exception {
 
         WebChromeClient.FileChooserParams params =
@@ -207,36 +216,42 @@ public class WebAppActivityTest {
         method.setAccessible(
                 true);
 
-        Intent intent =
+        Intent chooser =
                 (Intent) method.invoke(
                         null,
                         params);
 
         assertEquals(
-                Intent.ACTION_OPEN_DOCUMENT,
-                intent.getAction());
+                Intent.ACTION_CHOOSER,
+                chooser.getAction());
+
+        Intent inner =
+                chooser.getParcelableExtra(
+                        Intent.EXTRA_INTENT);
+
+        assertNotNull(
+                inner);
+
+        assertEquals(
+                Intent.ACTION_GET_CONTENT,
+                inner.getAction());
 
         assertEquals(
                 "application/pdf",
-                intent.getType());
+                inner.getType());
 
         assertArrayEquals(
                 new String[]{
                         "application/pdf",
                         "text/plain"
                 },
-                intent.getStringArrayExtra(
+                inner.getStringArrayExtra(
                         Intent.EXTRA_MIME_TYPES));
 
         assertTrue(
-                intent.getBooleanExtra(
+                inner.getBooleanExtra(
                         Intent.EXTRA_ALLOW_MULTIPLE,
                         false));
-
-        assertTrue(
-                intent.getCategories()
-                        .contains(
-                                Intent.CATEGORY_OPENABLE));
     }
 
     @Test

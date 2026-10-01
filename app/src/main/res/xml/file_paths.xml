@@ -3,4 +3,8 @@
     <cache-path
         name="webapp_camera"
         path="webapp-camera/" />
+
+    <cache-path
+        name="webapp_upload"
+        path="webapp-upload/" />
 </paths>

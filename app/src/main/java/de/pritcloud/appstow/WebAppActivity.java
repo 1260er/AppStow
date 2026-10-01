@@ -9,11 +9,13 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.view.View;
 import android.view.ViewGroup;
 import android.window.OnBackInvokedCallback;
@@ -39,7 +41,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 @SuppressLint({"SetJavaScriptEnabled", "WebViewApiAvailability", "ObsoleteSdkInt"})
@@ -545,246 +549,21 @@ public class WebAppActivity extends Activity {
     private static Intent createFileChooserIntent(
             WebChromeClient.FileChooserParams params) {
 
-        String[] mimeTypes =
-                normalizeAcceptTypes(
-                        params.getAcceptTypes());
+        Intent sourceIntent =
+                params.createIntent();
 
-        if (params.getMode()
-                != WebChromeClient.FileChooserParams.MODE_SAVE
-                && isImageOnlyMimeTypes(
-                        mimeTypes)) {
-
-            return createPhotoPickerIntent(
-                    params,
-                    mimeTypes);
-        }
-
-        String action =
-                params.getMode()
-                        == WebChromeClient.FileChooserParams.MODE_SAVE
-                        ? Intent.ACTION_CREATE_DOCUMENT
-                        : Intent.ACTION_OPEN_DOCUMENT;
-
-        Intent intent =
-                new Intent(
-                        action);
-
-        intent.addCategory(
+        sourceIntent.addCategory(
                 Intent.CATEGORY_OPENABLE);
 
-        intent.addFlags(
+        sourceIntent.addFlags(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        String primaryType =
-                null;
+        CharSequence title =
+                params.getTitle();
 
-        String[] extraMimeTypes =
-                null;
-
-        try {
-            Intent webViewIntent =
-                    params.createIntent();
-
-            if (webViewIntent != null) {
-
-                primaryType =
-                        webViewIntent.getType();
-
-                extraMimeTypes =
-                        webViewIntent.getStringArrayExtra(
-                                Intent.EXTRA_MIME_TYPES);
-            }
-
-        } catch (RuntimeException ignored) {
-        }
-
-        if (primaryType == null
-                || primaryType.trim().isEmpty()) {
-
-            if (mimeTypes.length > 0) {
-
-                primaryType =
-                        mimeTypes[0];
-
-            } else {
-
-                primaryType =
-                        "*/*";
-            }
-        }
-
-        intent.setType(
-                primaryType);
-
-        if (extraMimeTypes != null
-                && extraMimeTypes.length > 0) {
-
-            intent.putExtra(
-                    Intent.EXTRA_MIME_TYPES,
-                    extraMimeTypes);
-
-        } else if (mimeTypes.length > 1) {
-
-            intent.putExtra(
-                    Intent.EXTRA_MIME_TYPES,
-                    mimeTypes);
-        }
-
-        if (params.getMode()
-                == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
-
-            intent.putExtra(
-                    Intent.EXTRA_ALLOW_MULTIPLE,
-                    true);
-        }
-
-        if (Intent.ACTION_CREATE_DOCUMENT.equals(
-                action)) {
-
-            String filenameHint =
-                    params.getFilenameHint();
-
-            if (filenameHint != null
-                    && !filenameHint.trim().isEmpty()) {
-
-                intent.putExtra(
-                        Intent.EXTRA_TITLE,
-                        filenameHint);
-            }
-        }
-
-        return intent;
-    }
-
-    private static Intent createPhotoPickerIntent(
-            WebChromeClient.FileChooserParams params,
-            String[] mimeTypes) {
-
-        Intent intent =
-                new Intent(
-                        MediaStore.ACTION_PICK_IMAGES);
-
-        if (mimeTypes.length == 1) {
-
-            intent.setType(
-                    mimeTypes[0]);
-
-        } else {
-
-            intent.setType(
-                    "image/*");
-        }
-
-        if (params.getMode()
-                == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
-
-            int maxImages =
-                    MediaStore.getPickImagesMaxLimit();
-
-            if (maxImages > 1) {
-
-                intent.putExtra(
-                        MediaStore.EXTRA_PICK_IMAGES_MAX,
-                        maxImages);
-            }
-        }
-
-        return intent;
-    }
-
-    private static boolean isImageOnlyMimeTypes(
-            String[] mimeTypes) {
-
-        if (mimeTypes == null
-                || mimeTypes.length == 0) {
-
-            return false;
-        }
-
-        for (String mimeType : mimeTypes) {
-
-            if (mimeType == null
-                    || !mimeType.regionMatches(
-                            true,
-                            0,
-                            "image/",
-                            0,
-                            6)) {
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static String[] normalizeAcceptTypes(
-            String[] acceptTypes) {
-
-        ArrayList<String> mimeTypes =
-                new ArrayList<>();
-
-        if (acceptTypes == null) {
-            return new String[0];
-        }
-
-        for (String rawType : acceptTypes) {
-
-            if (rawType == null) {
-                continue;
-            }
-
-            String[] parts =
-                    rawType.split(",");
-
-            for (String part : parts) {
-
-                String value =
-                        part.trim();
-
-                if (value.isEmpty()) {
-                    continue;
-                }
-
-                if ("*/*".equals(
-                        value)) {
-
-                    return new String[]{
-                            "*/*"
-                    };
-                }
-
-                String mimeType =
-                        null;
-
-                if (value.startsWith(".")) {
-
-                    String extension =
-                            value.substring(1);
-
-                    mimeType =
-                            MimeTypeMap.getSingleton()
-                                    .getMimeTypeFromExtension(
-                                            extension);
-
-                } else if (value.contains("/")) {
-
-                    mimeType =
-                            value;
-                }
-
-                if (mimeType != null
-                        && !mimeTypes.contains(
-                                mimeType)) {
-
-                    mimeTypes.add(
-                            mimeType);
-                }
-            }
-        }
-
-        return mimeTypes.toArray(
-                new String[0]);
+        return Intent.createChooser(
+                sourceIntent,
+                title);
     }
 
     private static Uri[] extractFileChooserResults(
@@ -838,6 +617,268 @@ public class WebAppActivity extends Activity {
 
         return results.toArray(
                 new Uri[0]);
+    }
+
+    private void stabilizeFileChooserResultsAsync(
+            Uri[] sourceUris) {
+
+        if (sourceUris == null
+                || sourceUris.length == 0) {
+
+            completeFileChooser(
+                    null);
+
+            return;
+        }
+
+        Thread copyThread =
+                new Thread(
+                        () -> {
+
+                            Uri[] stableResults =
+                                    stabilizeFileChooserResults(
+                                            sourceUris);
+
+                            runOnUiThread(
+                                    () -> {
+
+                                        if (isFinishing()
+                                                || isDestroyed()) {
+
+                                            return;
+                                        }
+
+                                        completeFileChooser(
+                                                filterFileChooserResults(
+                                                        stableResults));
+                                    });
+                        },
+                        "AppStow-upload-copy");
+
+        copyThread.start();
+    }
+
+    private Uri[] stabilizeFileChooserResults(
+            Uri[] sourceUris) {
+
+        if (sourceUris == null
+                || sourceUris.length == 0) {
+
+            return null;
+        }
+
+        File uploadRoot =
+                new File(
+                        getCacheDir(),
+                        "webapp-upload");
+
+        if (!uploadRoot.exists()
+                && !uploadRoot.mkdirs()) {
+
+            return null;
+        }
+
+        File selectionDirectory =
+                new File(
+                        uploadRoot,
+                        "selection-"
+                                + System.nanoTime());
+
+        if (!selectionDirectory.mkdirs()) {
+            return null;
+        }
+
+        ArrayList<Uri> stableUris =
+                new ArrayList<>();
+
+        try {
+            for (int index = 0;
+                 index < sourceUris.length;
+                 index++) {
+
+                Uri sourceUri =
+                        sourceUris[index];
+
+                if (sourceUri == null
+                        || !"content".equalsIgnoreCase(
+                                sourceUri.getScheme())) {
+
+                    throw new IOException(
+                            "Unsupported upload URI.");
+                }
+
+                String fileName =
+                        resolveUploadFileName(
+                                sourceUri,
+                                index);
+
+                File target =
+                        new File(
+                                selectionDirectory,
+                                fileName);
+
+                try (InputStream input =
+                             getContentResolver()
+                                     .openInputStream(
+                                             sourceUri);
+                     FileOutputStream output =
+                             new FileOutputStream(
+                                     target)) {
+
+                    if (input == null) {
+                        throw new IOException(
+                                "Could not open selected upload.");
+                    }
+
+                    byte[] buffer =
+                            new byte[32768];
+
+                    int count;
+
+                    while ((count =
+                            input.read(
+                                    buffer))
+                            != -1) {
+
+                        output.write(
+                                buffer,
+                                0,
+                                count);
+                    }
+
+                    output.flush();
+                }
+
+                Uri stableUri =
+                        FileProvider.getUriForFile(
+                                this,
+                                getPackageName()
+                                        + ".fileprovider",
+                                target);
+
+                stableUris.add(
+                        stableUri);
+            }
+
+        } catch (IOException
+                 | RuntimeException exception) {
+
+            deleteRecursively(
+                    selectionDirectory);
+
+            return null;
+        }
+
+        return stableUris.toArray(
+                new Uri[0]);
+    }
+
+    private String resolveUploadFileName(
+            Uri uri,
+            int index) {
+
+        String displayName =
+                null;
+
+        try (Cursor cursor =
+                     getContentResolver()
+                             .query(
+                                     uri,
+                                     new String[]{
+                                             OpenableColumns.DISPLAY_NAME
+                                     },
+                                     null,
+                                     null,
+                                     null)) {
+
+            if (cursor != null
+                    && cursor.moveToFirst()) {
+
+                int column =
+                        cursor.getColumnIndex(
+                                OpenableColumns.DISPLAY_NAME);
+
+                if (column >= 0) {
+                    displayName =
+                            cursor.getString(
+                                    column);
+                }
+            }
+
+        } catch (RuntimeException ignored) {
+        }
+
+        if (displayName == null
+                || displayName.trim().isEmpty()) {
+
+            String extension =
+                    null;
+
+            try {
+                String mimeType =
+                        getContentResolver()
+                                .getType(
+                                        uri);
+
+                if (mimeType != null) {
+                    extension =
+                            MimeTypeMap.getSingleton()
+                                    .getExtensionFromMimeType(
+                                            mimeType);
+                }
+
+            } catch (RuntimeException ignored) {
+            }
+
+            displayName =
+                    "upload-"
+                            + index
+                            + (extension == null
+                            ? ""
+                            : "." + extension);
+        }
+
+        displayName =
+                displayName
+                        .replace(
+                                "/",
+                                "_")
+                        .replace(
+                                "\\",
+                                "_");
+
+        return index
+                + "-"
+                + displayName;
+    }
+
+    private static void deleteRecursively(
+            File file) {
+
+        if (file == null
+                || !file.exists()) {
+
+            return;
+        }
+
+        if (file.isDirectory()) {
+
+            File[] children =
+                    file.listFiles();
+
+            if (children != null) {
+
+                for (File child : children) {
+                    deleteRecursively(
+                            child);
+                }
+            }
+        }
+
+        try {
+            file.delete();
+        } catch (RuntimeException ignored) {
+        }
     }
 
     private void launchCameraCapture() {
@@ -1121,9 +1162,14 @@ public class WebAppActivity extends Activity {
                             };
 
                 } else {
-                    results =
+                    Uri[] sourceResults =
                             extractFileChooserResults(
                                     data);
+
+                    stabilizeFileChooserResultsAsync(
+                            sourceResults);
+
+                    return;
                 }
             }
 
