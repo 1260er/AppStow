@@ -1,33 +1,33 @@
 # AppStow – Projektstatus
 
-Stand: 26. September 2026
+Stand: 1. Oktober 2026
 
-## Status
+## Stabiler Release
 
-Die Entwicklung von AppStow ist vorläufig abgeschlossen.
+- Version: 0.1.2
+- Tag: v0.1.2
+- Hauptbranch: main
+- Release-Tag-Commit: 5cf6c68
 
-- Stabiler Release: `0.1.2`
-- Tag: `v0.1.2`
-- Release-Commit: `5cf6c689914a038a27486c057b39ea70051ad483`
-- Hauptbranch: `main`
+## Version 0.1.3
 
-## Veröffentlichung
+- Status: Release-Vorbereitung
+- Entwicklungsbranch: dev/papra-pdf-support
+- Erfolgreich getesteter Dev-Release: dev-136
+- Gerätetest auf GrapheneOS erfolgreich
 
-AppStow 0.1.2 wurde erfolgreich über den Signed-Release-Workflow veröffentlicht.
+## Qualitätssicherung
 
-Release-Dateien:
+- Debug- und Release-Builds erfolgreich.
+- Unit-Tests und Android Lint erfolgreich.
+- Signierter Dev-Release mit R8-Optimierung.
+- Weitere Geräte und WebView-Versionen nicht vollständig getestet.
 
-- `AppStow-0.1.2.apk`
-- `AppStow-0.1.2.apk.sha256`
+## Noch ausstehend
 
-Der Release-Build umfasst Signaturprüfung, R8-Codeoptimierung, Resource Shrinking, Baseline Profile, Unit-Tests und Android Lint.
-
-## GitHub Actions
-
-Der Signed-Release-Workflow wird für Tags nach dem Schema `v*` ausgeführt.
-
-Der Dev-Release-Workflow ist nach Abschluss der Entwicklung nur noch manuell über `workflow_dispatch` startbar.
-
-## Entwicklung wieder aufnehmen
-
-Für eine spätere Weiterentwicklung wird ein neuer Entwicklungsbranch vom aktuellen `main` erstellt. Nach Tests wird der geprüfte Stand wieder nach `main` übernommen und mit einem neuen `v*`-Tag veröffentlicht.
+- Dokumentation abschließen.
+- GitHub Actions aktualisieren und prüfen.
+- Abschließende Debug- und Release-Prüfung.
+- Entwicklungsstand nach main übernehmen.
+- Stabilen Release 0.1.3 veröffentlichen und prüfen.
+- Entwicklungsreste anschließend bereinigen.

@@ -597,7 +597,8 @@ public class WebAppActivityTest {
 
         Intent inner =
                 chooser.getParcelableExtra(
-                        Intent.EXTRA_INTENT);
+                        Intent.EXTRA_INTENT,
+                        Intent.class);
 
         assertNotNull(
                 inner);
@@ -648,7 +649,8 @@ public class WebAppActivityTest {
 
         Intent inner =
                 chooser.getParcelableExtra(
-                        Intent.EXTRA_INTENT);
+                        Intent.EXTRA_INTENT,
+                        Intent.class);
 
         assertNotNull(
                 inner);
