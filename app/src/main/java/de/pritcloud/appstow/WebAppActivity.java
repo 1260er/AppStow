@@ -68,6 +68,7 @@ public class WebAppActivity extends Activity {
     private static final int REQUEST_WEB_GEOLOCATION_PERMISSION = 1005;
 
     private WebView webView;
+    private Uri webAppInitialOrigin;
     private AlertDialog errorDialog;
     private View customFullscreenView;
     private WebChromeClient.CustomViewCallback customFullscreenCallback;
@@ -254,6 +255,8 @@ public class WebAppActivity extends Activity {
     }
 
     private void configureWebView(Uri initialUri) {
+
+        webAppInitialOrigin = initialUri;
 
         WebSettings settings =
                 webView.getSettings();
@@ -1456,9 +1459,9 @@ public class WebAppActivity extends Activity {
             return false;
         }
 
-        return isSameHttpsOrigin(
-                Uri.parse(
-                        currentUrl),
+        return isPermittedWebOrigin(
+                webAppInitialOrigin,
+                Uri.parse(currentUrl),
                 originUri);
     }
 
@@ -1529,9 +1532,9 @@ public class WebAppActivity extends Activity {
                 webView.getUrl();
 
         return currentUrl != null
-                && isSameHttpsOrigin(
-                        Uri.parse(
-                                currentUrl),
+                && isPermittedWebOrigin(
+                        webAppInitialOrigin,
+                        Uri.parse(currentUrl),
                         request.getOrigin());
     }
 
@@ -1753,7 +1756,8 @@ public class WebAppActivity extends Activity {
                 webView.getUrl();
 
         if (currentUrl == null
-                || !isSameHttpsOrigin(
+                || !isPermittedWebOrigin(
+                        webAppInitialOrigin,
                         Uri.parse(currentUrl),
                         request.getOrigin())) {
 
@@ -1777,6 +1781,26 @@ public class WebAppActivity extends Activity {
         }
 
         return false;
+    }
+
+    private static boolean isPermittedWebOrigin(
+            Uri configuredOrigin,
+            Uri currentOrigin,
+            Uri requestedOrigin) {
+
+        if (configuredOrigin == null
+                || currentOrigin == null
+                || requestedOrigin == null) {
+
+            return false;
+        }
+
+        return isSameHttpsOrigin(
+                configuredOrigin,
+                requestedOrigin)
+                && isSameHttpsOrigin(
+                currentOrigin,
+                requestedOrigin);
     }
 
     private static boolean isSameHttpsOrigin(
@@ -2270,14 +2294,6 @@ public class WebAppActivity extends Activity {
     @Override
     protected void onDestroy() {
 
-        if (webHistoryBackCallbackRegistered) {
-            getOnBackInvokedDispatcher()
-                    .unregisterOnBackInvokedCallback(
-                            webHistoryBackCallback);
-
-            webHistoryBackCallbackRegistered = false;
-        }
-
         dismissErrorDialog();
 
         hideCustomFullscreenView();
@@ -2296,6 +2312,14 @@ public class WebAppActivity extends Activity {
 
         if (bridge != null) {
             bridge.close();
+        }
+
+        if (webHistoryBackCallbackRegistered) {
+            getOnBackInvokedDispatcher()
+                    .unregisterOnBackInvokedCallback(
+                            webHistoryBackCallback);
+
+            webHistoryBackCallbackRegistered = false;
         }
 
         disposeWebView(

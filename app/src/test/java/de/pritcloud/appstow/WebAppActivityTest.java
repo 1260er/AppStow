@@ -196,6 +196,71 @@ public class WebAppActivityTest {
     }
 
     @Test
+    public void webPermissionsStayOnConfiguredAppOrigin()
+            throws Exception {
+
+        Method method =
+                WebAppActivity.class.getDeclaredMethod(
+                        "isPermittedWebOrigin",
+                        Uri.class,
+                        Uri.class,
+                        Uri.class);
+
+        method.setAccessible(true);
+
+        Uri configured =
+                Uri.parse("https://chatgpt.com");
+
+        Uri current =
+                Uri.parse("https://chatgpt.com/c/123");
+
+        Uri requested =
+                Uri.parse("https://chatgpt.com");
+
+        assertTrue(
+                (Boolean) method.invoke(
+                        null,
+                        configured,
+                        current,
+                        requested));
+
+        assertFalse(
+                (Boolean) method.invoke(
+                        null,
+                        configured,
+                        Uri.parse("https://example.com"),
+                        Uri.parse("https://example.com")));
+
+        assertFalse(
+                (Boolean) method.invoke(
+                        null,
+                        configured,
+                        current,
+                        Uri.parse("https://example.com")));
+
+        assertFalse(
+                (Boolean) method.invoke(
+                        null,
+                        configured,
+                        current,
+                        Uri.parse("https://chatgpt.com:8443")));
+
+        assertFalse(
+                (Boolean) method.invoke(
+                        null,
+                        configured,
+                        current,
+                        Uri.parse("http://chatgpt.com")));
+
+        assertFalse(
+                (Boolean) method.invoke(
+                        null,
+                        null,
+                        current,
+                        requested));
+    }
+
+    @Test
     public void webCameraOriginMustMatchCurrentPage() throws Exception {
 
         Method method =
