@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -70,6 +71,7 @@ public class WebAppActivity extends Activity {
     private AlertDialog errorDialog;
     private View customFullscreenView;
     private WebChromeClient.CustomViewCallback customFullscreenCallback;
+    private WebAppBlobDownloadBridge blobDownloadBridge;
 
     private ValueCallback<Uri[]> filePathCallback;
     private WebChromeClient.FileChooserParams pendingFileChooserParams;
@@ -160,7 +162,7 @@ public class WebAppActivity extends Activity {
                 initialUri.toString();
 
         try {
-            configureWebView();
+            configureWebView(initialUri);
 
             boolean restored =
                     false;
@@ -251,7 +253,7 @@ public class WebAppActivity extends Activity {
         }
     }
 
-    private void configureWebView() {
+    private void configureWebView(Uri initialUri) {
 
         WebSettings settings =
                 webView.getSettings();
@@ -277,6 +279,12 @@ public class WebAppActivity extends Activity {
         settings.setAllowContentAccess(true);
         settings.setMixedContentMode(
                 WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+
+        blobDownloadBridge =
+                WebAppBlobDownloadBridge.install(
+                        this,
+                        webView,
+                        initialUri);
 
         CookieManager cookieManager =
                 CookieManager.getInstance();
@@ -359,6 +367,22 @@ public class WebAppActivity extends Activity {
 
         webView.setWebViewClient(
                 new WebViewClient() {
+
+                    @Override
+                    public void onPageStarted(
+                            WebView view,
+                            String url,
+                            Bitmap favicon) {
+
+                        super.onPageStarted(
+                                view,
+                                url,
+                                favicon);
+
+                        if (blobDownloadBridge != null) {
+                            blobDownloadBridge.cancelActive();
+                        }
+                    }
 
                     @Override
                     public boolean shouldOverrideUrlLoading(
@@ -708,9 +732,9 @@ public class WebAppActivity extends Activity {
                         webView.getUrl();
 
                 if (currentUrl != null
-                        && isHttpsUri(
-                                Uri.parse(
-                                        currentUrl))) {
+                        && isSameHttpsOrigin(
+                                Uri.parse(currentUrl),
+                                uri)) {
 
                     request.addRequestHeader(
                             "Referer",
@@ -2264,6 +2288,15 @@ public class WebAppActivity extends Activity {
         denyPendingWebPermissionRequest();
 
         denyPendingGeolocationRequest();
+
+        WebAppBlobDownloadBridge bridge =
+                blobDownloadBridge;
+
+        blobDownloadBridge = null;
+
+        if (bridge != null) {
+            bridge.close();
+        }
 
         disposeWebView(
                 webView);

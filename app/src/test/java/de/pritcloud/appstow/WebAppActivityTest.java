@@ -94,6 +94,70 @@ public class WebAppActivityTest {
     }
 
     @Test
+    public void blobBridgeAcceptsOnlyExactHttpsOrigins() {
+
+        assertEquals(
+                "https://papra.example.com",
+                WebAppBlobDownloadBridge.originRule(
+                        Uri.parse(
+                                "https://papra.example.com/documents")));
+
+        assertEquals(
+                "https://papra.example.com:8443",
+                WebAppBlobDownloadBridge.originRule(
+                        Uri.parse(
+                                "https://papra.example.com:8443/docs")));
+
+        assertEquals(
+                null,
+                WebAppBlobDownloadBridge.originRule(
+                        Uri.parse(
+                                "http://papra.example.com")));
+
+        assertEquals(
+                null,
+                WebAppBlobDownloadBridge.originRule(
+                        Uri.parse(
+                                "https://*.example.com")));
+    }
+
+    @Test
+    public void blobBridgeSanitizesFileNames() {
+
+        assertEquals(
+                "report_2026.pdf",
+                WebAppBlobDownloadBridge.sanitizeFileName(
+                        "report/2026.pdf"));
+
+        assertEquals(
+                "folder_file.pdf",
+                WebAppBlobDownloadBridge.sanitizeFileName(
+                        "folder"
+                                + (char) 92
+                                + "file.pdf"));
+
+        assertEquals(
+                "download",
+                WebAppBlobDownloadBridge.sanitizeFileName(
+                        ".."));
+    }
+
+    @Test
+    public void blobDownloadScriptIsPackaged()
+            throws Exception {
+
+        Context context =
+                ApplicationProvider.getApplicationContext();
+
+        try (java.io.InputStream input =
+                     context.getAssets().open(
+                             "appstow_blob_download.js")) {
+
+            assertTrue(input.read() != -1);
+        }
+    }
+
+    @Test
     public void regularDownloadRequiresHttps()
             throws Exception {
 

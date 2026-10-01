@@ -1,0 +1,663 @@
+package de.pritcloud.appstow;
+
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.webkit.WebView;
+import android.widget.Toast;
+
+import androidx.webkit.JavaScriptReplyProxy;
+import androidx.webkit.WebMessageCompat;
+import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebViewFeature;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+final class WebAppBlobDownloadBridge
+        implements AutoCloseable {
+
+    private static final String BRIDGE_NAME =
+            "AppStowBlobDownload";
+
+    private static final int MAX_CHUNK =
+            64 * 1024;
+
+    private static final long MAX_FILE_SIZE =
+            512L * 1024 * 1024;
+
+    private final Activity activity;
+    private final Uri allowedOrigin;
+    private final ExecutorService executor =
+            Executors.newSingleThreadExecutor();
+
+    private volatile boolean closed;
+    private Session session;
+
+    private WebAppBlobDownloadBridge(
+            Activity activity,
+            Uri allowedOrigin) {
+
+        this.activity = activity;
+        this.allowedOrigin = allowedOrigin;
+    }
+
+    static WebAppBlobDownloadBridge install(
+            Activity activity,
+            WebView webView,
+            Uri initialUri) {
+
+        if (!WebViewFeature.isFeatureSupported(
+                WebViewFeature.WEB_MESSAGE_LISTENER)
+                || !WebViewFeature.isFeatureSupported(
+                WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER)
+                || !WebViewFeature.isFeatureSupported(
+                WebViewFeature.DOCUMENT_START_SCRIPT)) {
+
+            return null;
+        }
+
+        String originRule =
+                originRule(initialUri);
+
+        if (originRule == null) {
+            return null;
+        }
+
+        String script;
+
+        try (InputStream input =
+                     activity.getAssets().open(
+                             "appstow_blob_download.js");
+             ByteArrayOutputStream output =
+                     new ByteArrayOutputStream()) {
+
+            byte[] buffer =
+                    new byte[4096];
+
+            int count;
+
+            while ((count = input.read(buffer)) != -1) {
+                output.write(
+                        buffer,
+                        0,
+                        count);
+            }
+
+            script =
+                    new String(
+                            output.toByteArray(),
+                            StandardCharsets.UTF_8);
+
+        } catch (IOException exception) {
+            return null;
+        }
+
+        WebAppBlobDownloadBridge bridge =
+                new WebAppBlobDownloadBridge(
+                        activity,
+                        Uri.parse(originRule));
+
+        try {
+            WebViewCompat.addWebMessageListener(
+                    webView,
+                    BRIDGE_NAME,
+                    Collections.singleton(originRule),
+                    (view, message, sourceOrigin,
+                     isMainFrame, replyProxy) ->
+                            bridge.handleMessage(
+                                    view,
+                                    message,
+                                    sourceOrigin,
+                                    isMainFrame,
+                                    replyProxy));
+
+            WebViewCompat.addDocumentStartJavaScript(
+                    webView,
+                    script,
+                    Collections.singleton(originRule));
+
+            return bridge;
+
+        } catch (RuntimeException exception) {
+
+            bridge.close();
+            return null;
+        }
+    }
+
+    static String originRule(Uri uri) {
+
+        if (uri == null
+                || !"https".equalsIgnoreCase(
+                        uri.getScheme())
+                || uri.getHost() == null) {
+
+            return null;
+        }
+
+        String host =
+                uri.getHost();
+
+        if (!host.matches("[A-Za-z0-9.-]+")) {
+            return null;
+        }
+
+        int port =
+                uri.getPort();
+
+        if (port > 65535) {
+            return null;
+        }
+
+        String origin =
+                "https://" + host;
+
+        if (port != -1 && port != 443) {
+            origin += ":" + port;
+        }
+
+        return origin;
+    }
+
+    private static boolean sameOrigin(
+            Uri first,
+            Uri second) {
+
+        String a = originRule(first);
+        String b = originRule(second);
+
+        return a != null
+                && a.equalsIgnoreCase(b);
+    }
+
+    static String sanitizeFileName(
+            String input) {
+
+        if (input == null
+                || input.trim().isEmpty()) {
+
+            return "download";
+        }
+
+        String value = input.trim();
+
+        StringBuilder result =
+                new StringBuilder();
+
+        for (int i = 0; i < value.length(); i++) {
+
+            char character =
+                    value.charAt(i);
+
+            if (character == 47
+                    || character == 92
+                    || Character.isISOControl(character)) {
+
+                result.append("_");
+
+            } else {
+
+                result.append(character);
+            }
+        }
+
+        String name =
+                result.toString().trim();
+
+        if (name.isEmpty()
+                || ".".equals(name)
+                || "..".equals(name)) {
+
+            return "download";
+        }
+
+        if (name.length() > 180) {
+            name = name.substring(0, 180);
+        }
+
+        return name;
+    }
+
+    private static String sanitizeMimeType(
+            String input) {
+
+        if (input == null) {
+            return "application/octet-stream";
+        }
+
+        String value = input.trim();
+
+        if (!value.matches(
+                "[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+")) {
+
+            return "application/octet-stream";
+        }
+
+        return value;
+    }
+
+    private void handleMessage(
+            WebView view,
+            WebMessageCompat message,
+            Uri sourceOrigin,
+            boolean isMainFrame,
+            JavaScriptReplyProxy replyProxy) {
+
+        if (closed
+                || !isMainFrame
+                || !sameOrigin(
+                        allowedOrigin,
+                        sourceOrigin)
+                || view.getUrl() == null
+                || !sameOrigin(
+                        allowedOrigin,
+                        Uri.parse(view.getUrl()))) {
+
+            return;
+        }
+
+        if (message.getType()
+                == WebMessageCompat.TYPE_ARRAY_BUFFER) {
+
+            byte[] data =
+                    message.getArrayBuffer();
+
+            submit(() ->
+                    writeChunk(
+                            data,
+                            replyProxy));
+
+            return;
+        }
+
+        if (message.getType()
+                != WebMessageCompat.TYPE_STRING) {
+
+            return;
+        }
+
+        String text = message.getData();
+
+        if (text == null
+                || text.length() > 4096) {
+
+            return;
+        }
+
+        try {
+            JSONObject command =
+                    new JSONObject(text);
+
+            String kind =
+                    command.optString("kind", "");
+
+            long id =
+                    command.optLong("id", 0);
+
+            if (id <= 0) {
+                return;
+            }
+
+            if ("start".equals(kind)) {
+
+                String name =
+                        sanitizeFileName(
+                                command.optString(
+                                        "fileName",
+                                        "download"));
+
+                String mime =
+                        sanitizeMimeType(
+                                command.optString(
+                                        "mimeType",
+                                        ""));
+
+                submit(() ->
+                        startDownload(
+                                id,
+                                name,
+                                mime,
+                                replyProxy));
+
+            } else if ("end".equals(kind)) {
+
+                submit(() ->
+                        finishDownload(
+                                id,
+                                replyProxy));
+
+            } else if ("abort".equals(kind)) {
+
+                submit(() ->
+                        abortIfMatching(id));
+            }
+
+        } catch (JSONException ignored) {
+        }
+    }
+
+    private void submit(Runnable task) {
+
+        if (closed) {
+            return;
+        }
+
+        try {
+            executor.execute(task);
+        } catch (RuntimeException ignored) {
+        }
+    }
+
+    private void startDownload(
+            long id,
+            String name,
+            String mime,
+            JavaScriptReplyProxy replyProxy) {
+
+        abortSession();
+
+        ContentResolver resolver =
+                activity.getContentResolver();
+
+        Uri uri = null;
+        OutputStream output = null;
+
+        try {
+            ContentValues values =
+                    new ContentValues();
+
+            values.put(
+                    MediaStore.MediaColumns.DISPLAY_NAME,
+                    name);
+
+            values.put(
+                    MediaStore.MediaColumns.MIME_TYPE,
+                    mime);
+
+            values.put(
+                    MediaStore.MediaColumns.RELATIVE_PATH,
+                    Environment.DIRECTORY_DOWNLOADS);
+
+            values.put(
+                    MediaStore.MediaColumns.IS_PENDING,
+                    1);
+
+            uri = resolver.insert(
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                    values);
+
+            if (uri == null) {
+                throw new IOException(
+                        "Download creation failed");
+            }
+
+            output =
+                    resolver.openOutputStream(uri, "w");
+
+            if (output == null) {
+                throw new IOException(
+                        "Download stream unavailable");
+            }
+
+            session =
+                    new Session(id, uri, output);
+
+            reply(replyProxy, "ready", id);
+
+        } catch (IOException | RuntimeException exception) {
+
+            closeQuietly(output);
+            deleteQuietly(uri);
+
+            reply(replyProxy, "error", id);
+            showFailure();
+        }
+    }
+
+    private void writeChunk(
+            byte[] data,
+            JavaScriptReplyProxy replyProxy) {
+
+        Session current = session;
+
+        if (current == null) {
+            return;
+        }
+
+        if (data == null
+                || data.length == 0
+                || data.length > MAX_CHUNK
+                || current.bytes > MAX_FILE_SIZE - data.length) {
+
+            long id = current.id;
+
+            abortSession();
+            reply(replyProxy, "error", id);
+            showFailure();
+            return;
+        }
+
+        try {
+            current.output.write(data);
+
+            current.bytes += data.length;
+
+            reply(
+                    replyProxy,
+                    "next",
+                    current.id);
+
+        } catch (IOException | RuntimeException exception) {
+
+            long id = current.id;
+
+            abortSession();
+
+            reply(replyProxy, "error", id);
+            showFailure();
+        }
+    }
+
+    private void finishDownload(
+            long id,
+            JavaScriptReplyProxy replyProxy) {
+
+        Session current = session;
+
+        if (current == null
+                || current.id != id) {
+
+            reply(replyProxy, "error", id);
+            return;
+        }
+
+        session = null;
+
+        try {
+            current.output.flush();
+            current.output.close();
+
+            ContentValues values =
+                    new ContentValues();
+
+            values.put(
+                    MediaStore.MediaColumns.IS_PENDING,
+                    0);
+
+            int updated =
+                    activity.getContentResolver().update(
+                            current.uri,
+                            values,
+                            null,
+                            null);
+
+            if (updated <= 0) {
+                throw new IOException(
+                        "Download publication failed");
+            }
+
+            reply(replyProxy, "done", id);
+
+            showToast(
+                    R.string.webapp_download_completed);
+
+        } catch (IOException | RuntimeException exception) {
+
+            closeQuietly(current.output);
+            deleteQuietly(current.uri);
+
+            reply(replyProxy, "error", id);
+            showFailure();
+        }
+    }
+
+    private void abortIfMatching(long id) {
+
+        if (session != null
+                && session.id == id) {
+
+            abortSession();
+        }
+    }
+
+    void cancelActive() {
+        submit(this::abortSession);
+    }
+
+    private void abortSession() {
+
+        Session current = session;
+        session = null;
+
+        if (current != null) {
+
+            closeQuietly(current.output);
+            deleteQuietly(current.uri);
+        }
+    }
+
+    private void deleteQuietly(Uri uri) {
+
+        if (uri == null) {
+            return;
+        }
+
+        try {
+            activity.getContentResolver().delete(
+                    uri,
+                    null,
+                    null);
+
+        } catch (RuntimeException ignored) {
+        }
+    }
+
+    private static void closeQuietly(
+            OutputStream output) {
+
+        if (output == null) {
+            return;
+        }
+
+        try {
+            output.close();
+        } catch (IOException | RuntimeException ignored) {
+        }
+    }
+
+    private void reply(
+            JavaScriptReplyProxy proxy,
+            String kind,
+            long id) {
+
+        activity.runOnUiThread(() -> {
+
+            if (closed
+                    || activity.isFinishing()
+                    || activity.isDestroyed()) {
+
+                return;
+            }
+
+            String message =
+                    "{\"kind\":\""
+                            + kind
+                            + "\",\"id\":"
+                            + id
+                            + "}";
+
+            try {
+                proxy.postMessage(message);
+            } catch (RuntimeException ignored) {
+            }
+        });
+    }
+
+    private void showFailure() {
+        showToast(
+                R.string.webapp_download_failed);
+    }
+
+    private void showToast(int resource) {
+
+        activity.runOnUiThread(() -> {
+
+            if (!closed
+                    && !activity.isFinishing()
+                    && !activity.isDestroyed()) {
+
+                Toast.makeText(
+                        activity,
+                        resource,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void close() {
+
+        if (closed) {
+            return;
+        }
+
+        closed = true;
+
+        executor.execute(
+                this::abortSession);
+
+        executor.shutdown();
+    }
+
+    private static final class Session {
+
+        final long id;
+        final Uri uri;
+        final OutputStream output;
+
+        long bytes;
+
+        Session(
+                long id,
+                Uri uri,
+                OutputStream output) {
+
+            this.id = id;
+            this.uri = uri;
+            this.output = output;
+        }
+    }
+}
