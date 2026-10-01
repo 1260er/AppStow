@@ -179,10 +179,13 @@ public class WebAppActivityTest {
                 "*/*",
                 intent.getType());
 
-        assertTrue(
+        assertArrayEquals(
+                new String[]{
+                        "image/*",
+                        "application/pdf"
+                },
                 intent.getStringArrayExtra(
-                        Intent.EXTRA_MIME_TYPES)
-                        == null);
+                        Intent.EXTRA_MIME_TYPES));
 
         assertTrue(
                 intent.getCategories()
