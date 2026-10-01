@@ -59,6 +59,31 @@ intent:#Intent;action=android.media.action.IMAGE_CAPTURE;end
 package:com.example.app
 ```
 
+## Integrated web apps
+
+HTTPS web apps run in a separate Android WebView process.
+
+Supported features include file and photo uploads, camera
+capture, zoom, fullscreen, location and microphone requests,
+HTTPS downloads and compatible blob downloads.
+
+Web permissions are restricted to the configured HTTPS origin.
+Authenticated HTTPS downloads do not forward session cookies
+or the original Referer to a different origin.
+
+Downloads are saved to the Android Downloads collection.
+The file size limit is 512 MiB. Ordinary HTTPS downloads
+stop when the web app activity is destroyed and do not
+provide a persistent system download notification.
+
+Web app functionality depends on the installed Android
+WebView and the website. WebAuthn may require correctly
+configured Digital Asset Links.
+
+Integrated web apps require a validated network connection.
+Local-only networks without validated internet access
+may therefore be rejected.
+
 ## Backup and restore
 
 Backups include categories, symbols, assignments, favorites, shortcuts, overview order, item order, and related settings.

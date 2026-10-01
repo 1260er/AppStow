@@ -21,12 +21,12 @@ Stand: 1. Oktober 2026
 - Debug- und Release-Builds erfolgreich.
 - Unit-Tests und Android Lint erfolgreich.
 - Signierter Dev-Release mit R8-Optimierung.
+- Aktualisierte CI mit dev-137 erfolgreich geprüft.
 - Weitere Geräte und WebView-Versionen nicht vollständig getestet.
 
 ## Noch ausstehend
 
-- Dokumentation abschließen.
-- GitHub Actions aktualisieren und prüfen.
+- Release-Hinweise nach Veröffentlichung finalisieren.
 - Abschließende Debug- und Release-Prüfung.
 - Entwicklungsstand nach main übernehmen.
 - Stabilen Release 0.1.3 veröffentlichen und prüfen.
