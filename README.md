@@ -9,7 +9,13 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 - Assign emoji symbols to categories
 - Offline emoji picker with German and English search
 - Create website, web app, and deep-link shortcuts
+- Switch between list and grid views
+- Choose 3, 4 or 5 global grid columns
+- Set individual column counts for opened sections
+- Use the global view when assigning apps
+- Assign categories by tapping an app
 - Reorder overview sections and their contents
+- Replace favorite stars with drag handles while sorting
 - Backup and restore the AppStow configuration
 - German and English interface
 - Light and dark system themes
@@ -24,6 +30,7 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 ## Installation
 
 The current stable release is **AppStow 0.1.3**.
+Version 2.0.0 is in final release preparation.
 
 https://github.com/1260er/AppStow/releases/latest
 
@@ -42,6 +49,10 @@ https://github.com/1260er/AppStow
 
 Categories can be created, renamed, deleted, and assigned an emoji symbol.
 Apps can belong to one or multiple categories.
+
+In Assign apps, tap an app to choose its categories.
+This page follows the global list or grid view.
+The favorite star works independently of category assignments.
 
 ## Custom shortcuts
 
@@ -84,7 +95,10 @@ may therefore be rejected.
 
 ## Backup and restore
 
-Backups include categories, symbols, assignments, favorites, shortcuts, overview order, item order, and related settings.
+Backups include categories, symbols, assignments, favorites,
+shortcuts, section and item order, and display settings.
+Display settings include the global view, global column count,
+and individual column counts for opened sections.
 
 Web-app sessions, cookies, Android permissions, and other application data are not included.
 
