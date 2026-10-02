@@ -134,13 +134,15 @@ None found</string>
     <string name="webapp_network_open_network_settings">Network settings</string>
 
     <string name="help_overview_title">Launch apps</string>
-    <string name="help_overview_text">Here you can find favorites, your categories, and custom shortcuts. Tap a heading to expand or collapse the section. Tap apps and shortcuts to launch them.</string>
+    <string name="help_overview_text">This is where you launch your apps and shortcuts. Favorites, categories and custom shortcuts are grouped into sections. Tap an app or shortcut to open it. Use the search field to find entries across sections.</string>
 
+    <string name="help_grid_title">List and grid view</string>
+    <string name="help_grid_text">Tap the view icon in the overview to switch between list and grid view. Touch and hold the view icon to choose 3, 4 or 5 columns globally. In grid view, tap a category tile to open its contents. Use the view icon in the open section to choose Global, 3, 4 or 5 columns for that section. Global follows the overview column count, including later changes. A fixed value stays independent. Favorites and Custom shortcuts work the same way. Use the section heading or Back to return to the overview.</string>
     <string name="help_categories_title">Favorites &amp; Categories</string>
-    <string name="help_categories_text">Favorites appear in the “Favorites” section. You can create, rename, or delete categories under “Manage categories”.</string>
+    <string name="help_categories_text">Create, rename or delete categories under Manage categories and assign an emoji to each one. Apps and shortcuts can belong to several categories. Use the star to add or remove favorites. The Favorites section and Custom shortcuts section also have their own contents.</string>
 
     <string name="help_apps_title">Assign apps</string>
-    <string name="help_apps_text">Press and hold an app to assign it to one or more categories. Use the filter icon to show only apps that have not yet been assigned to a category.</string>
+    <string name="help_apps_text">Under Assign apps, touch and hold an app to assign it to one or more categories. Use the filter icon to show only apps that have not yet been assigned. The search field helps you find installed apps.</string>
 
     <string name="help_shortcuts_title">Custom shortcuts</string>
 
@@ -170,13 +172,15 @@ None found</string>
     <string name="help_example_settings">package:com.example.app</string>
 
     <string name="help_sort_title">Sorting</string>
-    <string name="help_sort_text">Use the sort icon at the top to move sections. The sort icon inside a section sorts its apps and shortcuts. Drag the displayed handles to the desired position.</string>
+    <string name="help_sort_text">Tap the sort icon in the overview to rearrange sections. Tap the sort icon inside a section to rearrange its apps and shortcuts. In grid view, you can drag tiles in all four directions using the handles at the upper right. Tap the check mark to finish sorting. Your order is saved.</string>
 
     <string name="help_backup_title">Backup &amp; Restore</string>
-    <string name="help_backup_text">A backup contains categories, assignments, favorites, custom shortcuts, and all sorting orders. Web app logins, cookies, and Android permissions are not backed up.</string>
+    <string name="help_backup_text">Under Backup &amp; Restore, save your categories, assignments, favorites, custom shortcuts, sorting orders and display settings as a JSON file. This includes list or grid view, the global column count and individual section column counts. Restoring replaces the current configuration. Older backups without display settings use the default view settings. Web app sessions, cookies and Android permissions are not included.</string>
 
     <string name="about_app_name">AppStow</string>
-    <string name="about_description">A compact app launcher for favorites, categories, custom shortcuts, and web apps.</string>
+    <string name="about_description">A compact app launcher for favorites, categories, custom shortcuts and web apps. Keep your applications organized and ready to launch.</string>
+    <string name="about_name_origin_title">Where the name comes from</string>
+    <string name="about_name_origin_text">AppStow combines App, short for application, with the English word stow, meaning to put something away neatly. The idea behind the name is simple: a place to stow your applications and find them again whenever you need them.</string>
     <string name="about_details_title">App information</string>
     <string name="about_version">Version: %1$s</string>
     <string name="about_package">Package: %1$s</string>
@@ -184,15 +188,20 @@ None found</string>
     <string name="about_github_url">https://github.com/1260er/AppStow</string>
     <string name="about_github_failed">Could not open GitHub.</string>
 
+    <string name="about_support_title">Support the projects</string>
+    <string name="about_support_text">If you would like to support the development, you can do so via Ko-fi. Your donation supports the projects as a whole and is not tied specifically to AppStow.</string>
+    <string name="about_support_button">Support on Ko-fi</string>
+    <string name="about_support_url">https://ko-fi.com/1260er</string>
+    <string name="about_support_failed">Could not open Ko-fi.</string>
     <string name="nav_backup">Backup &amp; Restore</string>
     <string name="backup_create">Create backup</string>
     <string name="backup_restore">Restore backup</string>
-    <string name="backup_description">Backs up categories, app assignments, favorites, custom shortcuts, and all sorting orders. Web app logins and Android permissions are not included.</string>
+    <string name="backup_description">Back up categories, app assignments, favorites, custom shortcuts, sorting orders and display settings as a JSON file. Web app sessions, cookies and Android permissions are not included.</string>
     <string name="backup_created">Backup created.</string>
     <string name="backup_failed">Backup failed.</string>
     <string name="backup_restore_failed">Restore failed.</string>
     <string name="backup_restore_title">Restore backup?</string>
-    <string name="backup_restore_message">Existing categories, app assignments, favorites, custom shortcuts, and sorting orders will be completely replaced by the backup.</string>
+    <string name="backup_restore_message">The existing categories, app assignments, favorites, custom shortcuts, sorting orders and display settings will be replaced by the backup.</string>
     <string name="backup_restore_confirm">Restore</string>
     <string name="backup_restored">Backup restored.</string>
 

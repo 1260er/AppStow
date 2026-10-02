@@ -49,6 +49,30 @@
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="@string/about_name_origin_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:text="@string/about_name_origin_text"
+                android:textColor="@color/ui_text_secondary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:background="@drawable/overview_section_background"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_md">
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:text="@string/about_details_title"
                 android:textStyle="bold" />
 
@@ -86,6 +110,46 @@
             android:paddingHorizontal="@dimen/spacing_md"
             android:text="@string/about_github"
             android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:background="@drawable/overview_section_background"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_md">
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/about_support_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:text="@string/about_support_text"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                android:id="@+id/aboutSupportButton"
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:background="@drawable/search_input_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="@dimen/spacing_md"
+                android:text="@string/about_support_button"
+                android:textStyle="bold" />
+        </LinearLayout>
 
     </LinearLayout>
 

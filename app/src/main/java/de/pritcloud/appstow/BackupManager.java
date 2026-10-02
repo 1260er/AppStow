@@ -31,6 +31,11 @@ final class BackupManager {
 
     private static final int FORMAT_VERSION = 2;
 
+    private static final String DISPLAY_PREFS =
+            "overview_display";
+    private static final String DISPLAY_SECTION_PREFIX =
+            "section_grid_columns_";
+
     private static final int MAX_BACKUP_BYTES =
             5 * 1024 * 1024;
 
@@ -241,6 +246,25 @@ final class BackupManager {
                 backup.getJSONObject(
                         "sectionItemOrder");
 
+        JSONObject display =
+                backup.optJSONObject(
+                        "overviewDisplay");
+
+        boolean gridMode =
+                display != null
+                        && display.getBoolean("gridMode");
+
+        int gridColumns =
+                display == null
+                        ? 4
+                        : display.getInt("gridColumns");
+
+        JSONObject sectionColumns =
+                display == null
+                        ? new JSONObject()
+                        : display.getJSONObject(
+                                "sectionColumns");
+
         Set<String> favorites =
                 new HashSet<>();
 
@@ -277,6 +301,11 @@ final class BackupManager {
                         "section_item_order",
                         Context.MODE_PRIVATE);
 
+        SharedPreferences displayPrefs =
+                context.getSharedPreferences(
+                        DISPLAY_PREFS,
+                        Context.MODE_PRIVATE);
+
         Map<String, Object> categorySnapshot =
                 snapshotPreferences(
                         categoryPrefs);
@@ -296,6 +325,10 @@ final class BackupManager {
         Map<String, Object> sectionItemOrderSnapshot =
                 snapshotPreferences(
                         sectionItemOrderPrefs);
+
+        Map<String, Object> displaySnapshot =
+                snapshotPreferences(
+                        displayPrefs);
 
         try {
             boolean categoriesSaved =
@@ -349,11 +382,39 @@ final class BackupManager {
                                     sectionItemOrder.toString())
                             .commit();
 
+            SharedPreferences.Editor displayEditor =
+                    displayPrefs.edit()
+                            .clear()
+                            .putBoolean(
+                                    "grid_mode",
+                                    gridMode)
+                            .putInt(
+                                    "grid_columns",
+                                    gridColumns);
+
+            Iterator<String> displayKeys =
+                    sectionColumns.keys();
+
+            while (displayKeys.hasNext()) {
+                String sectionId =
+                        displayKeys.next();
+
+                displayEditor.putInt(
+                        DISPLAY_SECTION_PREFIX
+                                + sectionId,
+                        sectionColumns.getInt(
+                                sectionId));
+            }
+
+            boolean displaySaved =
+                    displayEditor.commit();
+
             if (!categoriesSaved
                     || !favoritesSaved
                     || !shortcutsSaved
                     || !orderSaved
-                    || !sectionItemOrderSaved) {
+                    || !sectionItemOrderSaved
+                    || !displaySaved) {
 
                 throw new IOException(
                         "Backup konnte nicht vollständig wiederhergestellt werden.");
@@ -384,6 +445,11 @@ final class BackupManager {
                     restorePreferences(
                             sectionItemOrderPrefs,
                             sectionItemOrderSnapshot);
+
+            rollbackSaved &=
+                    restorePreferences(
+                            displayPrefs,
+                            displaySnapshot);
 
             if (!rollbackSaved) {
                 throw new IOException(
@@ -531,6 +597,11 @@ final class BackupManager {
                         "section_item_order",
                         Context.MODE_PRIVATE);
 
+        SharedPreferences displayPrefs =
+                context.getSharedPreferences(
+                        DISPLAY_PREFS,
+                        Context.MODE_PRIVATE);
+
         JSONArray categories =
                 new JSONArray(
                         categoryPrefs.getString(
@@ -584,6 +655,69 @@ final class BackupManager {
                                 "orders",
                                 "{}"));
 
+        JSONObject display =
+                new JSONObject();
+
+        display.put(
+                "gridMode",
+                displayPrefs.getBoolean(
+                        "grid_mode",
+                        false));
+
+        display.put(
+                "gridColumns",
+                displayPrefs.getInt(
+                        "grid_columns",
+                        4));
+
+        Set<String> validSectionIds =
+                new HashSet<>();
+
+        validSectionIds.add("favorites");
+        validSectionIds.add("shortcuts");
+
+        for (int i = 0;
+             i < categories.length();
+             i++) {
+
+            validSectionIds.add(
+                    "category:"
+                            + categories.getJSONObject(i)
+                                    .getString("id"));
+        }
+
+        JSONObject sectionColumns =
+                new JSONObject();
+
+        for (Map.Entry<String, ?> entry :
+                displayPrefs.getAll().entrySet()) {
+
+            String key =
+                    entry.getKey();
+
+            if (!key.startsWith(
+                    DISPLAY_SECTION_PREFIX)) {
+
+                continue;
+            }
+
+            String sectionId =
+                    key.substring(
+                            DISPLAY_SECTION_PREFIX.length());
+
+            if (validSectionIds.contains(
+                    sectionId)) {
+
+                sectionColumns.put(
+                        sectionId,
+                        entry.getValue());
+            }
+        }
+
+        display.put(
+                "sectionColumns",
+                sectionColumns);
+
         JSONObject backup =
                 new JSONObject();
 
@@ -627,9 +761,13 @@ final class BackupManager {
                 "sectionItemOrder",
                 sectionItemOrder);
 
+        backup.put(
+                "overviewDisplay",
+                display);
+
         validateBackup(
                 backup,
-                false);
+                true);
 
         return backup;
     }
@@ -718,6 +856,33 @@ final class BackupManager {
         }
 
         return value;
+    }
+
+    private static int requireGridColumns(
+            Object value)
+            throws JSONException {
+
+        if (!(value instanceof Number)) {
+            throw new JSONException(
+                    "Ungültige Spaltenzahl im Backup.");
+        }
+
+        Number number =
+                (Number) value;
+
+        int columns =
+                number.intValue();
+
+        if (columns < 3
+                || columns > 5
+                || number.doubleValue()
+                        != columns) {
+
+            throw new JSONException(
+                    "Ungültige Spaltenzahl im Backup.");
+        }
+
+        return columns;
     }
 
     private static void validateBackup(
@@ -812,6 +977,57 @@ final class BackupManager {
 
                 throw new JSONException(
                         "Ungültige Kategorien im Backup.");
+            }
+        }
+
+        if (backup.has(
+                "overviewDisplay")) {
+
+            JSONObject display =
+                    backup.getJSONObject(
+                            "overviewDisplay");
+
+            if (!display.has("gridMode")
+                    || !(display.get("gridMode")
+                    instanceof Boolean)) {
+
+                throw new JSONException(
+                        "Ungültige Ansicht im Backup.");
+            }
+
+            requireGridColumns(
+                    display.get("gridColumns"));
+
+            JSONObject sectionColumns =
+                    display.getJSONObject(
+                            "sectionColumns");
+
+            Iterator<String> displayKeys =
+                    sectionColumns.keys();
+
+            while (displayKeys.hasNext()) {
+                String sectionId =
+                        displayKeys.next();
+
+                boolean knownSection =
+                        "favorites".equals(
+                                sectionId)
+                                || "shortcuts".equals(
+                                        sectionId)
+                                || (sectionId.startsWith(
+                                        "category:")
+                                && categoryIds.contains(
+                                        sectionId.substring(
+                                                "category:".length())));
+
+                if (!knownSection) {
+                    throw new JSONException(
+                            "Unbekannte Kategorie in der Anzeigeeinstellung.");
+                }
+
+                requireGridColumns(
+                        sectionColumns.get(
+                                sectionId));
             }
         }
 

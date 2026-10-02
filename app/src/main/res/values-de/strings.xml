@@ -134,13 +134,15 @@ Keines gefunden</string>
     <string name="webapp_network_open_network_settings">Netzwerk-Einstellungen</string>
 
     <string name="help_overview_title">App starten</string>
-    <string name="help_overview_text">Hier findest du Favoriten, deine Kategorien und eigene Shortcuts. Tippe auf eine Überschrift, um den Bereich auf- oder zuzuklappen. Apps und Shortcuts werden durch Antippen gestartet.</string>
+    <string name="help_overview_text">Hier startest du deine Apps und Shortcuts. Favoriten, Kategorien und eigene Shortcuts sind in Bereichen zusammengefasst. Tippe auf eine App oder einen Shortcut, um ihn zu öffnen. Mit dem Suchfeld findest du Einträge über alle Bereiche hinweg.</string>
 
+    <string name="help_grid_title">Listen- und Kachelansicht</string>
+    <string name="help_grid_text">Tippe in der Übersicht auf das Ansichtssymbol, um zwischen Listen- und Kachelansicht zu wechseln. Halte das Symbol länger gedrückt, um global 3, 4 oder 5 Spalten einzustellen. Tippe in der Kachelansicht auf eine Kategorie, um ihren Inhalt zu öffnen. Über das Ansichtssymbol im geöffneten Bereich wählst du Global, 3, 4 oder 5 Spalten. Global übernimmt die Spaltenzahl der Übersicht und folgt auch späteren Änderungen. Eine feste Spaltenzahl bleibt davon unabhängig. Das funktioniert ebenso für Favoriten und eigene Shortcuts. Über die Bereichsüberschrift oder Zurück gelangst du wieder zur Übersicht.</string>
     <string name="help_categories_title">Favoriten &amp; Kategorien</string>
-    <string name="help_categories_text">Favoriten erscheinen im Bereich „Favoriten“. Kategorien kannst du unter „Kategorien verwalten“ anlegen, umbenennen oder löschen.</string>
+    <string name="help_categories_text">Unter Kategorien verwalten kannst du Kategorien anlegen, umbenennen, löschen und ihnen ein Emoji zuweisen. Apps und Shortcuts können mehreren Kategorien angehören. Mit dem Stern fügst du Favoriten hinzu oder entfernst sie. Auch Favoriten und eigene Shortcuts besitzen jeweils einen eigenen Bereich.</string>
 
     <string name="help_apps_title">Apps zuweisen</string>
-    <string name="help_apps_text">Halte eine App länger gedrückt, um sie einer oder mehreren Kategorien zuzuweisen. Über das Filtersymbol kannst du nur Apps anzeigen, die noch keiner Kategorie zugewiesen sind.</string>
+    <string name="help_apps_text">Halte unter Apps zuweisen eine App länger gedrückt, um sie einer oder mehreren Kategorien zuzuweisen. Das Filtersymbol zeigt nur Apps an, die noch keiner Kategorie zugeordnet sind. Mit dem Suchfeld findest du installierte Apps schneller.</string>
 
     <string name="help_shortcuts_title">Eigene Shortcuts</string>
 
@@ -170,13 +172,15 @@ Keines gefunden</string>
     <string name="help_example_settings">package:com.example.app</string>
 
     <string name="help_sort_title">Sortieren</string>
-    <string name="help_sort_text">Mit dem Sortiersymbol oben kannst du die Bereiche verschieben. Das Sortiersymbol innerhalb eines Bereichs sortiert dessen Apps und Shortcuts. Ziehe die eingeblendeten Griffe an die gewünschte Position.</string>
+    <string name="help_sort_text">Tippe in der Übersicht auf das Sortiersymbol, um die Bereiche anzuordnen. Mit dem Sortiersymbol innerhalb eines Bereichs sortierst du dessen Apps und Shortcuts. In der Kachelansicht lassen sich die Kacheln über die Anfasser rechts oben in alle vier Richtungen verschieben. Mit dem Häkchen beendest du die Sortierung. Die Reihenfolge wird gespeichert.</string>
 
     <string name="help_backup_title">Backup &amp; Wiederherstellen</string>
-    <string name="help_backup_text">Ein Backup enthält Kategorien, Zuweisungen, Favoriten, eigene Shortcuts und alle Sortierungen. Web-App-Anmeldungen, Cookies und Android-Berechtigungen werden nicht gesichert.</string>
+    <string name="help_backup_text">Unter Backup &amp; Wiederherstellen sicherst du Kategorien, Zuweisungen, Favoriten, eigene Shortcuts, Sortierreihenfolgen und Anzeigeeinstellungen in einer JSON-Datei. Dazu gehören die Listen- oder Kachelansicht, die globale Spaltenzahl und individuelle Spaltenzahlen. Beim Wiederherstellen wird die vorhandene Konfiguration ersetzt. Ältere Backups ohne Anzeigeeinstellungen verwenden die Standardansicht. Web-App-Anmeldungen, Cookies und Android-Berechtigungen werden nicht gesichert.</string>
 
     <string name="about_app_name">AppStow</string>
-    <string name="about_description">Ein kompakter App-Launcher für Favoriten, Kategorien, eigene Shortcuts und Web-Apps.</string>
+    <string name="about_description">Ein kompakter App-Launcher für Favoriten, Kategorien, eigene Shortcuts und Web-Apps. Deine Anwendungen bleiben übersichtlich verstaut und schnell erreichbar.</string>
+    <string name="about_name_origin_title">Wie der Name entstanden ist</string>
+    <string name="about_name_origin_text">Der Name AppStow setzt sich aus App, der Kurzform für Anwendung, und dem englischen Wort stow zusammen. Stow bedeutet, etwas ordentlich zu verstauen. Genau das ist die Idee hinter AppStow: Anwendungen übersichtlich verstauen und bei Bedarf schnell wiederfinden.</string>
     <string name="about_details_title">App-Informationen</string>
     <string name="about_version">Version: %1$s</string>
     <string name="about_package">Paket: %1$s</string>
@@ -184,15 +188,20 @@ Keines gefunden</string>
     <string name="about_github_url">https://github.com/1260er/AppStow</string>
     <string name="about_github_failed">GitHub konnte nicht geöffnet werden.</string>
 
+    <string name="about_support_title">Projekte unterstützen</string>
+    <string name="about_support_text">Wenn du die Entwicklung unterstützen möchtest, kannst du das über Ko-fi tun. Deine Spende unterstützt die Projekte insgesamt und ist nicht speziell an AppStow gebunden.</string>
+    <string name="about_support_button">Über Ko-fi unterstützen</string>
+    <string name="about_support_url">https://ko-fi.com/1260er</string>
+    <string name="about_support_failed">Ko-fi konnte nicht geöffnet werden.</string>
     <string name="nav_backup">Backup &amp; Wiederherstellen</string>
     <string name="backup_create">Backup erstellen</string>
     <string name="backup_restore">Backup wiederherstellen</string>
-    <string name="backup_description">Sichert Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts und alle Sortierungen. Web-App-Anmeldungen und Android-Berechtigungen sind nicht enthalten.</string>
+    <string name="backup_description">Sichert Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts, Sortierreihenfolgen und Anzeigeeinstellungen als JSON-Datei. Web-App-Anmeldungen, Cookies und Android-Berechtigungen sind nicht enthalten.</string>
     <string name="backup_created">Backup erstellt.</string>
     <string name="backup_failed">Backup fehlgeschlagen.</string>
     <string name="backup_restore_failed">Wiederherstellung fehlgeschlagen.</string>
     <string name="backup_restore_title">Backup wiederherstellen?</string>
-    <string name="backup_restore_message">Die vorhandenen Kategorien, App-Zuweisungen, Favoriten, eigenen Shortcuts und die Sortierung werden vollständig durch das Backup ersetzt.</string>
+    <string name="backup_restore_message">Die vorhandenen Kategorien, App-Zuweisungen, Favoriten, eigenen Shortcuts, Sortierreihenfolgen und Anzeigeeinstellungen werden durch das Backup ersetzt.</string>
     <string name="backup_restore_confirm">Wiederherstellen</string>
     <string name="backup_restored">Backup wiederhergestellt.</string>
 

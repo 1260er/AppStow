@@ -55,7 +55,7 @@ android {
         versionCode =
             providers.environmentVariable("APPSTOW_VERSION_CODE")
                 .orNull?.toIntOrNull() ?: 1
-        versionName = "0.1.3"
+        versionName = "2.0.0"
     }
 
     signingConfigs {

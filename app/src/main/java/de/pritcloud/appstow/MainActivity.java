@@ -75,6 +75,8 @@ public class MainActivity extends Activity {
     private static final String STATE_PAGE = "main_page";
     private static final String STATE_APP_SEARCH = "app_search";
     private static final String STATE_OVERVIEW_SEARCH = "overview_search";
+    private static final String STATE_GRID_OPEN_SECTION =
+            "grid_open_section";
 
     private static final String OVERVIEW_DISPLAY_PREFS =
             "overview_display";
@@ -732,6 +734,27 @@ public class MainActivity extends Activity {
                             STATE_PAGE,
                             PAGE_OVERVIEW));
 
+            if (PAGE_OVERVIEW.equals(currentPage)
+                    && overviewAdapter.isGridMode()) {
+
+                String savedGridSection =
+                        savedInstanceState.getString(
+                                STATE_GRID_OPEN_SECTION);
+
+                if (savedGridSection != null) {
+                    for (OverviewSection section :
+                            overviewSections) {
+
+                        if (savedGridSection.equals(
+                                section.id)) {
+
+                            openGridSection(section);
+                            break;
+                        }
+                    }
+                }
+            }
+
             int helpScroll =
                     savedInstanceState.getInt(
                             STATE_HELP_SCROLL,
@@ -782,6 +805,10 @@ public class MainActivity extends Activity {
         outState.putString(
                 STATE_OVERVIEW_SEARCH,
                 overviewSearchQuery);
+
+        outState.putString(
+                STATE_GRID_OPEN_SECTION,
+                overviewAdapter.getGridOpenSectionId());
 
         outState.putBoolean(
                 STATE_APP_FILTER,
@@ -2065,6 +2092,14 @@ public class MainActivity extends Activity {
 
                                     sectionItemOrderStore.removeOrder(
                                             "category:" + category.id);
+
+                                    overviewDisplayPreferences
+                                            .edit()
+                                            .remove(
+                                                    KEY_SECTION_GRID_COLUMNS
+                                                            + "category:"
+                                                            + category.id)
+                                            .apply();
 
                                     refreshCategories();
                                 })
@@ -3663,6 +3698,11 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         openGithub());
 
+        aboutManagement.findViewById(
+                        R.id.aboutSupportButton)
+                .setOnClickListener(v ->
+                        openSupport());
+
         aboutStub = null;
     }
 
@@ -3739,6 +3779,28 @@ public class MainActivity extends Activity {
             Toast.makeText(
                     this,
                     R.string.about_github_failed,
+                    Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
+
+    private void openSupport() {
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(
+                                getString(
+                                        R.string.about_support_url)));
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        try {
+            startActivity(intent);
+        } catch (RuntimeException exception) {
+            Toast.makeText(
+                    this,
+                    R.string.about_support_failed,
                     Toast.LENGTH_SHORT)
                     .show();
         }

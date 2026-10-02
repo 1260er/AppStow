@@ -1,6 +1,7 @@
 package de.pritcloud.appstow;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 
 import org.json.JSONArray;
@@ -38,7 +39,8 @@ public class BackupManagerTest {
                 "favorites",
                 "shortcuts",
                 "overview_order",
-                "section_item_order");
+                "section_item_order",
+                "overview_display");
     }
 
     @Test
@@ -492,6 +494,463 @@ public class BackupManagerTest {
                                 "shortcut:site",
                                 "shortcut:webapp",
                                 "shortcut:paypal")));
+    }
+
+    @Test
+    public void displaySettingsSurviveBackupAndRestore()
+            throws Exception {
+
+        CategoryStore categoryStore =
+                new CategoryStore(context);
+
+        assertTrue(
+                categoryStore.addCategory(
+                        "Work",
+                        "💼"));
+
+        String categoryId =
+                categoryStore.getCategories()
+                        .get(0).id;
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                3)
+                        .putInt(
+                                "section_grid_columns_favorites",
+                                5)
+                        .putInt(
+                                "section_grid_columns_shortcuts",
+                                4)
+                        .putInt(
+                                "section_grid_columns_category:"
+                                        + categoryId,
+                                4)
+                        .putInt(
+                                "section_grid_columns_category:deleted",
+                                5)
+                        .commit());
+
+        File file =
+                File.createTempFile(
+                        "appstow-display-",
+                        ".json",
+                        context.getCacheDir());
+
+        try {
+            Uri uri =
+                    Uri.fromFile(file);
+
+            BackupManager.writeBackup(
+                    context,
+                    uri);
+
+            JSONObject backup =
+                    BackupManager.readBackup(
+                            context,
+                            uri);
+
+            JSONObject savedDisplay =
+                    backup.getJSONObject(
+                            "overviewDisplay");
+
+            assertTrue(
+                    savedDisplay.getBoolean(
+                            "gridMode"));
+
+            assertEquals(
+                    3,
+                    savedDisplay.getInt(
+                            "gridColumns"));
+
+            JSONObject savedSections =
+                    savedDisplay.getJSONObject(
+                            "sectionColumns");
+
+            assertEquals(
+                    5,
+                    savedSections.getInt(
+                            "favorites"));
+
+            assertEquals(
+                    4,
+                    savedSections.getInt(
+                            "shortcuts"));
+
+            assertEquals(
+                    4,
+                    savedSections.getInt(
+                            "category:" + categoryId));
+
+            assertTrue(
+                    !savedSections.has(
+                            "category:deleted"));
+
+            assertTrue(
+                    display.edit()
+                            .clear()
+                            .commit());
+
+            BackupManager.restoreBackup(
+                    context,
+                    backup);
+
+            assertTrue(
+                    display.getBoolean(
+                            "grid_mode",
+                            false));
+
+            assertEquals(
+                    3,
+                    display.getInt(
+                            "grid_columns",
+                            -1));
+
+            assertEquals(
+                    5,
+                    display.getInt(
+                            "section_grid_columns_favorites",
+                            -1));
+
+            assertEquals(
+                    4,
+                    display.getInt(
+                            "section_grid_columns_shortcuts",
+                            -1));
+
+            assertEquals(
+                    4,
+                    display.getInt(
+                            "section_grid_columns_category:"
+                                    + categoryId,
+                            -1));
+
+            assertTrue(
+                    !display.contains(
+                            "section_grid_columns_category:deleted"));
+
+        } finally {
+            file.delete();
+        }
+    }
+
+    @Test
+    public void legacyBackupResetsDisplayToDefaults()
+            throws Exception {
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                5)
+                        .putInt(
+                                "section_grid_columns_favorites",
+                                3)
+                        .putInt(
+                                "section_grid_columns_category:cat-work",
+                                4)
+                        .commit());
+
+        BackupManager.restoreBackup(
+                context,
+                validBackup());
+
+        assertTrue(
+                !display.getBoolean(
+                        "grid_mode",
+                        true));
+
+        assertEquals(
+                4,
+                display.getInt(
+                        "grid_columns",
+                        -1));
+
+        assertTrue(
+                !display.contains(
+                        "section_grid_columns_favorites"));
+
+        assertTrue(
+                !display.contains(
+                        "section_grid_columns_category:cat-work"));
+
+        assertEquals(
+                1,
+                new CategoryStore(context)
+                        .getCategories()
+                        .size());
+    }
+
+    @Test
+    public void modernBackupReplacesPreviousDisplaySettings()
+            throws Exception {
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putInt(
+                                "grid_columns",
+                                5)
+                        .putInt(
+                                "section_grid_columns_category:old",
+                                3)
+                        .commit());
+
+        JSONObject sectionColumns =
+                new JSONObject()
+                        .put(
+                                "favorites",
+                                5)
+                        .put(
+                                "category:cat-work",
+                                3);
+
+        JSONObject settings =
+                new JSONObject()
+                        .put(
+                                "gridMode",
+                                true)
+                        .put(
+                                "gridColumns",
+                                4)
+                        .put(
+                                "sectionColumns",
+                                sectionColumns);
+
+        JSONObject backup =
+                validBackup()
+                        .put(
+                                "overviewDisplay",
+                                settings);
+
+        BackupManager.restoreBackup(
+                context,
+                backup);
+
+        assertTrue(
+                display.getBoolean(
+                        "grid_mode",
+                        false));
+
+        assertEquals(
+                4,
+                display.getInt(
+                        "grid_columns",
+                        -1));
+
+        assertEquals(
+                5,
+                display.getInt(
+                        "section_grid_columns_favorites",
+                        -1));
+
+        assertEquals(
+                3,
+                display.getInt(
+                        "section_grid_columns_category:cat-work",
+                        -1));
+
+        assertTrue(
+                !display.contains(
+                        "section_grid_columns_category:old"));
+
+        assertTrue(
+                !display.contains(
+                        "section_grid_columns_shortcuts"));
+    }
+
+    @Test
+    public void invalidDisplaySettingsCannotChangeStoredData()
+            throws Exception {
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                5)
+                        .commit());
+
+        JSONObject invalidColumns =
+                new JSONObject()
+                        .put(
+                                "gridMode",
+                                true)
+                        .put(
+                                "gridColumns",
+                                2)
+                        .put(
+                                "sectionColumns",
+                                new JSONObject());
+
+        JSONObject unknownCategory =
+                new JSONObject()
+                        .put(
+                                "gridMode",
+                                true)
+                        .put(
+                                "gridColumns",
+                                4)
+                        .put(
+                                "sectionColumns",
+                                new JSONObject()
+                                        .put(
+                                                "category:unknown",
+                                                3));
+
+        JSONObject invalidSectionColumns =
+                new JSONObject()
+                        .put(
+                                "gridMode",
+                                true)
+                        .put(
+                                "gridColumns",
+                                4)
+                        .put(
+                                "sectionColumns",
+                                new JSONObject()
+                                        .put(
+                                                "favorites",
+                                                6));
+
+        JSONObject invalidMode =
+                new JSONObject()
+                        .put(
+                                "gridMode",
+                                "true")
+                        .put(
+                                "gridColumns",
+                                4)
+                        .put(
+                                "sectionColumns",
+                                new JSONObject());
+
+        JSONObject[] invalidSettings = {
+                invalidColumns,
+                unknownCategory,
+                invalidSectionColumns,
+                invalidMode
+        };
+
+        for (JSONObject settings :
+                invalidSettings) {
+
+            JSONObject backup =
+                    validBackup()
+                            .put(
+                                    "overviewDisplay",
+                                    settings);
+
+            assertInvalid(
+                    backup);
+
+            assertTrue(
+                    display.getBoolean(
+                            "grid_mode",
+                            false));
+
+            assertEquals(
+                    5,
+                    display.getInt(
+                            "grid_columns",
+                            -1));
+
+            assertEquals(
+                    "[]",
+                    context.getSharedPreferences(
+                                    "categories",
+                                    Context.MODE_PRIVATE)
+                            .getString(
+                                    "category_list",
+                                    "[]"));
+        }
+    }
+
+    @Test
+    public void invalidLocalShortcutCannotProduceBrokenBackup()
+            throws Exception {
+
+        JSONObject invalidShortcut =
+                new JSONObject()
+                        .put(
+                                "id",
+                                "invalid-webapp")
+                        .put(
+                                "name",
+                                "Invalid web app")
+                        .put(
+                                "type",
+                                ShortcutEntry.TYPE_WEB_APP)
+                        .put(
+                                "target",
+                                "http://example.com/app")
+                        .put(
+                                "favorite",
+                                false)
+                        .put(
+                                "categories",
+                                new JSONArray());
+
+        assertTrue(
+                context.getSharedPreferences(
+                                "shortcuts",
+                                Context.MODE_PRIVATE)
+                        .edit()
+                        .putString(
+                                "shortcut_list",
+                                new JSONArray()
+                                        .put(invalidShortcut)
+                                        .toString())
+                        .commit());
+
+        File file =
+                File.createTempFile(
+                        "appstow-invalid-",
+                        ".json",
+                        context.getCacheDir());
+
+        try {
+            BackupManager.writeBackup(
+                    context,
+                    Uri.fromFile(file));
+
+            fail(
+                    "Ungültiger Shortcut wurde gesichert.");
+
+        } catch (JSONException expected) {
+            // Die Sicherung muss abgelehnt werden.
+
+        } finally {
+            file.delete();
+        }
     }
 
     private void assertInvalid(

@@ -6,13 +6,16 @@ import static org.junit.Assert.assertTrue;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Looper;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
@@ -20,12 +23,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlertDialog;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(RobolectricTestRunner.class)
@@ -44,6 +49,9 @@ public class MainActivityRecreationTest {
 
         context.deleteSharedPreferences(
                 "shortcuts");
+
+        context.deleteSharedPreferences(
+                "overview_display");
     }
 
     @Test
@@ -504,6 +512,415 @@ public class MainActivityRecreationTest {
                                         .toString());
                     });
         }
+    }
+
+    @Test
+    public void openGridCategorySurvivesActivityRecreation() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        CategoryStore store =
+                new CategoryStore(context);
+
+        assertTrue(
+                store.addCategory(
+                        "Recreation",
+                        "📁"));
+
+        String categoryId =
+                store.getCategories().get(0).id;
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                3)
+                        .putInt(
+                                "section_grid_columns_category:"
+                                        + categoryId,
+                                5)
+                        .commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                OverviewSection section =
+                        findCategorySection(
+                                activity,
+                                categoryId);
+
+                invoke(
+                        activity,
+                        "openGridSection",
+                        new Class<?>[] {
+                                OverviewSection.class
+                        },
+                        new Object[] {
+                                section
+                        });
+
+                OverviewAdapter adapter =
+                        getPrivateField(
+                                activity,
+                                "overviewAdapter",
+                                OverviewAdapter.class);
+
+                GridLayoutManager layout =
+                        getPrivateField(
+                                activity,
+                                "overviewGridLayoutManager",
+                                GridLayoutManager.class);
+
+                assertEquals(
+                        section.id,
+                        adapter.getGridOpenSectionId());
+
+                assertEquals(
+                        5,
+                        layout.getSpanCount());
+            });
+
+            scenario.recreate();
+
+            scenario.onActivity(activity -> {
+
+                OverviewAdapter adapter =
+                        getPrivateField(
+                                activity,
+                                "overviewAdapter",
+                                OverviewAdapter.class);
+
+                GridLayoutManager layout =
+                        getPrivateField(
+                                activity,
+                                "overviewGridLayoutManager",
+                                GridLayoutManager.class);
+
+                assertEquals(
+                        "category:" + categoryId,
+                        adapter.getGridOpenSectionId());
+
+                assertEquals(
+                        5,
+                        layout.getSpanCount());
+
+                invoke(
+                        activity,
+                        "showOverview",
+                        new Class<?>[0],
+                        new Object[0]);
+
+                assertEquals(
+                        null,
+                        adapter.getGridOpenSectionId());
+
+                assertEquals(
+                        3,
+                        layout.getSpanCount());
+
+                assertTrue(
+                        adapter.isGridOverview());
+            });
+        }
+    }
+
+    @Test
+    public void deletedCategoryRemovesColumnOverride() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        CategoryStore store =
+                new CategoryStore(context);
+
+        assertTrue(
+                store.addCategory(
+                        "Temporary",
+                        "📁"));
+
+        String categoryId =
+                store.getCategories().get(0).id;
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        String settingKey =
+                "section_grid_columns_category:"
+                        + categoryId;
+
+        assertTrue(
+                display.edit()
+                        .putInt(
+                                settingKey,
+                                5)
+                        .commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                CategoryStore activityStore =
+                        getPrivateField(
+                                activity,
+                                "categoryStore",
+                                CategoryStore.class);
+
+                CategoryEntry category =
+                        activityStore.getCategories()
+                                .stream()
+                                .filter(
+                                        entry ->
+                                                categoryId.equals(entry.id))
+                                .findFirst()
+                                .orElseThrow(
+                                        AssertionError::new);
+
+                assertEquals(
+                        categoryId,
+                        category.id);
+
+                invoke(
+                        activity,
+                        "showDeleteCategoryDialog",
+                        new Class<?>[] {
+                                CategoryEntry.class
+                        },
+                        new Object[] {
+                                category
+                        });
+
+                assertTrue(
+                        latestDialog()
+                                .getButton(
+                                        AlertDialog.BUTTON_POSITIVE)
+                                .performClick());
+            });
+
+            Shadows.shadowOf(
+                    Looper.getMainLooper())
+                    .idle();
+
+            scenario.onActivity(activity -> {
+
+                CategoryStore activityStore =
+                        getPrivateField(
+                                activity,
+                                "categoryStore",
+                                CategoryStore.class);
+
+                boolean deletedCategoryPresent =
+                        activityStore.getCategories()
+                                .stream()
+                                .anyMatch(
+                                        entry ->
+                                                categoryId.equals(entry.id));
+
+                assertTrue(
+                        !deletedCategoryPresent);
+
+                assertTrue(
+                        !display.contains(
+                                settingKey));
+            });
+        }
+    }
+
+    @Test
+    public void globalSelectionFollowsChangedGlobalColumns() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        CategoryStore store =
+                new CategoryStore(context);
+
+        assertTrue(
+                store.addCategory(
+                        "Global setting",
+                        "📁"));
+
+        String categoryId =
+                store.getCategories().get(0).id;
+
+        String settingKey =
+                "section_grid_columns_category:"
+                        + categoryId;
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                4)
+                        .putInt(
+                                settingKey,
+                                5)
+                        .commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                OverviewSection section =
+                        findCategorySection(
+                                activity,
+                                categoryId);
+
+                GridLayoutManager layout =
+                        getPrivateField(
+                                activity,
+                                "overviewGridLayoutManager",
+                                GridLayoutManager.class);
+
+                invoke(
+                        activity,
+                        "openGridSection",
+                        new Class<?>[] {
+                                OverviewSection.class
+                        },
+                        new Object[] {
+                                section
+                        });
+
+                assertEquals(
+                        5,
+                        layout.getSpanCount());
+
+                invoke(
+                        activity,
+                        "showSectionGridColumnsDialog",
+                        new Class<?>[] {
+                                OverviewSection.class
+                        },
+                        new Object[] {
+                                section
+                        });
+
+                ListView choices =
+                        latestDialog().getListView();
+
+                assertNotNull(choices);
+
+                choices.performItemClick(
+                        null,
+                        0,
+                        choices.getAdapter()
+                                .getItemId(0));
+
+                assertTrue(
+                        !display.contains(
+                                settingKey));
+
+                assertEquals(
+                        4,
+                        layout.getSpanCount());
+
+                invoke(
+                        activity,
+                        "showOverview",
+                        new Class<?>[0],
+                        new Object[0]);
+
+                invoke(
+                        activity,
+                        "showOverviewColumnsDialog",
+                        new Class<?>[0],
+                        new Object[0]);
+
+                ListView globalChoices =
+                        latestDialog().getListView();
+
+                assertNotNull(globalChoices);
+
+                globalChoices.performItemClick(
+                        null,
+                        0,
+                        globalChoices.getAdapter()
+                                .getItemId(0));
+
+                assertEquals(
+                        3,
+                        display.getInt(
+                                "grid_columns",
+                                -1));
+
+                OverviewSection updatedSection =
+                        findCategorySection(
+                                activity,
+                                categoryId);
+
+                invoke(
+                        activity,
+                        "openGridSection",
+                        new Class<?>[] {
+                                OverviewSection.class
+                        },
+                        new Object[] {
+                                updatedSection
+                        });
+
+                assertEquals(
+                        3,
+                        layout.getSpanCount());
+
+                assertTrue(
+                        !display.contains(
+                                settingKey));
+            });
+        }
+    }
+
+    private static OverviewSection findCategorySection(
+            MainActivity activity,
+            String categoryId) {
+
+        List<?> sections =
+                getPrivateField(
+                        activity,
+                        "overviewSections",
+                        List.class);
+
+        for (Object entry : sections) {
+            OverviewSection section =
+                    (OverviewSection) entry;
+
+            if (("category:" + categoryId)
+                    .equals(section.id)) {
+
+                return section;
+            }
+        }
+
+        throw new AssertionError(
+                "Kategorie in der Übersicht nicht gefunden.");
     }
 
     private static AlertDialog latestDialog() {
