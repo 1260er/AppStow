@@ -27,6 +27,7 @@ final class OverviewAdapter
     private static final int TYPE_APP = 2;
     private static final int TYPE_SHORTCUT = 3;
     private static final int TYPE_GRID_SECTION = 4;
+    private static final int TYPE_GRID_ENTRY = 5;
 
     private static final String CATEGORY_PREFIX =
             "category:";
@@ -51,6 +52,10 @@ final class OverviewAdapter
 
     interface OnGridSectionClickListener {
         void onGridSectionClick(OverviewSection section);
+    }
+
+    interface OnGridSectionCloseListener {
+        void onGridSectionClose();
     }
 
     interface OnSectionDragStartListener {
@@ -83,6 +88,7 @@ final class OverviewAdapter
     private final OnAppLongClickListener appLongClickListener;
     private final OnSectionDragStartListener dragStartListener;
     private final OnGridSectionClickListener gridSectionClickListener;
+    private final OnGridSectionCloseListener gridSectionCloseListener;
 
     private boolean gridMode;
     private String gridOpenSectionId;
@@ -102,7 +108,8 @@ final class OverviewAdapter
             OnShortcutLongClickListener shortcutLongClickListener,
             OnAppLongClickListener appLongClickListener,
             OnSectionDragStartListener dragStartListener,
-            OnGridSectionClickListener gridSectionClickListener) {
+            OnGridSectionClickListener gridSectionClickListener,
+            OnGridSectionCloseListener gridSectionCloseListener) {
 
         this.sections = sections;
         this.favoritesStore = favoritesStore;
@@ -116,6 +123,7 @@ final class OverviewAdapter
         this.appLongClickListener = appLongClickListener;
         this.dragStartListener = dragStartListener;
         this.gridSectionClickListener = gridSectionClickListener;
+        this.gridSectionCloseListener = gridSectionCloseListener;
 
         refreshShortcutEntries();
         rebuildRows();
@@ -164,10 +172,22 @@ final class OverviewAdapter
     }
 
     boolean isGridCell(int position) {
-        return isGridOverview()
-                && position >= 0
-                && position < rows.size()
-                && rows.get(position).type == TYPE_SECTION;
+        if (!gridMode
+                || gridOpenSectionId != null
+                || position < 0
+                || position >= rows.size()) {
+
+            return false;
+        }
+
+        int type = rows.get(position).type;
+
+        if (searchQuery.isEmpty()) {
+            return type == TYPE_SECTION;
+        }
+
+        return type == TYPE_APP
+                || type == TYPE_SHORTCUT;
     }
 
     void openGridSection(OverviewSection selected) {
@@ -472,7 +492,9 @@ final class OverviewAdapter
             int position) {
 
         if (isGridCell(position)) {
-            return TYPE_GRID_SECTION;
+            return rows.get(position).type == TYPE_SECTION
+                    ? TYPE_GRID_SECTION
+                    : TYPE_GRID_ENTRY;
         }
 
         return rows.get(position).type;
@@ -509,16 +531,20 @@ final class OverviewAdapter
         }
 
         if (viewType == TYPE_APP
-                || viewType == TYPE_SHORTCUT) {
+                || viewType == TYPE_SHORTCUT
+                || viewType == TYPE_GRID_ENTRY) {
 
             View view =
                     inflater.inflate(
-                            R.layout.item_app,
+                            viewType == TYPE_GRID_ENTRY
+                                    ? R.layout.item_overview_grid_entry
+                                    : R.layout.item_app,
                             parent,
                             false);
 
             return new EntryViewHolder(
-                    view);
+                    view,
+                    viewType == TYPE_GRID_ENTRY);
         }
 
         View view =
@@ -727,6 +753,10 @@ final class OverviewAdapter
             holder.itemView
                     .setOnClickListener(
                             null);
+        } else if (gridOpenSectionId != null) {
+            holder.itemView.setOnClickListener(v ->
+                    gridSectionCloseListener
+                            .onGridSectionClose());
         } else {
             holder.itemView
                     .setOnClickListener(v -> {
@@ -773,9 +803,11 @@ final class OverviewAdapter
                 categoryLabel);
 
         holder.categories.setVisibility(
-                categoryLabel.isEmpty()
-                        ? View.INVISIBLE
-                        : View.VISIBLE);
+                holder.gridTile
+                        ? View.GONE
+                        : categoryLabel.isEmpty()
+                                ? View.INVISIBLE
+                                : View.VISIBLE);
 
         boolean favorite =
                 favoritesStore.isFavorite(
@@ -897,9 +929,11 @@ final class OverviewAdapter
                 categoryLabel);
 
         holder.categories.setVisibility(
-                categoryLabel.isEmpty()
-                        ? View.INVISIBLE
-                        : View.VISIBLE);
+                holder.gridTile
+                        ? View.GONE
+                        : categoryLabel.isEmpty()
+                                ? View.INVISIBLE
+                                : View.VISIBLE);
 
         updateFavoriteButton(
                 holder,
@@ -1316,11 +1350,14 @@ final class OverviewAdapter
         final TextView categories;
         final ImageButton favorite;
         final ImageView itemDragHandle;
+        final boolean gridTile;
 
         EntryViewHolder(
-                @NonNull View itemView) {
+                @NonNull View itemView,
+                boolean gridTile) {
 
             super(itemView);
+            this.gridTile = gridTile;
 
             icon =
                     itemView.findViewById(

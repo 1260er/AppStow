@@ -120,6 +120,8 @@ public class MainActivity extends Activity {
     private static final String PAGE_ABOUT = "about";
 
     private DrawerLayout drawerLayout;
+    private View mainHeader;
+    private View mainContentArea;
     private TextView pageTitle;
     private TextView pageMessage;
     private RecyclerView appList;
@@ -279,6 +281,8 @@ public class MainActivity extends Activity {
                 });
 
         drawerLayout = findViewById(R.id.drawerLayout);
+        mainHeader = findViewById(R.id.mainHeader);
+        mainContentArea = findViewById(R.id.mainContentArea);
         pageTitle = findViewById(R.id.pageTitle);
         pageMessage = findViewById(R.id.pageMessage);
         appList = findViewById(R.id.appList);
@@ -473,7 +477,8 @@ public class MainActivity extends Activity {
                         this::showShortcutEditor,
                         this::handleAppLongClick,
                         this::startOverviewDrag,
-                        this::openGridSection);
+                        this::openGridSection,
+                        this::showOverview);
 
         overviewAdapter.setGridMode(
                 overviewDisplayPreferences.getBoolean(
@@ -1329,6 +1334,15 @@ public class MainActivity extends Activity {
         overviewAdapter.openGridSection(section);
 
         setTopNavigation(false);
+
+        mainHeader.setVisibility(View.GONE);
+
+        ViewGroup.MarginLayoutParams contentParams =
+                (ViewGroup.MarginLayoutParams)
+                        mainContentArea.getLayoutParams();
+
+        contentParams.topMargin = 0;
+        mainContentArea.setLayoutParams(contentParams);
 
         overviewLayoutButton.setVisibility(View.GONE);
         overviewSortButton.setVisibility(View.GONE);
@@ -3442,6 +3456,18 @@ public class MainActivity extends Activity {
 
     private void setTopNavigation(
             boolean overview) {
+
+        mainHeader.setVisibility(View.VISIBLE);
+
+        ViewGroup.MarginLayoutParams contentParams =
+                (ViewGroup.MarginLayoutParams)
+                        mainContentArea.getLayoutParams();
+
+        contentParams.topMargin =
+                getResources().getDimensionPixelSize(
+                        R.dimen.spacing_lg);
+
+        mainContentArea.setLayoutParams(contentParams);
 
         showingOverview = overview;
         updatePageBackCallback();
