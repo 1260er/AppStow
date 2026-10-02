@@ -134,16 +134,26 @@ None found</string>
     <string name="webapp_network_open_network_settings">Network settings</string>
 
     <string name="help_overview_title">Launch apps</string>
-    <string name="help_overview_text">This is where you launch your apps and shortcuts. Favorites, categories and custom shortcuts are grouped into sections. Tap an app or shortcut to open it. Use the search field to find entries across sections.</string>
+    <string name="help_overview_text">Favorites, categories and custom shortcuts are grouped into sections. Tap an app or shortcut to launch it.</string>
 
+    <string name="help_overview_search_text">Use the search field to find apps and shortcuts across all sections.</string>
     <string name="help_grid_title">List and grid view</string>
-    <string name="help_grid_text">Tap the view icon in the overview to switch between list and grid view. Touch and hold the view icon to choose 3, 4 or 5 columns globally. In grid view, tap a category tile to open its contents. Use the view icon in the open section to choose Global, 3, 4 or 5 columns for that section. Global follows the overview column count, including later changes. A fixed value stays independent. Favorites and Custom shortcuts work the same way. Use the section heading or Back to return to the overview.</string>
+    <string name="help_grid_switch_title">Switch views</string>
+    <string name="help_grid_switch_text">Tap the view icon in the overview to switch between list and grid view.</string>
+    <string name="help_grid_global_title">Set the global column count</string>
+    <string name="help_grid_global_text">Touch and hold the view icon to choose 3, 4 or 5 columns for the grid overview.</string>
+    <string name="help_grid_open_title">Open a section</string>
+    <string name="help_grid_open_text">Tap a category tile to open its contents. Favorites and Custom shortcuts work the same way. Use the section heading or Back to return to the overview.</string>
+    <string name="help_grid_individual_title">Global or individual columns</string>
+    <string name="help_grid_individual_text">Use the view icon inside an open section to choose Global, 3, 4 or 5 columns. Global follows the overview column count, including later changes. A fixed number stays independent.</string>
     <string name="help_categories_title">Favorites &amp; Categories</string>
-    <string name="help_categories_text">Create, rename or delete categories under Manage categories and assign an emoji to each one. Apps and shortcuts can belong to several categories. Use the star to add or remove favorites. The Favorites section and Custom shortcuts section also have their own contents.</string>
+    <string name="help_categories_text">Under Manage categories, you can create, rename and delete categories and assign an emoji to each one. Apps and shortcuts can belong to multiple categories.</string>
 
+    <string name="help_categories_favorites_text">Use the star to add or remove favorites. Favorites and Custom shortcuts also have their own sections.</string>
     <string name="help_apps_title">Assign apps</string>
-    <string name="help_apps_text">Under Assign apps, touch and hold an app to assign it to one or more categories. Use the filter icon to show only apps that have not yet been assigned. The search field helps you find installed apps.</string>
+    <string name="help_apps_text">Under Assign apps, touch and hold an app to assign it to one or more categories.</string>
 
+    <string name="help_apps_filter_text">Use the filter icon to show only apps that have not yet been assigned. The search field helps you find installed apps.</string>
     <string name="help_shortcuts_title">Custom shortcuts</string>
 
     <string name="help_shortcut_website_title">Website</string>
@@ -155,6 +165,7 @@ None found</string>
     <string name="help_shortcut_deeplink_title">Deep link (advanced)</string>
     <string name="help_shortcut_deeplink_text">Opens a specific function of an app. Which links work depends on the app. Android intent URIs can also be used.</string>
 
+    <string name="help_examples_title">Examples</string>
     <string name="help_example_maps_title">Google Maps – Navigation</string>
     <string name="help_example_maps">https://www.google.com/maps/dir/?api=1&amp;destination=Berlin</string>
 
@@ -172,11 +183,21 @@ None found</string>
     <string name="help_example_settings">package:com.example.app</string>
 
     <string name="help_sort_title">Sorting</string>
-    <string name="help_sort_text">Tap the sort icon in the overview to rearrange sections. Tap the sort icon inside a section to rearrange its apps and shortcuts. In grid view, you can drag tiles in all four directions using the handles at the upper right. Tap the check mark to finish sorting. Your order is saved.</string>
 
+    <string name="help_sort_sections_title">Rearrange sections</string>
+    <string name="help_sort_sections_text">Tap the sort icon in the overview to change the order of the sections.</string>
+    <string name="help_sort_items_title">Rearrange apps and shortcuts</string>
+    <string name="help_sort_items_text">Tap the sort icon inside a section. Drag entries using their handles. In grid view, tiles can be moved in all four directions using the handles at the upper right.</string>
+    <string name="help_sort_finish_title">Save the order</string>
+    <string name="help_sort_finish_text">Tap the check mark to finish sorting. The new order is saved.</string>
     <string name="help_backup_title">Backup &amp; Restore</string>
-    <string name="help_backup_text">Under Backup &amp; Restore, save your categories, assignments, favorites, custom shortcuts, sorting orders and display settings as a JSON file. This includes list or grid view, the global column count and individual section column counts. Restoring replaces the current configuration. Older backups without display settings use the default view settings. Web app sessions, cookies and Android permissions are not included.</string>
 
+    <string name="help_backup_create_title">Create a backup</string>
+    <string name="help_backup_create_text">Under Backup &amp; Restore, save your configuration as a JSON file. It contains categories, assignments, favorites, shortcuts, sorting orders and display settings, including global and individual column counts.</string>
+    <string name="help_backup_restore_title">Restore a backup</string>
+    <string name="help_backup_restore_text">Restoring replaces the current configuration. Older backups without display settings use the default view settings.</string>
+    <string name="help_backup_excluded_title">Not included</string>
+    <string name="help_backup_excluded_text">Web app sessions, cookies and Android permissions are not backed up.</string>
     <string name="about_app_name">AppStow</string>
     <string name="about_description">A compact app launcher for favorites, categories, custom shortcuts and web apps. Keep your applications organized and ready to launch.</string>
     <string name="about_name_origin_title">Where the name comes from</string>

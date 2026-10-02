@@ -33,6 +33,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
                 android:text="@string/help_overview_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/help_overview_search_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
         </LinearLayout>
 
@@ -55,8 +65,68 @@
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:text="@string/help_grid_text"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/help_grid_switch_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_grid_switch_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_grid_global_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_grid_global_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_grid_open_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_grid_open_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_grid_individual_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_grid_individual_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
         </LinearLayout>
 
@@ -81,6 +151,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
                 android:text="@string/help_categories_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/help_categories_favorites_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
         </LinearLayout>
 
@@ -105,6 +185,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
                 android:text="@string/help_apps_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/help_apps_filter_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
         </LinearLayout>
 
@@ -138,6 +228,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/help_shortcut_website_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
 
             <TextView
@@ -154,6 +245,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/help_shortcut_webapp_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
 
             <TextView
@@ -170,7 +262,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/help_shortcut_deeplink_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_examples_title"
+                android:textStyle="bold" />
 
             <TextView
                 style="@style/UiBodyText"
@@ -262,6 +363,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/help_shortcut_settings_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
 
             <TextView
@@ -295,8 +397,51 @@
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:text="@string/help_sort_text"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/help_sort_sections_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_sort_sections_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_sort_items_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_sort_items_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_sort_finish_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_sort_finish_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
         </LinearLayout>
 
@@ -319,8 +464,51 @@
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:text="@string/help_backup_text"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/help_backup_create_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_backup_create_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_backup_restore_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_backup_restore_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_backup_excluded_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_backup_excluded_text"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
         </LinearLayout>
 
