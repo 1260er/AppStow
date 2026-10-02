@@ -26,6 +26,7 @@ final class OverviewAdapter
     private static final int TYPE_MESSAGE = 1;
     private static final int TYPE_APP = 2;
     private static final int TYPE_SHORTCUT = 3;
+    private static final int TYPE_GRID_SECTION = 4;
 
     private static final String CATEGORY_PREFIX =
             "category:";
@@ -46,6 +47,10 @@ final class OverviewAdapter
 
     interface OnAppLongClickListener {
         void onAppLongClick(AppEntry app);
+    }
+
+    interface OnGridSectionClickListener {
+        void onGridSectionClick(OverviewSection section);
     }
 
     interface OnSectionDragStartListener {
@@ -77,7 +82,10 @@ final class OverviewAdapter
     private final OnShortcutLongClickListener shortcutLongClickListener;
     private final OnAppLongClickListener appLongClickListener;
     private final OnSectionDragStartListener dragStartListener;
+    private final OnGridSectionClickListener gridSectionClickListener;
 
+    private boolean gridMode;
+    private String gridOpenSectionId;
     private String searchQuery = "";
     private boolean sortMode;
     private String itemSortSectionId;
@@ -93,7 +101,8 @@ final class OverviewAdapter
             OnShortcutClickListener shortcutClickListener,
             OnShortcutLongClickListener shortcutLongClickListener,
             OnAppLongClickListener appLongClickListener,
-            OnSectionDragStartListener dragStartListener) {
+            OnSectionDragStartListener dragStartListener,
+            OnGridSectionClickListener gridSectionClickListener) {
 
         this.sections = sections;
         this.favoritesStore = favoritesStore;
@@ -106,6 +115,7 @@ final class OverviewAdapter
         this.shortcutLongClickListener = shortcutLongClickListener;
         this.appLongClickListener = appLongClickListener;
         this.dragStartListener = dragStartListener;
+        this.gridSectionClickListener = gridSectionClickListener;
 
         refreshShortcutEntries();
         rebuildRows();
@@ -131,6 +141,42 @@ final class OverviewAdapter
         }
 
         searchQuery = normalized;
+        rebuildRows();
+        notifyStructureChanged();
+    }
+
+    void setGridMode(boolean enabled) {
+        gridMode = enabled;
+        gridOpenSectionId = null;
+
+        rebuildRows();
+        notifyStructureChanged();
+    }
+
+    boolean isGridMode() {
+        return gridMode;
+    }
+
+    boolean isGridOverview() {
+        return gridMode
+                && gridOpenSectionId == null
+                && searchQuery.isEmpty();
+    }
+
+    boolean isGridCell(int position) {
+        return isGridOverview()
+                && position >= 0
+                && position < rows.size()
+                && rows.get(position).type == TYPE_SECTION;
+    }
+
+    void openGridSection(OverviewSection selected) {
+        gridOpenSectionId = selected.id;
+
+        for (OverviewSection section : sections) {
+            section.expanded = section == selected;
+        }
+
         rebuildRows();
         notifyStructureChanged();
     }
@@ -176,8 +222,20 @@ final class OverviewAdapter
             return;
         }
 
+        if (isGridOverview()) {
+            for (OverviewSection section : sections) {
+                rows.add(Row.section(section));
+            }
+            return;
+        }
+
         for (OverviewSection section :
                 sections) {
+
+            if (gridOpenSectionId != null
+                    && !gridOpenSectionId.equals(section.id)) {
+                continue;
+            }
 
             rows.add(
                     Row.section(section));
@@ -413,6 +471,10 @@ final class OverviewAdapter
     public int getItemViewType(
             int position) {
 
+        if (isGridCell(position)) {
+            return TYPE_GRID_SECTION;
+        }
+
         return rows.get(position).type;
     }
 
@@ -425,6 +487,15 @@ final class OverviewAdapter
         LayoutInflater inflater =
                 LayoutInflater.from(
                         parent.getContext());
+
+        if (viewType == TYPE_GRID_SECTION) {
+            View view = inflater.inflate(
+                    R.layout.item_overview_grid_section,
+                    parent,
+                    false);
+
+            return new GridSectionViewHolder(view);
+        }
 
         if (viewType == TYPE_SECTION) {
             View view =
@@ -467,6 +538,14 @@ final class OverviewAdapter
 
         Row row =
                 rows.get(position);
+
+        if (holder instanceof GridSectionViewHolder) {
+            bindGridSection(
+                    (GridSectionViewHolder) holder,
+                    row.section);
+
+            return;
+        }
 
         if (holder instanceof SectionViewHolder) {
             bindSection(
@@ -511,6 +590,50 @@ final class OverviewAdapter
             if (section != activeSection) {
                 section.expanded = false;
             }
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void bindGridSection(
+            GridSectionViewHolder holder,
+            OverviewSection section) {
+
+        holder.symbol.setText(section.gridSymbol);
+        holder.name.setText(section.gridLabel);
+
+        holder.itemView.setContentDescription(
+                section.gridLabel);
+
+        holder.dragHandle.setVisibility(
+                sortMode ? View.VISIBLE : View.GONE);
+
+        if (sortMode) {
+            holder.itemView.setOnClickListener(null);
+
+            holder.itemView.setOnLongClickListener(v -> {
+                dragStartListener.onDragStart(holder);
+                return true;
+            });
+
+            holder.dragHandle.setOnTouchListener(
+                    (view, event) -> {
+                        if (event.getActionMasked()
+                                == MotionEvent.ACTION_DOWN) {
+                            dragStartListener.onDragStart(
+                                    holder);
+                        }
+
+                        return false;
+                    });
+
+        } else {
+            holder.dragHandle.setOnTouchListener(null);
+            holder.itemView.setOnLongClickListener(null);
+            holder.itemView.setLongClickable(false);
+
+            holder.itemView.setOnClickListener(v ->
+                    gridSectionClickListener
+                            .onGridSectionClick(section));
         }
     }
 
@@ -1114,6 +1237,27 @@ final class OverviewAdapter
 
             return SectionItemOrderStore.shortcutItemId(
                     shortcut.id);
+        }
+    }
+
+    static final class GridSectionViewHolder
+            extends RecyclerView.ViewHolder {
+
+        final TextView symbol;
+        final TextView name;
+        final ImageView dragHandle;
+
+        GridSectionViewHolder(@NonNull View itemView) {
+            super(itemView);
+
+            symbol = itemView.findViewById(
+                    R.id.gridSectionSymbol);
+
+            name = itemView.findViewById(
+                    R.id.gridSectionName);
+
+            dragHandle = itemView.findViewById(
+                    R.id.gridSectionDragHandle);
         }
     }
 

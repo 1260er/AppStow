@@ -21,7 +21,12 @@
     <string name="search_apps_hint">Apps durchsuchen</string>
     <string name="apps_loading">Apps werden geladen …</string>
     <string name="action_clear_search">Suche löschen</string>
-    <string name="action_grid_view_unavailable">Kachelansicht (noch nicht verfügbar)</string>
+    <string name="action_show_grid_view">Kachelansicht anzeigen</string>
+    <string name="action_show_list_view">Listenansicht anzeigen</string>
+    <string name="grid_columns_title">Spaltenanzahl</string>
+    <string name="grid_columns_3">3 Spalten</string>
+    <string name="grid_columns_4">4 Spalten</string>
+    <string name="grid_columns_5">5 Spalten</string>
     <string name="action_filter_unassigned_apps">Nur nicht zugewiesene Apps anzeigen</string>
     <string name="action_show_all_apps">Alle Apps anzeigen</string>
     <string name="apps_unassigned_empty">Keine nicht zugewiesenen Apps gefunden.</string>

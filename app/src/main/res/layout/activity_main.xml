@@ -42,11 +42,9 @@
                 android:layout_width="@dimen/icon_button_size"
                 android:layout_height="@dimen/icon_button_size"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/action_grid_view_unavailable"
+                android:contentDescription="@string/action_show_grid_view"
                 android:padding="10dp"
                 android:src="@drawable/ic_grid_view"
-                android:enabled="false"
-                android:alpha="0.45"
                 android:visibility="gone" />
 
             <ImageButton

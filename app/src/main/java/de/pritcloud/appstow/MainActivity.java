@@ -75,6 +75,13 @@ public class MainActivity extends Activity {
     private static final String STATE_PAGE = "main_page";
     private static final String STATE_APP_SEARCH = "app_search";
     private static final String STATE_OVERVIEW_SEARCH = "overview_search";
+
+    private static final String OVERVIEW_DISPLAY_PREFS =
+            "overview_display";
+    private static final String KEY_GRID_MODE =
+            "grid_mode";
+    private static final String KEY_GRID_COLUMNS =
+            "grid_columns";
     private static final String STATE_APP_FILTER = "app_filter";
     private static final String STATE_EXPANDED_SECTION = "expanded_section";
     private static final String STATE_HELP_SCROLL = "help_scroll";
@@ -143,6 +150,9 @@ public class MainActivity extends Activity {
     private ImageButton appSearchClear;
     private ImageButton overviewLayoutButton;
     private ImageButton overviewSortButton;
+    private GridLayoutManager overviewGridLayoutManager;
+    private SharedPreferences overviewDisplayPreferences;
+    private int overviewGridColumns = 4;
     private ImageButton appFilterButton;
     private ImageButton shortcutHelpButton;
     private ImageButton topNavigationButton;
@@ -324,6 +334,19 @@ public class MainActivity extends Activity {
         overviewOrderStore =
                 new OverviewOrderStore(this);
 
+        overviewDisplayPreferences =
+                getSharedPreferences(
+                        OVERVIEW_DISPLAY_PREFS,
+                        MODE_PRIVATE);
+
+        overviewGridColumns = Math.max(
+                3,
+                Math.min(
+                        5,
+                        overviewDisplayPreferences.getInt(
+                                KEY_GRID_COLUMNS,
+                                4)));
+
         sectionItemOrderStore =
                 new SectionItemOrderStore(this);
 
@@ -449,10 +472,31 @@ public class MainActivity extends Activity {
                         this::launchShortcut,
                         this::showShortcutEditor,
                         this::handleAppLongClick,
-                        this::startOverviewDrag);
+                        this::startOverviewDrag,
+                        this::openGridSection);
+
+        overviewAdapter.setGridMode(
+                overviewDisplayPreferences.getBoolean(
+                        KEY_GRID_MODE,
+                        false));
+
+        overviewGridLayoutManager =
+                new GridLayoutManager(
+                        this,
+                        overviewGridColumns);
+
+        overviewGridLayoutManager.setSpanSizeLookup(
+                new GridLayoutManager.SpanSizeLookup() {
+                    @Override
+                    public int getSpanSize(int position) {
+                        return overviewAdapter.isGridCell(position)
+                                ? 1
+                                : overviewGridColumns;
+                    }
+                });
 
         overviewList.setLayoutManager(
-                new LinearLayoutManager(this));
+                overviewGridLayoutManager);
         overviewList.setAdapter(overviewAdapter);
 
         overviewItemTouchHelper =
@@ -465,6 +509,27 @@ public class MainActivity extends Activity {
                             @Override
                             public boolean isLongPressDragEnabled() {
                                 return false;
+                            }
+
+                            @Override
+                            public int getMovementFlags(
+                                    RecyclerView recyclerView,
+                                    RecyclerView.ViewHolder viewHolder) {
+
+                                if (overviewAdapter.isSortMode()
+                                        && overviewAdapter.isGridOverview()) {
+
+                                    return makeMovementFlags(
+                                            ItemTouchHelper.UP
+                                                    | ItemTouchHelper.DOWN
+                                                    | ItemTouchHelper.LEFT
+                                                    | ItemTouchHelper.RIGHT,
+                                            0);
+                                }
+
+                                return super.getMovementFlags(
+                                        recyclerView,
+                                        viewHolder);
                             }
 
                             @Override
@@ -526,6 +591,15 @@ public class MainActivity extends Activity {
         overviewSortButton.setOnClickListener(v ->
                 setOverviewSortMode(
                         !overviewAdapter.isSortMode()));
+
+        overviewLayoutButton.setOnClickListener(v ->
+                setOverviewGridMode(
+                        !overviewAdapter.isGridMode()));
+
+        overviewLayoutButton.setOnLongClickListener(v -> {
+            showOverviewColumnsDialog();
+            return true;
+        });
 
         appFilterButton.setOnClickListener(v -> {
             showOnlyUnassignedApps =
@@ -602,6 +676,11 @@ public class MainActivity extends Activity {
                     }
 
                     overviewSortButton.setVisibility(
+                            query.trim().isEmpty()
+                                    ? View.VISIBLE
+                                    : View.GONE);
+
+                    overviewLayoutButton.setVisibility(
                             query.trim().isEmpty()
                                     ? View.VISIBLE
                                     : View.GONE);
@@ -1011,7 +1090,9 @@ public class MainActivity extends Activity {
                 new OverviewSection(
                         "favorites",
                         favoritesTitle,
-                        getString(R.string.overview_favorites_empty));
+                        getString(R.string.overview_favorites_empty),
+                        getString(R.string.overview_favorites),
+                        "⭐");
 
         favorites.expanded =
                 expandedStates.getOrDefault(
@@ -1035,7 +1116,9 @@ public class MainActivity extends Activity {
                             "category:" + category.id,
                             categoryTitle,
                             getString(
-                                    R.string.overview_category_empty));
+                                    R.string.overview_category_empty),
+                            category.name,
+                            category.symbol);
 
             section.expanded =
                     expandedStates.getOrDefault(
@@ -1057,7 +1140,9 @@ public class MainActivity extends Activity {
                 new OverviewSection(
                         "shortcuts",
                         shortcutsTitle,
-                        getString(R.string.overview_shortcuts_empty));
+                        getString(R.string.overview_shortcuts_empty),
+                        getString(R.string.overview_shortcuts),
+                        "⚡");
 
         shortcuts.expanded =
                 expandedStates.getOrDefault(
@@ -1163,11 +1248,96 @@ public class MainActivity extends Activity {
 
         overviewAdapter.setSortMode(enabled);
 
+        overviewSortButton.setImageResource(
+                enabled
+                        ? R.drawable.ic_done
+                        : R.drawable.ic_sort_overview);
+
         overviewSortButton.setContentDescription(
                 getString(
                         enabled
                                 ? R.string.action_finish_sorting
                                 : R.string.action_sort_overview));
+    }
+
+    private void updateOverviewLayoutButton() {
+        boolean grid = overviewAdapter.isGridMode();
+
+        overviewLayoutButton.setImageResource(
+                grid
+                        ? R.drawable.ic_list_view
+                        : R.drawable.ic_grid_view);
+
+        overviewLayoutButton.setContentDescription(
+                getString(
+                        grid
+                                ? R.string.action_show_list_view
+                                : R.string.action_show_grid_view));
+    }
+
+    private void setOverviewGridMode(boolean enabled) {
+        overviewAdapter.finishItemSortMode();
+        setOverviewSortMode(false);
+
+        overviewAdapter.setGridMode(enabled);
+
+        overviewDisplayPreferences.edit()
+                .putBoolean(KEY_GRID_MODE, enabled)
+                .apply();
+
+        updateOverviewLayoutButton();
+        overviewList.scrollToPosition(0);
+    }
+
+    private void showOverviewColumnsDialog() {
+        CharSequence[] choices = {
+                getString(R.string.grid_columns_3),
+                getString(R.string.grid_columns_4),
+                getString(R.string.grid_columns_5)
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.grid_columns_title)
+                .setSingleChoiceItems(
+                        choices,
+                        overviewGridColumns - 3,
+                        (dialog, selected) -> {
+                            overviewGridColumns = selected + 3;
+
+                            overviewDisplayPreferences.edit()
+                                    .putInt(
+                                            KEY_GRID_COLUMNS,
+                                            overviewGridColumns)
+                                    .apply();
+
+                            overviewGridLayoutManager.setSpanCount(
+                                    overviewGridColumns);
+
+                            overviewList.scrollToPosition(0);
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
+    private void openGridSection(
+            OverviewSection section) {
+
+        setOverviewSortMode(false);
+        overviewAdapter.openGridSection(section);
+
+        setTopNavigation(false);
+
+        overviewLayoutButton.setVisibility(View.GONE);
+        overviewSortButton.setVisibility(View.GONE);
+
+        appSearchContainer.setVisibility(View.GONE);
+        appSearch.clearFocus();
+
+        pageTitle.setText(section.gridLabel);
+        overviewList.scrollToPosition(0);
     }
 
     private void updateAppFilterButton() {
@@ -1205,8 +1375,19 @@ public class MainActivity extends Activity {
         hideHelpPage();
         hideAboutPage();
 
+        overviewAdapter.finishItemSortMode();
         setOverviewSortMode(false);
-        overviewLayoutButton.setVisibility(View.VISIBLE);
+
+        overviewAdapter.setGridMode(
+                overviewAdapter.isGridMode());
+
+        updateOverviewLayoutButton();
+
+        overviewLayoutButton.setVisibility(
+                overviewSearchQuery.trim().isEmpty()
+                        ? View.VISIBLE
+                        : View.GONE);
+
         overviewSortButton.setVisibility(
                 overviewSearchQuery.trim().isEmpty()
                         ? View.VISIBLE
