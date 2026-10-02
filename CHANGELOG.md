@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 – Release in Vorbereitung
+## 2.0.0 – 2. Oktober 2026
 
 - Neue Listen- und Kachelansicht für App starten.
 - Globale Kachelansicht mit 3, 4 oder 5 Spalten.
