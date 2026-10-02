@@ -40,8 +40,9 @@ Stand: 2. Oktober 2026
 - Favoritenstern und Verschiebegriff getestet.
 - Stabiler Release-Workflow erfolgreich.
 - Stabile APK und SHA-256-Datei geprüft.
-- Ein separates Update von der stabilen 0.1.3
-  auf die stabile 2.0.0 wurde nicht durchgeführt.
+- Update von der stabilen Version 0.1.3
+  auf die stabile Version 2.0.0 auf dem Gerät
+  erfolgreich durchgeführt.
 
 ## Bekannter offener Prüfpunkt
 
@@ -54,9 +55,14 @@ Die Anmeldung mit 2FA funktioniert.
 Andere Herstellergeräte und WebView-Versionen
 wurden nicht vollständig getestet.
 
-## Nacharbeiten
+## Abschluss
 
-- Abgeschlossene Dev-Releases bereinigen.
-- Entwicklungsbranch dev/ui-search-grid entfernen.
-- Release-Tag v2.0.0 und den stabilen Release
-  unverändert erhalten.
+- Dev-Releases dev-138 bis dev-149 entfernt.
+- Alle zugehörigen Dev-Tags entfernt.
+- Entwicklungsbranch dev/ui-search-grid
+  lokal und auf GitHub entfernt.
+- Alle fünf stabilen Releases erhalten.
+- main enthält die vollständige Release-Dokumentation.
+- Release-Tag v2.0.0 bleibt unverändert
+  auf Commit 079b951.
+- AppStow 2.0.0 erfolgreich abgeschlossen.
