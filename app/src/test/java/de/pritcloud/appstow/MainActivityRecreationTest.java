@@ -852,10 +852,19 @@ public class MainActivityRecreationTest {
                     assertTrue(
                             !holder.itemView.isLongClickable());
 
+                    int expectedSize =
+                            grid
+                                    ? Math.round(
+                                            32f
+                                            * activity.getResources()
+                                                    .getDisplayMetrics()
+                                                    .density)
+                                    : activity.getResources()
+                                            .getDimensionPixelSize(
+                                                    R.dimen.icon_button_size);
+
                     assertEquals(
-                            activity.getResources()
-                                    .getDimensionPixelSize(
-                                            R.dimen.icon_button_size),
+                            expectedSize,
                             holder.favorite
                                     .getLayoutParams()
                                     .width);
@@ -898,6 +907,23 @@ public class MainActivityRecreationTest {
                                 .getDimensionPixelSize(
                                         R.dimen.icon_button_size);
 
+                float density =
+                        activity.getResources()
+                                .getDisplayMetrics()
+                                .density;
+
+                int gridSize =
+                        Math.round(32f * density);
+
+                int offset =
+                        -Math.round(2f * density);
+
+                int starPadding =
+                        Math.round(7f * density);
+
+                int handlePadding =
+                        Math.round(8f * density);
+
                 FrameLayout overviewTile =
                         (FrameLayout)
                                 LayoutInflater.from(
@@ -927,11 +953,11 @@ public class MainActivityRecreationTest {
                         (FrameLayout.LayoutParams)
                                 handle.getLayoutParams();
 
-                assertEquals(size, starParams.width);
-                assertEquals(size, starParams.height);
+                assertEquals(gridSize, starParams.width);
+                assertEquals(gridSize, starParams.height);
 
-                assertEquals(size, handleParams.width);
-                assertEquals(size, handleParams.height);
+                assertEquals(gridSize, handleParams.width);
+                assertEquals(gridSize, handleParams.height);
 
                 assertEquals(
                         Gravity.TOP | Gravity.END,
@@ -942,6 +968,34 @@ public class MainActivityRecreationTest {
                         handleParams.gravity);
 
                 assertEquals(
+                        offset,
+                        starParams.topMargin);
+
+                assertEquals(
+                        offset,
+                        starParams.getMarginEnd());
+
+                assertEquals(
+                        starParams.topMargin,
+                        handleParams.topMargin);
+
+                assertEquals(
+                        starParams.getMarginEnd(),
+                        handleParams.getMarginEnd());
+
+                assertEquals(
+                        starPadding,
+                        star.getPaddingLeft());
+
+                assertEquals(
+                        starPadding,
+                        star.getPaddingRight());
+
+                assertEquals(
+                        handlePadding,
+                        handle.getPaddingLeft());
+
+                assertEquals(
                         View.VISIBLE,
                         star.getVisibility());
 
@@ -949,10 +1003,10 @@ public class MainActivityRecreationTest {
                         View.GONE,
                         handle.getVisibility());
 
-                assertTrue(
+                assertEquals(
+                        0,
                         overviewTile.getChildAt(0)
-                                .getPaddingTop()
-                                >= size);
+                                .getPaddingTop());
 
                 FrameLayout assignmentTile =
                         (FrameLayout)
@@ -975,21 +1029,33 @@ public class MainActivityRecreationTest {
                                 assignmentStar.getLayoutParams();
 
                 assertEquals(
-                        size,
+                        gridSize,
                         assignmentParams.width);
 
                 assertEquals(
-                        size,
+                        gridSize,
                         assignmentParams.height);
 
                 assertEquals(
                         starParams.gravity,
                         assignmentParams.gravity);
 
-                assertTrue(
+                assertEquals(
+                        starParams.topMargin,
+                        assignmentParams.topMargin);
+
+                assertEquals(
+                        starParams.getMarginEnd(),
+                        assignmentParams.getMarginEnd());
+
+                assertEquals(
+                        starPadding,
+                        assignmentStar.getPaddingLeft());
+
+                assertEquals(
+                        0,
                         assignmentTile.getChildAt(0)
-                                .getPaddingTop()
-                                >= size);
+                                .getPaddingTop());
 
                 assertTrue(
                         assignmentTile.findViewById(
