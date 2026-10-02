@@ -24,6 +24,7 @@
     <string name="action_show_grid_view">Kachelansicht anzeigen</string>
     <string name="action_show_list_view">Listenansicht anzeigen</string>
     <string name="grid_columns_title">Spaltenanzahl</string>
+    <string name="grid_columns_global">Global (%1$d Spalten)</string>
     <string name="grid_columns_3">3 Spalten</string>
     <string name="grid_columns_4">4 Spalten</string>
     <string name="grid_columns_5">5 Spalten</string>

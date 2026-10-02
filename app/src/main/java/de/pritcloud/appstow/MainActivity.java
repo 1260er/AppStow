@@ -1347,7 +1347,22 @@ public class MainActivity extends Activity {
     private void showSectionGridColumnsDialog(
             OverviewSection section) {
 
+        String settingKey =
+                KEY_SECTION_GRID_COLUMNS + section.id;
+
+        boolean hasCustomColumns =
+                overviewDisplayPreferences.contains(
+                        settingKey);
+
+        int selectedChoice =
+                hasCustomColumns
+                        ? getSectionGridColumns(section) - 2
+                        : 0;
+
         CharSequence[] choices = {
+                getString(
+                        R.string.grid_columns_global,
+                        overviewGridColumns),
                 getString(R.string.grid_columns_3),
                 getString(R.string.grid_columns_4),
                 getString(R.string.grid_columns_5)
@@ -1357,23 +1372,31 @@ public class MainActivity extends Activity {
                 .setTitle(R.string.grid_columns_title)
                 .setSingleChoiceItems(
                         choices,
-                        getSectionGridColumns(section) - 3,
+                        selectedChoice,
                         (dialog, selected) -> {
-                            int columns = selected + 3;
 
-                            overviewDisplayPreferences.edit()
-                                    .putInt(
-                                            KEY_SECTION_GRID_COLUMNS
-                                                    + section.id,
-                                            columns)
-                                    .apply();
+                            if (selected == 0) {
+                                overviewDisplayPreferences
+                                        .edit()
+                                        .remove(settingKey)
+                                        .apply();
+                            } else {
+                                overviewDisplayPreferences
+                                        .edit()
+                                        .putInt(
+                                                settingKey,
+                                                selected + 2)
+                                        .apply();
+                            }
 
                             if (section.id.equals(
                                     overviewAdapter
                                             .getGridOpenSectionId())) {
 
                                 overviewGridLayoutManager
-                                        .setSpanCount(columns);
+                                        .setSpanCount(
+                                                getSectionGridColumns(
+                                                        section));
 
                                 overviewList.scrollToPosition(0);
                             }

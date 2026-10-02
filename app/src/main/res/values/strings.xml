@@ -24,6 +24,7 @@
     <string name="action_show_grid_view">Show grid view</string>
     <string name="action_show_list_view">Show list view</string>
     <string name="grid_columns_title">Grid columns</string>
+    <string name="grid_columns_global">Global (%1$d columns)</string>
     <string name="grid_columns_3">3 columns</string>
     <string name="grid_columns_4">4 columns</string>
     <string name="grid_columns_5">5 columns</string>
