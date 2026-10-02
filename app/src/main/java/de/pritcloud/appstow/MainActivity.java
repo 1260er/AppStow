@@ -141,6 +141,7 @@ public class MainActivity extends Activity {
     private String overviewSearchQuery = "";
     private View appSearchContainer;
     private ImageButton appSearchClear;
+    private ImageButton overviewLayoutButton;
     private ImageButton overviewSortButton;
     private ImageButton appFilterButton;
     private ImageButton shortcutHelpButton;
@@ -302,6 +303,8 @@ public class MainActivity extends Activity {
         appSearch = findViewById(R.id.appSearch);
         appSearchContainer = findViewById(R.id.appSearchContainer);
         appSearchClear = findViewById(R.id.appSearchClear);
+        overviewLayoutButton =
+                findViewById(R.id.buttonOverviewLayout);
         overviewSortButton =
                 findViewById(R.id.buttonSortOverview);
 
@@ -1184,6 +1187,7 @@ public class MainActivity extends Activity {
         overviewAdapter.finishItemSortMode();
         setOverviewSortMode(false);
 
+        overviewLayoutButton.setVisibility(View.GONE);
         overviewSortButton.setVisibility(View.GONE);
         appFilterButton.setVisibility(View.GONE);
     }
@@ -1202,6 +1206,7 @@ public class MainActivity extends Activity {
         hideAboutPage();
 
         setOverviewSortMode(false);
+        overviewLayoutButton.setVisibility(View.VISIBLE);
         overviewSortButton.setVisibility(
                 overviewSearchQuery.trim().isEmpty()
                         ? View.VISIBLE

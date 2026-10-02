@@ -38,6 +38,18 @@
                 android:visibility="gone" />
 
             <ImageButton
+                android:id="@+id/buttonOverviewLayout"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_grid_view_unavailable"
+                android:padding="10dp"
+                android:src="@drawable/ic_grid_view"
+                android:enabled="false"
+                android:alpha="0.45"
+                android:visibility="gone" />
+
+            <ImageButton
                 android:id="@+id/buttonSortOverview"
                 android:layout_width="@dimen/icon_button_size"
                 android:layout_height="@dimen/icon_button_size"

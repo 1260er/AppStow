@@ -21,6 +21,7 @@
     <string name="search_apps_hint">Search apps</string>
     <string name="apps_loading">Loading apps …</string>
     <string name="action_clear_search">Clear search</string>
+    <string name="action_grid_view_unavailable">Grid view (not yet available)</string>
     <string name="action_filter_unassigned_apps">Show only unassigned apps</string>
     <string name="action_show_all_apps">Show all apps</string>
     <string name="apps_unassigned_empty">No unassigned apps found.</string>
