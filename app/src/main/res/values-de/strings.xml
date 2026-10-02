@@ -151,9 +151,11 @@ Keines gefunden</string>
 
     <string name="help_categories_favorites_text">Mit dem Stern fügst du Favoriten hinzu oder entfernst sie. Favoriten und eigene Shortcuts besitzen außerdem jeweils einen eigenen Bereich.</string>
     <string name="help_apps_title">Apps zuweisen</string>
-    <string name="help_apps_text">Halte unter Apps zuweisen eine App länger gedrückt, um sie einer oder mehreren Kategorien zuzuweisen.</string>
+    <string name="help_apps_text">Tippe unter Apps zuweisen kurz auf eine App, um direkt ihre Kategoriezuweisung zu öffnen. Eine App kann mehreren Kategorien angehören. Über den Stern fügst du sie separat zu den Favoriten hinzu oder entfernst sie.</string>
 
     <string name="help_apps_filter_text">Das Filtersymbol zeigt nur Apps an, die noch keiner Kategorie zugeordnet sind. Mit dem Suchfeld findest du installierte Apps schneller.</string>
+    <string name="help_apps_view_title">Listen- oder Kachelansicht</string>
+    <string name="help_apps_view_text">Apps zuweisen übernimmt automatisch die globale Listen- oder Kachelansicht und die globale Spaltenzahl. Ändere diese Einstellungen über das Ansichtssymbol auf der Seite App starten. Apps werden ausschließlich unter App starten geöffnet.</string>
     <string name="help_shortcuts_title">Eigene Shortcuts</string>
 
     <string name="help_shortcut_website_title">Webseite</string>

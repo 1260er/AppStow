@@ -29,14 +29,19 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:gravity="center"
-            android:maxLines="1"
+            android:maxLines="2"
             android:textColor="@color/ui_text_primary"
             android:textSize="12sp" />
 
         <TextView
             android:id="@+id/appCategories"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/ui_text_secondary"
+            android:textSize="10sp"
             android:visibility="gone" />
 
     </LinearLayout>
@@ -50,15 +55,5 @@
         android:contentDescription="@string/action_add_favorite"
         android:padding="12dp"
         android:src="@drawable/ic_star_outline" />
-
-    <ImageView
-        android:id="@+id/overviewItemDragHandle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="top|end"
-        android:contentDescription="@string/action_drag_item"
-        android:padding="12dp"
-        android:src="@drawable/ic_drag_handle"
-        android:visibility="gone" />
 
 </FrameLayout>

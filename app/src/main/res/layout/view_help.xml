@@ -196,6 +196,23 @@
                 android:text="@string/help_apps_filter_text"
                 android:lineSpacingExtra="3dp"
                 android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_apps_view_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_apps_view_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
         </LinearLayout>
 
         <LinearLayout

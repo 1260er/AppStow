@@ -7,10 +7,19 @@ import static org.junit.Assert.assertTrue;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Looper;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -515,6 +524,641 @@ public class MainActivityRecreationTest {
     }
 
     @Test
+    public void appAssignmentFollowsGlobalViewAfterRecreation() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                5)
+                        .commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                invoke(
+                        activity,
+                        "showApps",
+                        new Class<?>[0],
+                        new Object[0]);
+
+                AppAdapter adapter =
+                        getPrivateField(
+                                activity,
+                                "appAdapter",
+                                AppAdapter.class);
+
+                GridLayoutManager layout =
+                        getPrivateField(
+                                activity,
+                                "appGridLayoutManager",
+                                GridLayoutManager.class);
+
+                assertTrue(
+                        adapter.isGridMode());
+
+                assertEquals(
+                        5,
+                        layout.getSpanCount());
+
+                AppAdapter.AppViewHolder holder =
+                        adapter.onCreateViewHolder(
+                                new FrameLayout(activity),
+                                adapter.getItemViewType(0));
+
+                assertTrue(
+                        holder.gridTile);
+
+                assertNotNull(
+                        holder.favorite);
+            });
+
+            scenario.recreate();
+
+            scenario.onActivity(activity -> {
+
+                AppAdapter adapter =
+                        getPrivateField(
+                                activity,
+                                "appAdapter",
+                                AppAdapter.class);
+
+                GridLayoutManager layout =
+                        getPrivateField(
+                                activity,
+                                "appGridLayoutManager",
+                                GridLayoutManager.class);
+
+                assertTrue(
+                        adapter.isGridMode());
+
+                assertEquals(
+                        5,
+                        layout.getSpanCount());
+
+                invoke(
+                        activity,
+                        "showOverview",
+                        new Class<?>[0],
+                        new Object[0]);
+
+                invoke(
+                        activity,
+                        "setOverviewGridMode",
+                        new Class<?>[] {
+                                boolean.class
+                        },
+                        new Object[] {
+                                false
+                        });
+
+                invoke(
+                        activity,
+                        "showApps",
+                        new Class<?>[0],
+                        new Object[0]);
+
+                assertTrue(
+                        !adapter.isGridMode());
+
+                assertEquals(
+                        1,
+                        layout.getSpanCount());
+            });
+        }
+    }
+
+    @Test
+    public void appAssignmentUsesUpdatedGlobalColumns() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "overview_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                5)
+                        .commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                invoke(
+                        activity,
+                        "showOverviewColumnsDialog",
+                        new Class<?>[0],
+                        new Object[0]);
+
+                ListView choices =
+                        latestDialog().getListView();
+
+                assertNotNull(choices);
+
+                choices.performItemClick(
+                        null,
+                        0,
+                        choices.getAdapter()
+                                .getItemId(0));
+
+                assertEquals(
+                        3,
+                        display.getInt(
+                                "grid_columns",
+                                -1));
+
+                invoke(
+                        activity,
+                        "showApps",
+                        new Class<?>[0],
+                        new Object[0]);
+
+                AppAdapter adapter =
+                        getPrivateField(
+                                activity,
+                                "appAdapter",
+                                AppAdapter.class);
+
+                GridLayoutManager layout =
+                        getPrivateField(
+                                activity,
+                                "appGridLayoutManager",
+                                GridLayoutManager.class);
+
+                assertTrue(
+                        adapter.isGridMode());
+
+                assertEquals(
+                        3,
+                        layout.getSpanCount());
+
+                assertTrue(
+                        activity.findViewById(
+                                        R.id.buttonFilterApps)
+                                .performClick());
+
+                assertTrue(
+                        getPrivateField(
+                                activity,
+                                "showOnlyUnassignedApps",
+                                Boolean.class));
+
+                EditText search =
+                        activity.findViewById(
+                                R.id.appSearch);
+
+                search.setText("example");
+
+                assertEquals(
+                        "example",
+                        getPrivateField(
+                                activity,
+                                "assignmentSearchQuery",
+                                String.class));
+            });
+        }
+    }
+
+    @Test
+    public void shortTapAssignsInListAndGridView() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        CategoryStore store =
+                new CategoryStore(context);
+
+        assertTrue(
+                store.addCategory(
+                        "Tap test",
+                        "📁"));
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                AppAdapter original =
+                        getPrivateField(
+                                activity,
+                                "appAdapter",
+                                AppAdapter.class);
+
+                AppAdapter.OnAppClickListener click =
+                        getPrivateField(
+                                original,
+                                "clickListener",
+                                AppAdapter.OnAppClickListener.class);
+
+                AppAdapter adapter =
+                        new AppAdapter(
+                                getPrivateField(
+                                        activity,
+                                        "favoritesStore",
+                                        FavoritesStore.class),
+                                getPrivateField(
+                                        activity,
+                                        "categoryStore",
+                                        CategoryStore.class),
+                                getPrivateField(
+                                        activity,
+                                        "appIconLoader",
+                                        AppIconLoader.class),
+                                click);
+
+                ResolveInfo info =
+                        new ResolveInfo();
+
+                info.activityInfo =
+                        new ActivityInfo();
+
+                info.activityInfo.name =
+                        "ExampleActivity";
+
+                info.activityInfo.packageName =
+                        "com.example.tap";
+
+                info.activityInfo.applicationInfo =
+                        new ApplicationInfo();
+
+                info.activityInfo.applicationInfo.packageName =
+                        "com.example.tap";
+
+                AppEntry entry =
+                        new AppEntry(
+                                "Example",
+                                "com.example.tap",
+                                info,
+                                null,
+                                1);
+
+                adapter.submitList(
+                        java.util.Collections.singletonList(
+                                entry));
+
+                for (boolean grid :
+                        new boolean[] {
+                                false,
+                                true
+                        }) {
+
+                    adapter.setGridMode(
+                            grid);
+
+                    AppAdapter.AppViewHolder holder =
+                            adapter.onCreateViewHolder(
+                                    new FrameLayout(
+                                            activity),
+                                    adapter.getItemViewType(
+                                            0));
+
+                    adapter.onBindViewHolder(
+                            holder,
+                            0);
+
+                    assertEquals(
+                            grid,
+                            holder.gridTile);
+
+                    assertTrue(
+                            !holder.itemView.isLongClickable());
+
+                    assertEquals(
+                            activity.getResources()
+                                    .getDimensionPixelSize(
+                                            R.dimen.icon_button_size),
+                            holder.favorite
+                                    .getLayoutParams()
+                                    .width);
+
+                    assertTrue(
+                            holder.itemView
+                                    .performClick());
+
+                    AlertDialog dialog =
+                            latestDialog();
+
+                    assertTrue(
+                            dialog.isShowing());
+
+                    assertNotNull(
+                            dialog.getListView());
+
+                    assertEquals(
+                            1,
+                            dialog.getListView()
+                                    .getCount());
+
+                    dialog.dismiss();
+                }
+            });
+        }
+    }
+
+    @Test
+    public void gridStarAndDragHandleSharePosition() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                int size =
+                        activity.getResources()
+                                .getDimensionPixelSize(
+                                        R.dimen.icon_button_size);
+
+                FrameLayout overviewTile =
+                        (FrameLayout)
+                                LayoutInflater.from(
+                                                activity)
+                                        .inflate(
+                                                R.layout.item_overview_grid_entry,
+                                                new FrameLayout(
+                                                        activity),
+                                                false);
+
+                ImageButton star =
+                        overviewTile.findViewById(
+                                R.id.appFavorite);
+
+                ImageView handle =
+                        overviewTile.findViewById(
+                                R.id.overviewItemDragHandle);
+
+                assertNotNull(star);
+                assertNotNull(handle);
+
+                FrameLayout.LayoutParams starParams =
+                        (FrameLayout.LayoutParams)
+                                star.getLayoutParams();
+
+                FrameLayout.LayoutParams handleParams =
+                        (FrameLayout.LayoutParams)
+                                handle.getLayoutParams();
+
+                assertEquals(size, starParams.width);
+                assertEquals(size, starParams.height);
+
+                assertEquals(size, handleParams.width);
+                assertEquals(size, handleParams.height);
+
+                assertEquals(
+                        Gravity.TOP | Gravity.END,
+                        starParams.gravity);
+
+                assertEquals(
+                        starParams.gravity,
+                        handleParams.gravity);
+
+                assertEquals(
+                        View.VISIBLE,
+                        star.getVisibility());
+
+                assertEquals(
+                        View.GONE,
+                        handle.getVisibility());
+
+                assertTrue(
+                        overviewTile.getChildAt(0)
+                                .getPaddingTop()
+                                >= size);
+
+                FrameLayout assignmentTile =
+                        (FrameLayout)
+                                LayoutInflater.from(
+                                                activity)
+                                        .inflate(
+                                                R.layout.item_app_grid,
+                                                new FrameLayout(
+                                                        activity),
+                                                false);
+
+                ImageButton assignmentStar =
+                        assignmentTile.findViewById(
+                                R.id.appFavorite);
+
+                assertNotNull(assignmentStar);
+
+                FrameLayout.LayoutParams assignmentParams =
+                        (FrameLayout.LayoutParams)
+                                assignmentStar.getLayoutParams();
+
+                assertEquals(
+                        size,
+                        assignmentParams.width);
+
+                assertEquals(
+                        size,
+                        assignmentParams.height);
+
+                assertEquals(
+                        starParams.gravity,
+                        assignmentParams.gravity);
+
+                assertTrue(
+                        assignmentTile.getChildAt(0)
+                                .getPaddingTop()
+                                >= size);
+
+                assertTrue(
+                        assignmentTile.findViewById(
+                                R.id.overviewItemDragHandle)
+                                == null);
+
+                View listTile =
+                        LayoutInflater.from(activity)
+                                .inflate(
+                                        R.layout.item_app,
+                                        new FrameLayout(
+                                                activity),
+                                        false);
+
+                ImageButton listStar =
+                        listTile.findViewById(
+                                R.id.appFavorite);
+
+                ImageView listHandle =
+                        listTile.findViewById(
+                                R.id.overviewItemDragHandle);
+
+                assertEquals(
+                        size,
+                        listStar.getLayoutParams()
+                                .width);
+
+                assertEquals(
+                        size,
+                        listHandle.getLayoutParams()
+                                .width);
+
+                assertEquals(
+                        View.GONE,
+                        listHandle.getVisibility());
+            });
+        }
+    }
+
+    @Test
+    public void gridSortingReplacesStarWithHandle() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                OverviewAdapter adapter =
+                        getPrivateField(
+                                activity,
+                                "overviewAdapter",
+                                OverviewAdapter.class);
+
+                OverviewSection section =
+                        new OverviewSection(
+                                "category:layout-test",
+                                "Layout test",
+                                "Empty",
+                                "Layout test",
+                                "📁");
+
+                ResolveInfo info =
+                        new ResolveInfo();
+
+                info.activityInfo =
+                        new ActivityInfo();
+
+                info.activityInfo.name =
+                        "ExampleActivity";
+
+                info.activityInfo.packageName =
+                        "com.example.layout";
+
+                info.activityInfo.applicationInfo =
+                        new ApplicationInfo();
+
+                info.activityInfo.applicationInfo.packageName =
+                        "com.example.layout";
+
+                AppEntry entry =
+                        new AppEntry(
+                                "Layout test",
+                                "com.example.layout",
+                                info,
+                                null,
+                                1);
+
+                View tile =
+                        LayoutInflater.from(activity)
+                                .inflate(
+                                        R.layout.item_overview_grid_entry,
+                                        new FrameLayout(
+                                                activity),
+                                        false);
+
+                OverviewAdapter.EntryViewHolder holder =
+                        new OverviewAdapter.EntryViewHolder(
+                                tile,
+                                true);
+
+                Class<?>[] arguments = {
+                        OverviewAdapter.EntryViewHolder.class,
+                        OverviewSection.class,
+                        AppEntry.class
+                };
+
+                Object[] values = {
+                        holder,
+                        section,
+                        entry
+                };
+
+                invoke(
+                        adapter,
+                        "bindApp",
+                        arguments,
+                        values);
+
+                assertEquals(
+                        View.VISIBLE,
+                        holder.favorite.getVisibility());
+
+                assertEquals(
+                        View.GONE,
+                        holder.itemDragHandle.getVisibility());
+
+                setPrivateField(
+                        adapter,
+                        "itemSortSectionId",
+                        section.id);
+
+                invoke(
+                        adapter,
+                        "bindApp",
+                        arguments,
+                        values);
+
+                assertEquals(
+                        View.GONE,
+                        holder.favorite.getVisibility());
+
+                assertEquals(
+                        View.VISIBLE,
+                        holder.itemDragHandle.getVisibility());
+
+                setPrivateField(
+                        adapter,
+                        "itemSortSectionId",
+                        null);
+
+                invoke(
+                        adapter,
+                        "bindApp",
+                        arguments,
+                        values);
+
+                assertEquals(
+                        View.VISIBLE,
+                        holder.favorite.getVisibility());
+
+                assertEquals(
+                        View.GONE,
+                        holder.itemDragHandle.getVisibility());
+            });
+        }
+    }
+
+    @Test
     public void openGridCategorySurvivesActivityRecreation() {
 
         Context context =
@@ -1003,6 +1647,28 @@ public class MainActivityRecreationTest {
 
             throw new AssertionError(
                     exception);
+        }
+    }
+
+    private static void setPrivateField(
+            Object target,
+            String name,
+            Object value) {
+
+        try {
+            Field field =
+                    target.getClass()
+                            .getDeclaredField(
+                                    name);
+
+            field.setAccessible(true);
+
+            field.set(
+                    target,
+                    value);
+
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError(exception);
         }
     }
 

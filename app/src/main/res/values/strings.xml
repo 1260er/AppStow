@@ -151,9 +151,11 @@ None found</string>
 
     <string name="help_categories_favorites_text">Use the star to add or remove favorites. Favorites and Custom shortcuts also have their own sections.</string>
     <string name="help_apps_title">Assign apps</string>
-    <string name="help_apps_text">Under Assign apps, touch and hold an app to assign it to one or more categories.</string>
+    <string name="help_apps_text">Tap an app under Assign apps to open its category assignment directly. Apps and shortcuts can belong to several categories. Tap the star separately to add or remove a favorite.</string>
 
     <string name="help_apps_filter_text">Use the filter icon to show only apps that have not yet been assigned. The search field helps you find installed apps.</string>
+    <string name="help_apps_view_title">List or grid view</string>
+    <string name="help_apps_view_text">Assign apps automatically uses the global list or grid view and the global column count. Change these settings using the view icon on the Launch apps page. Apps are launched only from Launch apps.</string>
     <string name="help_shortcuts_title">Custom shortcuts</string>
 
     <string name="help_shortcut_website_title">Website</string>

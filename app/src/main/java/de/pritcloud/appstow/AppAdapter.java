@@ -15,26 +15,24 @@ import androidx.recyclerview.widget.RecyclerView;
 public class AppAdapter
         extends ListAdapter<AppEntry, AppAdapter.AppViewHolder> {
 
+    private static final int TYPE_LIST = 0;
+    private static final int TYPE_GRID = 1;
+
     interface OnAppClickListener {
         void onAppClick(AppEntry app);
-    }
-
-    interface OnAppLongClickListener {
-        void onAppLongClick(AppEntry app);
     }
 
     private final FavoritesStore favoritesStore;
     private final CategoryStore categoryStore;
     private final AppIconLoader appIconLoader;
     private final OnAppClickListener clickListener;
-    private final OnAppLongClickListener longClickListener;
+    private boolean gridMode;
 
     AppAdapter(
             FavoritesStore favoritesStore,
             CategoryStore categoryStore,
             AppIconLoader appIconLoader,
-            OnAppClickListener clickListener,
-            OnAppLongClickListener longClickListener) {
+            OnAppClickListener clickListener) {
 
         super(DIFF_CALLBACK);
 
@@ -42,7 +40,26 @@ public class AppAdapter
         this.categoryStore = categoryStore;
         this.appIconLoader = appIconLoader;
         this.clickListener = clickListener;
-        this.longClickListener = longClickListener;
+    }
+
+    boolean isGridMode() {
+        return gridMode;
+    }
+
+    void setGridMode(boolean enabled) {
+        if (gridMode == enabled) {
+            return;
+        }
+
+        gridMode = enabled;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return gridMode
+                ? TYPE_GRID
+                : TYPE_LIST;
     }
 
     private static final DiffUtil.ItemCallback<AppEntry> DIFF_CALLBACK =
@@ -75,10 +92,22 @@ public class AppAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_app, parent, false);
+        int layout =
+                viewType == TYPE_GRID
+                        ? R.layout.item_app_grid
+                        : R.layout.item_app;
 
-        return new AppViewHolder(view);
+        View view =
+                LayoutInflater.from(
+                                parent.getContext())
+                        .inflate(
+                                layout,
+                                parent,
+                                false);
+
+        return new AppViewHolder(
+                view,
+                viewType == TYPE_GRID);
     }
 
     @Override
@@ -101,7 +130,9 @@ public class AppAdapter
         holder.categories.setText(categoryLabel);
         holder.categories.setVisibility(
                 categoryLabel.isEmpty()
-                        ? View.INVISIBLE
+                        ? holder.gridTile
+                                ? View.GONE
+                                : View.INVISIBLE
                         : View.VISIBLE);
 
         updateFavoriteButton(holder, app);
@@ -139,10 +170,8 @@ public class AppAdapter
         holder.itemView.setOnClickListener(v ->
                 clickListener.onAppClick(app));
 
-        holder.itemView.setOnLongClickListener(v -> {
-            longClickListener.onAppLongClick(app);
-            return true;
-        });
+        holder.itemView.setOnLongClickListener(null);
+        holder.itemView.setLongClickable(false);
     }
 
     private void updateFavoriteButton(
@@ -198,9 +227,15 @@ public class AppAdapter
         final TextView name;
         final TextView categories;
         final ImageButton favorite;
+        final boolean gridTile;
 
-        AppViewHolder(@NonNull View itemView) {
+        AppViewHolder(
+                @NonNull View itemView,
+                boolean gridTile) {
+
             super(itemView);
+
+            this.gridTile = gridTile;
 
             icon = itemView.findViewById(R.id.appIcon);
             name = itemView.findViewById(R.id.appName);

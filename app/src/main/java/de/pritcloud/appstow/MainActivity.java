@@ -157,6 +157,7 @@ public class MainActivity extends Activity {
     private ImageButton overviewLayoutButton;
     private ImageButton overviewSortButton;
     private GridLayoutManager overviewGridLayoutManager;
+    private GridLayoutManager appGridLayoutManager;
     private SharedPreferences overviewDisplayPreferences;
     private int overviewGridColumns = 4;
     private ImageButton appFilterButton;
@@ -453,10 +454,23 @@ public class MainActivity extends Activity {
                 favoritesStore,
                 categoryStore,
                 appIconLoader,
-                this::launchApp,
                 this::handleAppLongClick);
 
-        appList.setLayoutManager(new LinearLayoutManager(this));
+        appAdapter.setGridMode(
+                overviewDisplayPreferences.getBoolean(
+                        KEY_GRID_MODE,
+                        false));
+
+        appGridLayoutManager =
+                new GridLayoutManager(
+                        this,
+                        appAdapter.isGridMode()
+                                ? overviewGridColumns
+                                : 1);
+
+        appList.setLayoutManager(
+                appGridLayoutManager);
+
         appList.setAdapter(appAdapter);
         appList.setHasFixedSize(true);
 
@@ -1562,6 +1576,28 @@ public class MainActivity extends Activity {
         hideHelpPage();
         hideAboutPage();
         overviewList.setVisibility(View.GONE);
+
+        boolean grid =
+                overviewAdapter.isGridMode();
+
+        int columns =
+                grid
+                        ? overviewGridColumns
+                        : 1;
+
+        boolean layoutChanged =
+                appAdapter.isGridMode() != grid
+                        || appGridLayoutManager.getSpanCount()
+                        != columns;
+
+        appAdapter.setGridMode(grid);
+
+        appGridLayoutManager.setSpanCount(
+                columns);
+
+        if (layoutChanged) {
+            appList.scrollToPosition(0);
+        }
 
         requestAppReload();
 
