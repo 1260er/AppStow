@@ -58,6 +58,10 @@ final class OverviewAdapter
         void onGridSectionClose();
     }
 
+    interface OnSectionColumnsListener {
+        void onSectionColumns(OverviewSection section);
+    }
+
     interface OnSectionDragStartListener {
         void onDragStart(
                 RecyclerView.ViewHolder holder);
@@ -89,6 +93,7 @@ final class OverviewAdapter
     private final OnSectionDragStartListener dragStartListener;
     private final OnGridSectionClickListener gridSectionClickListener;
     private final OnGridSectionCloseListener gridSectionCloseListener;
+    private final OnSectionColumnsListener sectionColumnsListener;
 
     private boolean gridMode;
     private String gridOpenSectionId;
@@ -109,7 +114,8 @@ final class OverviewAdapter
             OnAppLongClickListener appLongClickListener,
             OnSectionDragStartListener dragStartListener,
             OnGridSectionClickListener gridSectionClickListener,
-            OnGridSectionCloseListener gridSectionCloseListener) {
+            OnGridSectionCloseListener gridSectionCloseListener,
+            OnSectionColumnsListener sectionColumnsListener) {
 
         this.sections = sections;
         this.favoritesStore = favoritesStore;
@@ -124,6 +130,7 @@ final class OverviewAdapter
         this.dragStartListener = dragStartListener;
         this.gridSectionClickListener = gridSectionClickListener;
         this.gridSectionCloseListener = gridSectionCloseListener;
+        this.sectionColumnsListener = sectionColumnsListener;
 
         refreshShortcutEntries();
         rebuildRows();
@@ -173,21 +180,37 @@ final class OverviewAdapter
 
     boolean isGridCell(int position) {
         if (!gridMode
-                || gridOpenSectionId != null
                 || position < 0
                 || position >= rows.size()) {
 
             return false;
         }
 
-        int type = rows.get(position).type;
+        Row row = rows.get(position);
 
-        if (searchQuery.isEmpty()) {
-            return type == TYPE_SECTION;
+        if (gridOpenSectionId != null) {
+            return searchQuery.isEmpty()
+                    && row.isEntry()
+                    && gridOpenSectionId.equals(
+                            row.section.id);
         }
 
-        return type == TYPE_APP
-                || type == TYPE_SHORTCUT;
+        if (!searchQuery.isEmpty()) {
+            return row.isEntry();
+        }
+
+        return row.type == TYPE_SECTION;
+    }
+
+    boolean isGridItemSortMode() {
+        return gridMode
+                && gridOpenSectionId != null
+                && gridOpenSectionId.equals(
+                        itemSortSectionId);
+    }
+
+    String getGridOpenSectionId() {
+        return gridOpenSectionId;
     }
 
     void openGridSection(OverviewSection selected) {
@@ -674,6 +697,20 @@ final class OverviewAdapter
         boolean itemSortMode =
                 section.id.equals(
                         itemSortSectionId);
+
+        holder.layoutButton.setVisibility(
+                gridMode
+                        && section.id.equals(
+                                gridOpenSectionId)
+                        && searchQuery.isEmpty()
+                        && !sortMode
+                        && !itemSortMode
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        holder.layoutButton.setOnClickListener(v ->
+                sectionColumnsListener
+                        .onSectionColumns(section));
 
         holder.sortButton.setVisibility(
                 sortMode || !searchQuery.isEmpty()
@@ -1299,6 +1336,7 @@ final class OverviewAdapter
             extends RecyclerView.ViewHolder {
 
         final TextView title;
+        final ImageButton layoutButton;
         final ImageButton sortButton;
         final ImageView chevron;
         final ImageView dragHandle;
@@ -1311,6 +1349,10 @@ final class OverviewAdapter
             title =
                     itemView.findViewById(
                             R.id.overviewSectionTitle);
+
+            layoutButton =
+                    itemView.findViewById(
+                            R.id.overviewSectionLayout);
 
             sortButton =
                     itemView.findViewById(

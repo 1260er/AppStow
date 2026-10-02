@@ -82,6 +82,8 @@ public class MainActivity extends Activity {
             "grid_mode";
     private static final String KEY_GRID_COLUMNS =
             "grid_columns";
+    private static final String KEY_SECTION_GRID_COLUMNS =
+            "section_grid_columns_";
     private static final String STATE_APP_FILTER = "app_filter";
     private static final String STATE_EXPANDED_SECTION = "expanded_section";
     private static final String STATE_HELP_SCROLL = "help_scroll";
@@ -478,7 +480,8 @@ public class MainActivity extends Activity {
                         this::handleAppLongClick,
                         this::startOverviewDrag,
                         this::openGridSection,
-                        this::showOverview);
+                        this::showOverview,
+                        this::showSectionGridColumnsDialog);
 
         overviewAdapter.setGridMode(
                 overviewDisplayPreferences.getBoolean(
@@ -496,7 +499,7 @@ public class MainActivity extends Activity {
                     public int getSpanSize(int position) {
                         return overviewAdapter.isGridCell(position)
                                 ? 1
-                                : overviewGridColumns;
+                                : overviewGridLayoutManager.getSpanCount();
                     }
                 });
 
@@ -521,8 +524,9 @@ public class MainActivity extends Activity {
                                     RecyclerView recyclerView,
                                     RecyclerView.ViewHolder viewHolder) {
 
-                                if (overviewAdapter.isSortMode()
-                                        && overviewAdapter.isGridOverview()) {
+                                if ((overviewAdapter.isSortMode()
+                                        && overviewAdapter.isGridOverview())
+                                        || overviewAdapter.isGridItemSortMode()) {
 
                                     return makeMovementFlags(
                                             ItemTouchHelper.UP
@@ -1327,10 +1331,69 @@ public class MainActivity extends Activity {
                 .show();
     }
 
+    private int getSectionGridColumns(
+            OverviewSection section) {
+
+        int savedColumns =
+                overviewDisplayPreferences.getInt(
+                        KEY_SECTION_GRID_COLUMNS + section.id,
+                        overviewGridColumns);
+
+        return Math.max(
+                3,
+                Math.min(5, savedColumns));
+    }
+
+    private void showSectionGridColumnsDialog(
+            OverviewSection section) {
+
+        CharSequence[] choices = {
+                getString(R.string.grid_columns_3),
+                getString(R.string.grid_columns_4),
+                getString(R.string.grid_columns_5)
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.grid_columns_title)
+                .setSingleChoiceItems(
+                        choices,
+                        getSectionGridColumns(section) - 3,
+                        (dialog, selected) -> {
+                            int columns = selected + 3;
+
+                            overviewDisplayPreferences.edit()
+                                    .putInt(
+                                            KEY_SECTION_GRID_COLUMNS
+                                                    + section.id,
+                                            columns)
+                                    .apply();
+
+                            if (section.id.equals(
+                                    overviewAdapter
+                                            .getGridOpenSectionId())) {
+
+                                overviewGridLayoutManager
+                                        .setSpanCount(columns);
+
+                                overviewList.scrollToPosition(0);
+                            }
+
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
     private void openGridSection(
             OverviewSection section) {
 
         setOverviewSortMode(false);
+
+        overviewGridLayoutManager.setSpanCount(
+                getSectionGridColumns(section));
+
         overviewAdapter.openGridSection(section);
 
         setTopNavigation(false);
@@ -1391,6 +1454,9 @@ public class MainActivity extends Activity {
 
         overviewAdapter.finishItemSortMode();
         setOverviewSortMode(false);
+
+        overviewGridLayoutManager.setSpanCount(
+                overviewGridColumns);
 
         overviewAdapter.setGridMode(
                 overviewAdapter.isGridMode());
