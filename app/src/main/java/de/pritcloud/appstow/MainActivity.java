@@ -74,6 +74,7 @@ public class MainActivity extends Activity {
 
     private static final String STATE_PAGE = "main_page";
     private static final String STATE_APP_SEARCH = "app_search";
+    private static final String STATE_OVERVIEW_SEARCH = "overview_search";
     private static final String STATE_APP_FILTER = "app_filter";
     private static final String STATE_EXPANDED_SECTION = "expanded_section";
     private static final String STATE_HELP_SCROLL = "help_scroll";
@@ -136,6 +137,8 @@ public class MainActivity extends Activity {
     private TextView aboutVersion;
     private TextView aboutPackage;
     private EditText appSearch;
+    private String assignmentSearchQuery = "";
+    private String overviewSearchQuery = "";
     private View appSearchContainer;
     private ImageButton appSearchClear;
     private ImageButton overviewSortButton;
@@ -585,9 +588,29 @@ public class MainActivity extends Activity {
                                 ? View.VISIBLE
                                 : View.GONE);
 
-                if (appSearchContainer.getVisibility()
-                        == View.VISIBLE) {
-                    renderApps(editable.toString());
+                String query = editable.toString();
+
+                if (PAGE_OVERVIEW.equals(currentPage)) {
+                    overviewSearchQuery = query;
+
+                    if (!query.trim().isEmpty()) {
+                        overviewAdapter.finishItemSortMode();
+                        setOverviewSortMode(false);
+                    }
+
+                    overviewSortButton.setVisibility(
+                            query.trim().isEmpty()
+                                    ? View.VISIBLE
+                                    : View.GONE);
+
+                    overviewAdapter.setSearchQuery(query);
+                } else if (PAGE_APPS.equals(currentPage)) {
+                    assignmentSearchQuery = query;
+
+                    if (appSearchContainer.getVisibility()
+                            == View.VISIBLE) {
+                        renderApps(query);
+                    }
                 }
             }
         });
@@ -603,10 +626,15 @@ public class MainActivity extends Activity {
                             STATE_APP_FILTER,
                             false);
 
-            appSearch.setText(
+            assignmentSearchQuery =
                     savedInstanceState.getString(
                             STATE_APP_SEARCH,
-                            ""));
+                            "");
+
+            overviewSearchQuery =
+                    savedInstanceState.getString(
+                            STATE_OVERVIEW_SEARCH,
+                            "");
 
             restorePage(
                     savedInstanceState.getString(
@@ -658,8 +686,11 @@ public class MainActivity extends Activity {
 
         outState.putString(
                 STATE_APP_SEARCH,
-                appSearch.getText()
-                        .toString());
+                assignmentSearchQuery);
+
+        outState.putString(
+                STATE_OVERVIEW_SEARCH,
+                overviewSearchQuery);
 
         outState.putBoolean(
                 STATE_APP_FILTER,
@@ -1171,15 +1202,22 @@ public class MainActivity extends Activity {
         hideAboutPage();
 
         setOverviewSortMode(false);
-        overviewSortButton.setVisibility(View.VISIBLE);
+        overviewSortButton.setVisibility(
+                overviewSearchQuery.trim().isEmpty()
+                        ? View.VISIBLE
+                        : View.GONE);
 
         rebuildOverviewSections();
         overviewAdapter.setApps(apps);
 
         pageTitle.setText(R.string.nav_overview);
 
-        appSearchContainer.setVisibility(View.GONE);
-        appSearchClear.setVisibility(View.GONE);
+        appSearchContainer.setVisibility(View.VISIBLE);
+        appSearch.setText(overviewSearchQuery);
+        appSearchClear.setVisibility(
+                appSearch.length() > 0
+                        ? View.VISIBLE
+                        : View.GONE);
         appSearch.clearFocus();
 
         appList.setVisibility(View.GONE);
@@ -1214,6 +1252,7 @@ public class MainActivity extends Activity {
         pageTitle.setText(R.string.nav_apps);
 
         appSearchContainer.setVisibility(View.VISIBLE);
+        appSearch.setText(assignmentSearchQuery);
         appSearchClear.setVisibility(
                 appSearch.length() > 0
                         ? View.VISIBLE
@@ -2595,9 +2634,7 @@ public class MainActivity extends Activity {
                     overviewAdapter.setApps(apps);
                 }
 
-                if (appSearchContainer.getVisibility()
-                        == View.VISIBLE) {
-
+                if (PAGE_APPS.equals(currentPage)) {
                     renderApps(
                             appSearch.getText()
                                     .toString());

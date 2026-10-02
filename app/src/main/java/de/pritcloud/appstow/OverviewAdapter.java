@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 final class OverviewAdapter
@@ -77,6 +78,7 @@ final class OverviewAdapter
     private final OnAppLongClickListener appLongClickListener;
     private final OnSectionDragStartListener dragStartListener;
 
+    private String searchQuery = "";
     private boolean sortMode;
     private String itemSortSectionId;
 
@@ -120,6 +122,19 @@ final class OverviewAdapter
         notifyStructureChanged();
     }
 
+    void setSearchQuery(String query) {
+        String normalized =
+                query.trim().toLowerCase(Locale.ROOT);
+
+        if (normalized.equals(searchQuery)) {
+            return;
+        }
+
+        searchQuery = normalized;
+        rebuildRows();
+        notifyStructureChanged();
+    }
+
     private void refreshFavoriteApps() {
         favoriteApps.clear();
 
@@ -155,6 +170,11 @@ final class OverviewAdapter
 
     private void rebuildRows() {
         rows.clear();
+
+        if (!searchQuery.isEmpty()) {
+            rebuildSearchRows();
+            return;
+        }
 
         for (OverviewSection section :
                 sections) {
@@ -241,6 +261,57 @@ final class OverviewAdapter
 
             rows.add(
                     Row.message(section));
+        }
+    }
+
+    private void rebuildSearchRows() {
+        for (OverviewSection section : sections) {
+            List<AppEntry> candidateApps =
+                    Collections.emptyList();
+            List<ShortcutEntry> candidateShortcuts =
+                    Collections.emptyList();
+
+            if ("favorites".equals(section.id)) {
+                candidateApps = favoriteApps;
+                candidateShortcuts = getFavoriteShortcuts();
+            } else if (section.id.startsWith(CATEGORY_PREFIX)) {
+                String categoryId = section.id.substring(
+                        CATEGORY_PREFIX.length());
+                candidateApps = getCategoryApps(categoryId);
+                candidateShortcuts = getCategoryShortcuts(categoryId);
+            } else if ("shortcuts".equals(section.id)) {
+                candidateShortcuts = allShortcuts;
+            }
+
+            List<AppEntry> matchingApps = new ArrayList<>();
+            for (AppEntry app : candidateApps) {
+                if (app.searchLabel.contains(searchQuery)
+                        || app.searchPackageName.contains(searchQuery)) {
+                    matchingApps.add(app);
+                }
+            }
+
+            List<ShortcutEntry> matchingShortcuts =
+                    new ArrayList<>();
+            for (ShortcutEntry shortcut : candidateShortcuts) {
+                if (shortcut.name.toLowerCase(Locale.ROOT)
+                        .contains(searchQuery)) {
+                    matchingShortcuts.add(shortcut);
+                }
+            }
+
+            if (matchingApps.isEmpty()
+                    && matchingShortcuts.isEmpty()) {
+                continue;
+            }
+
+            rows.add(Row.section(section));
+            addOrderedEntries(
+                    section, matchingApps, matchingShortcuts);
+        }
+
+        if (rows.isEmpty()) {
+            rows.add(Row.searchMessage());
         }
     }
 
@@ -424,8 +495,13 @@ final class OverviewAdapter
         MessageViewHolder messageHolder =
                 (MessageViewHolder) holder;
 
-        messageHolder.message.setText(
-                row.section.emptyMessage);
+        if (row.section == null) {
+            messageHolder.message.setText(
+                    R.string.apps_search_empty);
+        } else {
+            messageHolder.message.setText(
+                    row.section.emptyMessage);
+        }
     }
 
     private void collapseOtherSections(
@@ -451,7 +527,7 @@ final class OverviewAdapter
                         itemSortSectionId);
 
         holder.sortButton.setVisibility(
-                sortMode
+                sortMode || !searchQuery.isEmpty()
                         ? View.GONE
                         : View.VISIBLE);
 
@@ -467,7 +543,7 @@ final class OverviewAdapter
                                 : R.string.action_sort_section_items));
 
         holder.chevron.setVisibility(
-                sortMode || itemSortMode
+                sortMode || itemSortMode || !searchQuery.isEmpty()
                         ? View.GONE
                         : View.VISIBLE);
 
@@ -524,7 +600,7 @@ final class OverviewAdapter
                 .setOnTouchListener(
                         null);
 
-        if (itemSortMode) {
+        if (itemSortMode || !searchQuery.isEmpty()) {
             holder.itemView
                     .setOnClickListener(
                             null);
@@ -991,6 +1067,14 @@ final class OverviewAdapter
             return new Row(
                     TYPE_MESSAGE,
                     section,
+                    null,
+                    null);
+        }
+
+        static Row searchMessage() {
+            return new Row(
+                    TYPE_MESSAGE,
+                    null,
                     null,
                     null);
         }
