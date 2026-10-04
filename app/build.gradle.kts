@@ -57,7 +57,16 @@ android {
         applicationId = "de.pritcloud.appstow"
         minSdk = 33
         targetSdk = 36
-        versionCode = 10
+        versionCode = if (devReleaseBuild) {
+            providers.environmentVariable("APPSTOW_VERSION_CODE")
+                .orNull?.toIntOrNull()
+                ?.takeIf { it > 10 }
+                ?: throw GradleException(
+                    "Dev release requires APPSTOW_VERSION_CODE > 10."
+                )
+        } else {
+            10
+        }
         versionName = "2.0.0"
     }
 
