@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1 – In Vorbereitung
+
+- Android-App-Sprachauswahl für Deutsch und Englisch ergänzt.
+- Vorbereitungen für die Veröffentlichung auf F-Droid.
+- Versionscode für zukünftige Updates erhöht.
+
 ## 2.0.0 – 2. Oktober 2026
 
 - Neue Listen- und Kachelansicht für App starten.

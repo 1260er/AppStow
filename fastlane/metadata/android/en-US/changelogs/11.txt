@@ -1,0 +1,2 @@
+Added Android per-app language selection for English and German.
+Prepared source builds and metadata for F-Droid inclusion.
