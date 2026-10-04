@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.1 – In Vorbereitung
+## 2.0.1 – 4. Oktober 2026
 
 - Android-App-Sprachauswahl für Deutsch und Englisch ergänzt.
 - Vorbereitungen für die Veröffentlichung auf F-Droid.

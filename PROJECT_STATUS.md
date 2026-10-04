@@ -1,6 +1,21 @@
 # AppStow – Projektstatus
 
-Stand: 2. Oktober 2026
+Stand: 4. Oktober 2026
+
+## Freigegebener Release-Kandidat 2.0.1
+
+- Entwicklungsbranch: dev/fdroid-preparation.
+- Release-Code: Version 2.0.1, Versionscode 11.
+- Englische Standardsprache und deutsche Übersetzung geprüft.
+- Android-App-Sprachauswahl auf dem Gerät getestet.
+- Lizenz und zweisprachige F-Droid-Metadaten vorbereitet.
+- Je sechs deutsche und englische Screenshots vorhanden.
+- App-Symbol und versionsgenaue Release-Hinweise vorhanden.
+- Lokaler Reproduzierbarkeitstest erfolgreich.
+- Unit-Tests, Android Lint und APK-Builds erfolgreich.
+- Signaturzertifikat des bisherigen stabilen Releases geprüft.
+- Veröffentlichung auf GitHub freigegeben.
+- Unabhängige F-Droid-Buildprüfung steht noch aus.
 
 ## Stabiler Release
 
