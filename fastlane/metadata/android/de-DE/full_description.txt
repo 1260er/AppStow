@@ -1,0 +1,25 @@
+AppStow ist eine Android-App zum Organisieren und Starten installierter Apps, Webseiten, Web-Apps und eigener Verknüpfungen.
+
+Erstelle eigene Kategorien, markiere häufig verwendete Einträge als Favoriten und gestalte deine Übersicht nach deinen Wünschen.
+
+Funktionen:
+• Installierte Apps in eigenen Kategorien organisieren
+• Apps mehreren Kategorien zuweisen
+• Kategorien mit Emoji-Symbolen versehen
+• Emojis offline auf Deutsch und Englisch suchen
+• Webseiten, Web-Apps und Deep Links als Verknüpfungen anlegen
+• HTTPS-Web-Apps in einer integrierten WebView öffnen
+• Dateien und Fotos hochladen oder die Kamera in kompatiblen Web-Apps verwenden
+• Dateien aus unterstützten Web-Apps herunterladen
+• Zwischen Listen- und Kachelansicht wechseln
+• Kachelansichten mit 3, 4 oder 5 Spalten konfigurieren
+• Bereiche und Einträge manuell sortieren
+• Konfiguration sichern und wiederherstellen
+• Deutsche und englische Benutzeroberfläche
+• Helles und dunkles Systemdesign
+
+AppStow benötigt kein Benutzerkonto. Der Netzwerkzugriff wird für konfigurierte Webseiten und Web-Apps verwendet.
+
+AppStow benötigt Android 13 oder neuer.
+
+AppStow ist freie Software unter GPL-3.0-or-later.
