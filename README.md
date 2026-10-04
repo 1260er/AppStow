@@ -127,3 +127,9 @@ License and attribution files:
 ## Releases
 
 https://github.com/1260er/AppStow/releases
+
+## License
+
+AppStow is free software licensed under the GNU General Public License, version 3 or (at your option) any later version (SPDX: GPL-3.0-or-later). See [LICENSE](LICENSE).
+
+Unicode emoji data retain their separate license and attribution noted above.
