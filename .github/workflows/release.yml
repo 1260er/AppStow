@@ -17,7 +17,6 @@ jobs:
       APPSTOW_KEYSTORE_PASSWORD: ${{ secrets.APPSTOW_KEYSTORE_PASSWORD }}
       APPSTOW_KEY_ALIAS: ${{ secrets.APPSTOW_KEY_ALIAS }}
       APPSTOW_KEY_PASSWORD: ${{ secrets.APPSTOW_KEY_PASSWORD }}
-      APPSTOW_VERSION_CODE: ${{ github.run_number }}
 
     steps:
       - name: Check out source

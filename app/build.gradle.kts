@@ -36,6 +36,11 @@ if (releaseSigningRequired && !releaseSigningConfigured) {
 }
 
 android {
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     namespace = "de.pritcloud.appstow"
     compileSdk = 36
 
@@ -52,9 +57,7 @@ android {
         applicationId = "de.pritcloud.appstow"
         minSdk = 33
         targetSdk = 36
-        versionCode =
-            providers.environmentVariable("APPSTOW_VERSION_CODE")
-                .orNull?.toIntOrNull() ?: 1
+        versionCode = 10
         versionName = "2.0.0"
     }
 
@@ -85,6 +88,10 @@ android {
         }
 
         release {
+            vcsInfo {
+                include = false
+            }
+
             if (devReleaseBuild) {
                 applicationIdSuffix = ".dev"
                 versionNameSuffix = "-dev"
