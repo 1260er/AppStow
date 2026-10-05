@@ -2133,19 +2133,24 @@ public class MainActivity extends Activity {
     }
 
     private void showStatisticsResetDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle(
-                        R.string.statistics_reset_title)
-                .setMessage(
-                        R.string.statistics_reset_message)
-                .setPositiveButton(
-                        R.string.statistics_reset_confirm,
-                        (dialog, which) ->
-                                resetStatistics())
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.statistics_reset_title)
+                        .setMessage(
+                                R.string.statistics_reset_message)
+                        .setPositiveButton(
+                                R.string.statistics_reset_confirm,
+                                (currentDialog, which) ->
+                                        resetStatistics())
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .show();
+
+        styleCategoryDialog(
+                dialog,
+                true);
     }
 
     private void resetStatistics() {
