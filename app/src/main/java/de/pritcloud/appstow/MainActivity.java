@@ -27,7 +27,6 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -87,6 +86,8 @@ public class MainActivity extends Activity {
             "statistics_display";
     private static final String KEY_STATISTICS_PERIOD =
             "statistics_period";
+    private static final String KEY_STATISTICS_CARD_ORDER =
+            "statistics_card_order";
     private static final String KEY_GRID_MODE =
             "grid_mode";
     private static final String KEY_GRID_COLUMNS =
@@ -151,12 +152,13 @@ public class MainActivity extends Activity {
     private TextView shortcutEmptyMessage;
 
     private View statisticsManagement;
-    private RadioGroup statisticsPeriodGroup;
-    private TextView statisticsTotalLaunches;
-    private TextView statisticsTopApps;
-    private TextView statisticsUnusedApps;
-    private TextView statisticsTopCategories;
-    private TextView statisticsTopShortcuts;
+    private TextView statisticsPeriodLabel;
+    private RecyclerView statisticsList;
+    private StatisticsAdapter statisticsAdapter;
+    private ItemTouchHelper statisticsItemTouchHelper;
+    private ImageButton statisticsSortButton;
+    private ImageButton statisticsPeriodButton;
+    private boolean statisticsSortMode;
     private UsageStatisticsStore.Period statisticsPeriod =
             UsageStatisticsStore.Period.ONE_MONTH;
 
@@ -335,23 +337,11 @@ public class MainActivity extends Activity {
         statisticsManagement =
                 findViewById(R.id.statisticsManagement);
 
-        statisticsPeriodGroup =
-                findViewById(R.id.statisticsPeriodGroup);
+        statisticsPeriodLabel =
+                findViewById(R.id.statisticsPeriodLabel);
 
-        statisticsTotalLaunches =
-                findViewById(R.id.statisticsTotalLaunches);
-
-        statisticsTopApps =
-                findViewById(R.id.statisticsTopApps);
-
-        statisticsUnusedApps =
-                findViewById(R.id.statisticsUnusedApps);
-
-        statisticsTopCategories =
-                findViewById(R.id.statisticsTopCategories);
-
-        statisticsTopShortcuts =
-                findViewById(R.id.statisticsTopShortcuts);
+        statisticsList =
+                findViewById(R.id.statisticsList);
 
         backupManagement =
                 findViewById(R.id.backupManagement);
@@ -370,6 +360,12 @@ public class MainActivity extends Activity {
                 findViewById(R.id.buttonOverviewLayout);
         overviewSortButton =
                 findViewById(R.id.buttonSortOverview);
+
+        statisticsSortButton =
+                findViewById(R.id.buttonSortStatistics);
+
+        statisticsPeriodButton =
+                findViewById(R.id.buttonStatisticsPeriod);
 
         appFilterButton =
                 findViewById(R.id.buttonFilterApps);
@@ -425,6 +421,80 @@ public class MainActivity extends Activity {
 
         sectionItemOrderStore =
                 new SectionItemOrderStore(this);
+
+        statisticsAdapter =
+                new StatisticsAdapter(
+                        this::startStatisticsDrag);
+
+        statisticsList.setLayoutManager(
+                new LinearLayoutManager(this));
+
+        statisticsList.setAdapter(
+                statisticsAdapter);
+
+        statisticsItemTouchHelper =
+                new ItemTouchHelper(
+                        new ItemTouchHelper.SimpleCallback(
+                                ItemTouchHelper.UP
+                                        | ItemTouchHelper.DOWN,
+                                0) {
+
+                            @Override
+                            public boolean isLongPressDragEnabled() {
+                                return false;
+                            }
+
+                            @Override
+                            public int getMovementFlags(
+                                    RecyclerView recyclerView,
+                                    RecyclerView.ViewHolder viewHolder) {
+
+                                return makeMovementFlags(
+                                        statisticsSortMode
+                                                ? ItemTouchHelper.UP
+                                                | ItemTouchHelper.DOWN
+                                                : 0,
+                                        0);
+                            }
+
+                            @Override
+                            public boolean onMove(
+                                    RecyclerView recyclerView,
+                                    RecyclerView.ViewHolder source,
+                                    RecyclerView.ViewHolder target) {
+
+                                if (!statisticsSortMode) {
+                                    return false;
+                                }
+
+                                return statisticsAdapter.moveCard(
+                                        source.getBindingAdapterPosition(),
+                                        target.getBindingAdapterPosition());
+                            }
+
+                            @Override
+                            public void onSwiped(
+                                    RecyclerView.ViewHolder viewHolder,
+                                    int direction) {
+                            }
+
+                            @Override
+                            public void clearView(
+                                    RecyclerView recyclerView,
+                                    RecyclerView.ViewHolder viewHolder) {
+
+                                super.clearView(
+                                        recyclerView,
+                                        viewHolder);
+
+                                if (statisticsSortMode) {
+                                    saveStatisticsCardOrder();
+                                }
+                            }
+                        });
+
+        statisticsItemTouchHelper.attachToRecyclerView(
+                statisticsList);
 
         categoryAdapter = new CategoryAdapter(
                 new CategoryAdapter.Listener() {
@@ -705,47 +775,12 @@ public class MainActivity extends Activity {
         shortcutHelpButton.setOnClickListener(v ->
                 showHelp(true));
 
-        statisticsPeriodGroup.setOnCheckedChangeListener(
-                (group, checkedId) -> {
+        statisticsSortButton.setOnClickListener(v ->
+                setStatisticsSortMode(
+                        !statisticsSortMode));
 
-                    if (checkedId
-                            == R.id.statisticsPeriodOneMonth) {
-
-                        statisticsPeriod =
-                                UsageStatisticsStore.Period.ONE_MONTH;
-
-                    } else if (checkedId
-                            == R.id.statisticsPeriodThreeMonths) {
-
-                        statisticsPeriod =
-                                UsageStatisticsStore.Period.THREE_MONTHS;
-
-                    } else if (checkedId
-                            == R.id.statisticsPeriodSixMonths) {
-
-                        statisticsPeriod =
-                                UsageStatisticsStore.Period.SIX_MONTHS;
-
-                    } else if (checkedId
-                            == R.id.statisticsPeriodOneYear) {
-
-                        statisticsPeriod =
-                                UsageStatisticsStore.Period.ONE_YEAR;
-                    }
-
-                    statisticsDisplayPreferences
-                            .edit()
-                            .putString(
-                                    KEY_STATISTICS_PERIOD,
-                                    statisticsPeriod.name())
-                            .apply();
-
-                    if (PAGE_STATISTICS.equals(
-                            currentPage)) {
-
-                        refreshStatistics();
-                    }
-                });
+        statisticsPeriodButton.setOnClickListener(v ->
+                showStatisticsPeriodDialog());
 
         findViewById(R.id.navApps).setOnClickListener(v ->
                 showApps());
@@ -1824,8 +1859,14 @@ public class MainActivity extends Activity {
         pageTitle.setText(
                 R.string.nav_statistics);
 
-        statisticsPeriodGroup.check(
-                getStatisticsPeriodButtonId());
+        statisticsSortButton.setVisibility(
+                View.VISIBLE);
+
+        statisticsPeriodButton.setVisibility(
+                View.VISIBLE);
+
+        setStatisticsSortMode(false);
+        updateStatisticsPeriodLabel();
 
         statisticsManagement.setVisibility(
                 View.VISIBLE);
@@ -1837,36 +1878,247 @@ public class MainActivity extends Activity {
                 GravityCompat.END);
     }
 
-    private int getStatisticsPeriodButtonId() {
+    private int getStatisticsPeriodIndex() {
         if (statisticsPeriod
                 == UsageStatisticsStore.Period.THREE_MONTHS) {
 
-            return R.id.statisticsPeriodThreeMonths;
+            return 1;
         }
 
         if (statisticsPeriod
                 == UsageStatisticsStore.Period.SIX_MONTHS) {
 
-            return R.id.statisticsPeriodSixMonths;
+            return 2;
         }
 
         if (statisticsPeriod
                 == UsageStatisticsStore.Period.ONE_YEAR) {
 
-            return R.id.statisticsPeriodOneYear;
+            return 3;
         }
 
-        return R.id.statisticsPeriodOneMonth;
+        return 0;
+    }
+
+    private String getStatisticsPeriodLabel() {
+        if (statisticsPeriod
+                == UsageStatisticsStore.Period.THREE_MONTHS) {
+
+            return getString(
+                    R.string.statistics_period_three_months);
+        }
+
+        if (statisticsPeriod
+                == UsageStatisticsStore.Period.SIX_MONTHS) {
+
+            return getString(
+                    R.string.statistics_period_six_months);
+        }
+
+        if (statisticsPeriod
+                == UsageStatisticsStore.Period.ONE_YEAR) {
+
+            return getString(
+                    R.string.statistics_period_one_year);
+        }
+
+        return getString(
+                R.string.statistics_period_one_month);
+    }
+
+    private void updateStatisticsPeriodLabel() {
+        statisticsPeriodLabel.setText(
+                getString(
+                        R.string.statistics_period_selected,
+                        getStatisticsPeriodLabel()));
+    }
+
+    private void showStatisticsPeriodDialog() {
+        CharSequence[] choices = {
+                getString(
+                        R.string.statistics_period_one_month),
+                getString(
+                        R.string.statistics_period_three_months),
+                getString(
+                        R.string.statistics_period_six_months),
+                getString(
+                        R.string.statistics_period_one_year)
+        };
+
+        UsageStatisticsStore.Period[] periods = {
+                UsageStatisticsStore.Period.ONE_MONTH,
+                UsageStatisticsStore.Period.THREE_MONTHS,
+                UsageStatisticsStore.Period.SIX_MONTHS,
+                UsageStatisticsStore.Period.ONE_YEAR
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle(
+                        R.string.statistics_period_title)
+                .setSingleChoiceItems(
+                        choices,
+                        getStatisticsPeriodIndex(),
+                        (dialog, selected) -> {
+
+                            statisticsPeriod =
+                                    periods[selected];
+
+                            statisticsDisplayPreferences
+                                    .edit()
+                                    .putString(
+                                            KEY_STATISTICS_PERIOD,
+                                            statisticsPeriod.name())
+                                    .apply();
+
+                            updateStatisticsPeriodLabel();
+                            refreshStatistics();
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
+    private void startStatisticsDrag(
+            RecyclerView.ViewHolder holder) {
+
+        if (statisticsSortMode
+                && statisticsItemTouchHelper != null) {
+
+            statisticsItemTouchHelper.startDrag(
+                    holder);
+        }
+    }
+
+    private void setStatisticsSortMode(
+            boolean enabled) {
+
+        if (!enabled
+                && statisticsSortMode) {
+
+            saveStatisticsCardOrder();
+        }
+
+        statisticsSortMode = enabled;
+
+        if (statisticsAdapter != null) {
+            statisticsAdapter.setSortMode(
+                    enabled);
+        }
+
+        if (statisticsSortButton != null) {
+            statisticsSortButton.setImageResource(
+                    enabled
+                            ? R.drawable.ic_done
+                            : R.drawable.ic_sort_overview);
+
+            statisticsSortButton.setContentDescription(
+                    getString(
+                            enabled
+                                    ? R.string.action_finish_statistics_sorting
+                                    : R.string.action_sort_statistics));
+        }
+    }
+
+    private List<String> getStatisticsCardOrder() {
+        String saved =
+                statisticsDisplayPreferences.getString(
+                        KEY_STATISTICS_CARD_ORDER,
+                        "");
+
+        List<String> result =
+                new ArrayList<>();
+
+        if (saved == null
+                || saved.isBlank()) {
+
+            return result;
+        }
+
+        for (String id :
+                saved.split(",")) {
+
+            String normalized =
+                    id.trim();
+
+            if (!normalized.isEmpty()
+                    && !result.contains(
+                            normalized)) {
+
+                result.add(
+                        normalized);
+            }
+        }
+
+        return result;
+    }
+
+    private void saveStatisticsCardOrder() {
+        if (statisticsAdapter == null) {
+            return;
+        }
+
+        statisticsDisplayPreferences
+                .edit()
+                .putString(
+                        KEY_STATISTICS_CARD_ORDER,
+                        String.join(
+                                ",",
+                                statisticsAdapter.getOrder()))
+                .apply();
+    }
+
+    private List<StatisticsAdapter.Card>
+            applyStatisticsCardOrder(
+                    List<StatisticsAdapter.Card> cards,
+                    List<String> order) {
+
+        Map<String, StatisticsAdapter.Card> remaining =
+                new HashMap<>();
+
+        for (StatisticsAdapter.Card card :
+                cards) {
+
+            remaining.put(
+                    card.id,
+                    card);
+        }
+
+        List<StatisticsAdapter.Card> ordered =
+                new ArrayList<>();
+
+        for (String id :
+                order) {
+
+            StatisticsAdapter.Card card =
+                    remaining.remove(
+                            id);
+
+            if (card != null) {
+                ordered.add(
+                        card);
+            }
+        }
+
+        for (StatisticsAdapter.Card card :
+                cards) {
+
+            if (remaining.remove(
+                    card.id) != null) {
+
+                ordered.add(
+                        card);
+            }
+        }
+
+        return ordered;
     }
 
     private void refreshStatistics() {
         UsageStatisticsStore.Snapshot snapshot =
                 usageStatisticsStore.getSnapshot(
                         statisticsPeriod);
-
-        statisticsTotalLaunches.setText(
-                String.valueOf(
-                        snapshot.getTotalLaunches()));
 
         Map<String, String> appLabels =
                 new HashMap<>();
@@ -1899,27 +2151,74 @@ public class MainActivity extends Activity {
                     shortcut.name);
         }
 
-        statisticsTopApps.setText(
-                buildStatisticsRanking(
-                        snapshot.getAppCounts(),
-                        appLabels,
-                        R.string.statistics_no_app_launches));
+        List<StatisticsAdapter.Card> cards =
+                new ArrayList<>();
 
-        statisticsTopCategories.setText(
-                buildStatisticsRanking(
-                        snapshot.getCategoryCounts(),
-                        categoryLabels,
-                        R.string.statistics_no_category_launches));
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_TOTAL,
+                        getString(
+                                R.string.statistics_total_title),
+                        String.valueOf(
+                                snapshot.getTotalLaunches()),
+                        true));
 
-        statisticsTopShortcuts.setText(
-                buildStatisticsRanking(
-                        snapshot.getShortcutCounts(),
-                        shortcutLabels,
-                        R.string.statistics_no_shortcut_launches));
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_TOP_APPS,
+                        getString(
+                                R.string.statistics_top_apps_title),
+                        buildStatisticsRanking(
+                                snapshot.getAppCounts(),
+                                appLabels,
+                                R.string.statistics_no_app_launches),
+                        false));
 
-        statisticsUnusedApps.setText(
-                buildUnusedAppsText(
-                        snapshot.getAppCounts()));
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_UNUSED_APPS,
+                        getString(
+                                R.string.statistics_unused_apps_title),
+                        buildUnusedAppsText(
+                                snapshot.getAppCounts()),
+                        false));
+
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_TOP_CATEGORIES,
+                        getString(
+                                R.string.statistics_top_categories_title),
+                        buildStatisticsRanking(
+                                snapshot.getCategoryCounts(),
+                                categoryLabels,
+                                R.string.statistics_no_category_launches),
+                        false));
+
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_TOP_SHORTCUTS,
+                        getString(
+                                R.string.statistics_top_shortcuts_title),
+                        buildStatisticsRanking(
+                                snapshot.getShortcutCounts(),
+                                shortcutLabels,
+                                R.string.statistics_no_shortcut_launches),
+                        false));
+
+        List<String> order =
+                statisticsAdapter.getOrder();
+
+        if (order.isEmpty()) {
+            order =
+                    getStatisticsCardOrder();
+        }
+
+        statisticsAdapter.setCards(
+                applyStatisticsCardOrder(
+                        cards,
+                        order));
+
+        updateStatisticsPeriodLabel();
     }
 
     private String buildStatisticsRanking(
@@ -4109,6 +4408,18 @@ public class MainActivity extends Activity {
 
         statisticsManagement.setVisibility(
                 View.GONE);
+
+        if (!PAGE_STATISTICS.equals(
+                currentPage)) {
+
+            setStatisticsSortMode(false);
+
+            statisticsSortButton.setVisibility(
+                    View.GONE);
+
+            statisticsPeriodButton.setVisibility(
+                    View.GONE);
+        }
 
         ViewGroup.MarginLayoutParams contentParams =
                 (ViewGroup.MarginLayoutParams)

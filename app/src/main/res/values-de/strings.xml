@@ -8,13 +8,19 @@
     <string name="nav_categories">Kategorien verwalten</string>
     <string name="nav_shortcuts_manage">Eigene Shortcuts verwalten</string>
     <string name="nav_statistics">Statistik</string>
+    <string name="action_sort_statistics">Statistik sortieren</string>
+    <string name="action_finish_statistics_sorting">Sortieren beenden</string>
+    <string name="action_select_statistics_period">Zeitraum auswählen</string>
+    <string name="action_drag_statistics_card">Statistikkarte verschieben</string>
 
     <string name="statistics_description">AppStow erfasst ausschließlich Apps und Shortcuts, die über AppStow gestartet werden. Die Statistik bleibt auf diesem Gerät und wird höchstens ein Jahr gespeichert.</string>
     <string name="statistics_period_title">Zeitraum</string>
-    <string name="statistics_period_one_month">1 M</string>
-    <string name="statistics_period_three_months">3 M</string>
-    <string name="statistics_period_six_months">6 M</string>
-    <string name="statistics_period_one_year">1 J</string>
+    <string name="statistics_period_one_month">1 Monat</string>
+    <string name="statistics_period_three_months">3 Monate</string>
+    <string name="statistics_period_six_months">6 Monate</string>
+    <string name="statistics_period_one_year">1 Jahr</string>
+    <string name="statistics_period_selected">Zeitraum: %1$s</string>
+    <string name="statistics_period_default">Zeitraum: 1 Monat</string>
     <string name="statistics_total_title">Starts über AppStow</string>
     <string name="statistics_top_apps_title">Meistgenutzte Apps (Top 10)</string>
     <string name="statistics_unused_apps_title">In diesem Zeitraum nicht über AppStow gestartet</string>
