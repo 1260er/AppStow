@@ -338,6 +338,40 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_shortcut_webapp_permissions_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_shortcut_webapp_permissions_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_shortcut_webapp_navigation_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_shortcut_webapp_navigation_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
                 android:text="@string/help_shortcut_deeplink_title"
                 android:textStyle="bold" />
 

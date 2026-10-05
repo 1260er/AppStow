@@ -19,7 +19,7 @@
     <string name="help_statistics_counting_title">What is counted?</string>
     <string name="help_statistics_counting_text">AppStow records only launches started through AppStow. Apps and custom shortcuts are counted separately. A category is counted only when an app or custom shortcut is launched from that category section. Launches from Favorites do not increase a category count. Total launches combine app and custom shortcut launches for the selected period. Statistics remain locally on this device, are not included in backups, and are kept for at most one year.</string>
     <string name="help_statistics_display_title">Display</string>
-    <string name="help_statistics_display_text">Most used entries combines apps and custom shortcuts in one ranking. The number control selects Top 5, 10, 25, 50 or All; the period control selects 1, 3, 6 or 12 months. A star marks an app that is currently a favorite. Apps not launched lists installed apps that were not launched through AppStow during the selected period. Statistics cards can be rearranged with the sort icon.</string>
+    <string name="help_statistics_display_text">Most used entries combines apps and custom shortcuts in one ranking. The number control selects Top 5, 10, 25, 50 or All. The period control selects 1, 3 or 6 months, or 1 year. A star marks an app that is currently a favorite. Apps not launched lists installed apps that were not launched through AppStow during the selected period. Statistics cards can be rearranged with the sort icon.</string>
     <string name="help_statistics_reset_title">Reset statistics</string>
     <string name="help_statistics_reset_text">The reset icon deletes the recorded usage history after confirmation. The selected period, number of entries and statistics card order are kept.</string>
 
@@ -199,7 +199,7 @@ None found</string>
     <string name="help_grid_individual_title">Global or individual columns</string>
     <string name="help_grid_individual_text">Use the view icon inside an open section to choose Global, 3, 4 or 5 columns. Global follows the overview column count, including later changes. A fixed number stays independent.</string>
     <string name="help_categories_title">Favorites &amp; Categories</string>
-    <string name="help_categories_text">Under Manage categories, you can create, rename and delete categories and assign an emoji to each one. Apps and shortcuts can belong to multiple categories.</string>
+    <string name="help_categories_text">Under Manage categories, you can create, rename and delete categories. Every category has an emoji that is always shown in the overview. Apps and custom shortcuts can belong to multiple categories.</string>
 
     <string name="help_categories_favorites_text">Use the star to add or remove favorites. Favorites and Custom shortcuts also have their own sections.</string>
     <string name="help_apps_title">Assign apps</string>
@@ -214,7 +214,11 @@ None found</string>
     <string name="help_shortcut_website_text">Opens a normal http or https address with the appropriate app or the default browser.</string>
 
     <string name="help_shortcut_webapp_title">Web app</string>
-    <string name="help_shortcut_webapp_text">Opens an HTTPS website directly inside AppStow in full screen. Logins and cookies are stored in the app data independently of the normal browser. A network connection is required.</string>
+    <string name="help_shortcut_webapp_text">Opens only an HTTPS website directly inside AppStow. Logins and cookies are stored in the app data independently of the normal browser. A network connection is required. Full-screen content such as video is supported.</string>
+    <string name="help_shortcut_webapp_permissions_title">Permissions, files and downloads</string>
+    <string name="help_shortcut_webapp_permissions_text">Websites can request file selection, camera, microphone or location access. Required Android permissions are requested when needed. Downloads from HTTPS addresses can be saved through AppStow. Grant permissions only to websites you trust.</string>
+    <string name="help_shortcut_webapp_navigation_title">Navigation and errors</string>
+    <string name="help_shortcut_webapp_navigation_text">Back first navigates through the web app history. If there is no previous entry, the web app is closed. Loading, HTTP, SSL and WebView process errors are handled and displayed by AppStow.</string>
 
     <string name="help_shortcut_deeplink_title">Deep link (advanced)</string>
     <string name="help_shortcut_deeplink_text">Opens a specific function of an app. Which links work depends on the app. Android intent URIs can also be used.</string>
@@ -251,7 +255,7 @@ None found</string>
     <string name="help_backup_restore_title">Restore a backup</string>
     <string name="help_backup_restore_text">Restoring replaces the current configuration. Older backups without display settings use the default view settings.</string>
     <string name="help_backup_excluded_title">Not included</string>
-    <string name="help_backup_excluded_text">Web app sessions, cookies and Android permissions are not backed up.</string>
+    <string name="help_backup_excluded_text">Web app sessions, cookies, Android permissions and usage statistics are not backed up.</string>
     <string name="about_app_name">AppStow</string>
     <string name="about_description">A compact app launcher for favorites, categories, custom shortcuts and web apps. Keep your applications organized and ready to launch.</string>
     <string name="about_name_origin_title">Where the name comes from</string>
