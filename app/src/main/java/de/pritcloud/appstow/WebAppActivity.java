@@ -51,6 +51,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SuppressLint({"SetJavaScriptEnabled", "WebViewApiAvailability", "ObsoleteSdkInt"})
 public class WebAppActivity extends Activity {
@@ -63,6 +68,9 @@ public class WebAppActivity extends Activity {
     private static final int REQUEST_WEB_CAMERA_PERMISSION = 1003;
     private static final int REQUEST_WEB_MEDIA_PERMISSION = 1004;
     private static final int REQUEST_WEB_GEOLOCATION_PERMISSION = 1005;
+
+    private static final long TEMP_FILE_MAX_AGE_MS =
+            7L * 24L * 60L * 60L * 1000L;
 
     private WebView webView;
     private Uri webAppInitialOrigin;
@@ -79,6 +87,13 @@ public class WebAppActivity extends Activity {
     private PermissionRequest pendingWebPermissionRequest;
     private String pendingGeolocationOrigin;
     private GeolocationPermissions.Callback pendingGeolocationCallback;
+
+    private final ExecutorService uploadCopyExecutor =
+            Executors.newSingleThreadExecutor();
+
+    private final Set<File> managedTempArtifacts =
+            Collections.synchronizedSet(
+                    new HashSet<>());
 
     private final OnBackInvokedCallback webHistoryBackCallback =
             () -> {
@@ -159,6 +174,8 @@ public class WebAppActivity extends Activity {
 
         url =
                 initialUri.toString();
+
+        cleanupStaleWebAppTempFilesAsync();
 
         try {
             configureWebView(initialUri);
@@ -421,12 +438,6 @@ public class WebAppActivity extends Activity {
                                 url);
 
                         updateWebHistoryBackCallback();
-
-                        try {
-                            CookieManager.getInstance()
-                                    .flush();
-                        } catch (RuntimeException ignored) {
-                        }
                     }
 
                     @Override
@@ -940,31 +951,34 @@ public class WebAppActivity extends Activity {
             return;
         }
 
-        Thread copyThread =
-                new Thread(
-                        () -> {
+        try {
+            uploadCopyExecutor.execute(
+                    () -> {
 
-                            Uri[] stableResults =
-                                    stabilizeFileChooserResults(
-                                            sourceUris);
+                        Uri[] stableResults =
+                                stabilizeFileChooserResults(
+                                        sourceUris);
 
-                            runOnUiThread(
-                                    () -> {
+                        runOnUiThread(
+                                () -> {
 
-                                        if (isFinishing()
-                                                || isDestroyed()) {
+                                    if (isFinishing()
+                                            || isDestroyed()) {
 
-                                            return;
-                                        }
+                                        return;
+                                    }
 
-                                        completeFileChooser(
-                                                filterFileChooserResults(
-                                                        stableResults));
-                                    });
-                        },
-                        "AppStow-upload-copy");
+                                    completeFileChooser(
+                                            filterFileChooserResults(
+                                                    stableResults));
+                                });
+                    });
 
-        copyThread.start();
+        } catch (RuntimeException exception) {
+
+            completeFileChooser(
+                    null);
+        }
     }
 
     private Uri[] stabilizeFileChooserResults(
@@ -997,6 +1011,9 @@ public class WebAppActivity extends Activity {
             return null;
         }
 
+        managedTempArtifacts.add(
+                selectionDirectory);
+
         ArrayList<Uri> stableUris =
                 new ArrayList<>();
 
@@ -1004,6 +1021,13 @@ public class WebAppActivity extends Activity {
             for (int index = 0;
                  index < sourceUris.length;
                  index++) {
+
+                if (Thread.currentThread()
+                        .isInterrupted()) {
+
+                    throw new IOException(
+                            "Upload copy cancelled.");
+                }
 
                 Uri sourceUri =
                         sourceUris[index];
@@ -1049,6 +1073,13 @@ public class WebAppActivity extends Activity {
                                     buffer))
                             != -1) {
 
+                        if (Thread.currentThread()
+                                .isInterrupted()) {
+
+                            throw new IOException(
+                                    "Upload copy cancelled.");
+                        }
+
                         output.write(
                                 buffer,
                                 0,
@@ -1071,6 +1102,9 @@ public class WebAppActivity extends Activity {
 
         } catch (IOException
                  | RuntimeException exception) {
+
+            managedTempArtifacts.remove(
+                    selectionDirectory);
 
             deleteRecursively(
                     selectionDirectory);
@@ -1161,6 +1195,89 @@ public class WebAppActivity extends Activity {
                 + displayName;
     }
 
+    private void cleanupStaleWebAppTempFilesAsync() {
+
+        try {
+            uploadCopyExecutor.execute(
+                    () -> {
+
+                        long cutoff =
+                                System.currentTimeMillis()
+                                        - TEMP_FILE_MAX_AGE_MS;
+
+                        deleteStaleChildren(
+                                new File(
+                                        getCacheDir(),
+                                        "webapp-upload"),
+                                cutoff);
+
+                        deleteStaleChildren(
+                                new File(
+                                        getCacheDir(),
+                                        "webapp-camera"),
+                                cutoff);
+                    });
+
+        } catch (RuntimeException ignored) {
+        }
+    }
+
+    private static void deleteStaleChildren(
+            File root,
+            long cutoff) {
+
+        if (root == null
+                || !root.isDirectory()) {
+
+            return;
+        }
+
+        File[] children =
+                root.listFiles();
+
+        if (children == null) {
+            return;
+        }
+
+        for (File child : children) {
+
+            if (Thread.currentThread()
+                    .isInterrupted()) {
+
+                return;
+            }
+
+            long modified =
+                    child.lastModified();
+
+            if (modified > 0L
+                    && modified < cutoff) {
+
+                deleteRecursively(
+                        child);
+            }
+        }
+    }
+
+    private void cleanupManagedTempArtifacts() {
+
+        ArrayList<File> artifacts;
+
+        synchronized (managedTempArtifacts) {
+
+            artifacts =
+                    new ArrayList<>(
+                            managedTempArtifacts);
+
+            managedTempArtifacts.clear();
+        }
+
+        for (File artifact : artifacts) {
+            deleteRecursively(
+                    artifact);
+        }
+    }
+
     private static void deleteRecursively(
             File file) {
 
@@ -1214,6 +1331,9 @@ public class WebAppActivity extends Activity {
                             "capture-",
                             ".jpg",
                             cameraDirectory);
+
+            managedTempArtifacts.add(
+                    pendingCameraCaptureFile);
 
             pendingCameraCaptureUri =
                     FileProvider.getUriForFile(
@@ -1275,6 +1395,9 @@ public class WebAppActivity extends Activity {
         if ((results == null
                 || results.length == 0)
                 && cameraFile != null) {
+
+            managedTempArtifacts.remove(
+                    cameraFile);
 
             try {
                 cameraFile.delete();
@@ -2245,6 +2368,8 @@ public class WebAppActivity extends Activity {
 
         hideCustomFullscreenView();
 
+        uploadCopyExecutor.shutdownNow();
+
         completeFileChooser(
                 null);
 
@@ -2280,6 +2405,8 @@ public class WebAppActivity extends Activity {
 
         disposeWebView(
                 webView);
+
+        cleanupManagedTempArtifacts();
 
         super.onDestroy();
     }

@@ -270,6 +270,89 @@ public class MainActivityRecreationTest {
     }
 
     @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void statisticsSummaryKeepsExplicitTopLimitAboveAppCount() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        List currentApps =
+                                getPrivateField(
+                                        activity,
+                                        "apps",
+                                        List.class);
+
+                        currentApps.clear();
+
+                        for (int index = 0;
+                             index < 8;
+                             index++) {
+
+                            currentApps.add(
+                                    new AppEntry(
+                                            "App " + index,
+                                            "com.example.app" + index,
+                                            new ResolveInfo(),
+                                            null,
+                                            1));
+                        }
+
+                        setPrivateField(
+                                activity,
+                                "appsLoaded",
+                                true);
+
+                        setPrivateField(
+                                activity,
+                                "statisticsTopLimit",
+                                10);
+
+                        invoke(
+                                activity,
+                                "updateStatisticsSummary",
+                                new Class<?>[0],
+                                new Object[0]);
+
+                        TextView summary =
+                                getPrivateField(
+                                        activity,
+                                        "statisticsSummaryLabel",
+                                        TextView.class);
+
+                        assertEquals(
+                                activity.getString(
+                                        R.string.statistics_summary_top_one_month,
+                                        10,
+                                        8),
+                                summary.getText()
+                                        .toString());
+
+                        setPrivateField(
+                                activity,
+                                "statisticsTopLimit",
+                                -1);
+
+                        invoke(
+                                activity,
+                                "updateStatisticsSummary",
+                                new Class<?>[0],
+                                new Object[0]);
+
+                        assertEquals(
+                                activity.getString(
+                                        R.string.statistics_summary_all_one_month,
+                                        8),
+                                summary.getText()
+                                        .toString());
+                    });
+        }
+    }
+
+    @Test
     public void statisticsResetKeepsDisplaySettings() {
 
         Context context =

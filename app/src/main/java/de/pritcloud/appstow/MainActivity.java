@@ -1967,10 +1967,7 @@ public class MainActivity extends Activity {
 
         boolean allApps =
                 statisticsTopLimit
-                        == STATISTICS_TOP_LIMIT_ALL
-                        || (appsLoaded
-                        && statisticsTopLimit
-                        >= appCount);
+                        == STATISTICS_TOP_LIMIT_ALL;
 
         int textResource;
 
