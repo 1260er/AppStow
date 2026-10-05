@@ -7,6 +7,15 @@
     <string name="nav_apps">Apps zuweisen</string>
     <string name="nav_categories">Kategorien verwalten</string>
     <string name="nav_shortcuts_manage">Eigene Shortcuts verwalten</string>
+    <string name="nav_statistics">Statistik</string>
+
+    <string name="statistics_description">AppStow erfasst ausschließlich Apps und Shortcuts, die über AppStow gestartet werden. Die Statistik bleibt auf diesem Gerät und wird höchstens ein Jahr gespeichert.</string>
+    <string name="statistics_period_title">Zeitraum</string>
+    <string name="statistics_period_one_month">1 M</string>
+    <string name="statistics_period_three_months">3 M</string>
+    <string name="statistics_period_six_months">6 M</string>
+    <string name="statistics_period_one_year">1 J</string>
+    <string name="statistics_total_title">Starts über AppStow</string>
     <string name="nav_help">Hilfe</string>
     <string name="nav_about">Über</string>
 

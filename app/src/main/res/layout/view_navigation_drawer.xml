@@ -47,6 +47,13 @@
             android:text="@string/nav_shortcuts_manage" />
 
         <TextView
+            android:id="@+id/navStatistics"
+            style="@style/UiDrawerItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_statistics" />
+
+        <TextView
             android:id="@+id/navBackup"
             style="@style/UiDrawerItem"
             android:layout_width="match_parent"

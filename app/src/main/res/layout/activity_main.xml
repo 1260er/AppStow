@@ -226,6 +226,102 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/statisticsManagement"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/statistics_description"
+                    android:textColor="@color/ui_text_secondary" />
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_lg"
+                    android:text="@string/statistics_period_title"
+                    android:textStyle="bold" />
+
+                <RadioGroup
+                    android:id="@+id/statisticsPeriodGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:checkedButton="@id/statisticsPeriodOneMonth"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/statisticsPeriodOneMonth"
+                        style="@style/UiBodyText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:minHeight="48dp"
+                        android:text="@string/statistics_period_one_month" />
+
+                    <RadioButton
+                        android:id="@+id/statisticsPeriodThreeMonths"
+                        style="@style/UiBodyText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:minHeight="48dp"
+                        android:text="@string/statistics_period_three_months" />
+
+                    <RadioButton
+                        android:id="@+id/statisticsPeriodSixMonths"
+                        style="@style/UiBodyText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:minHeight="48dp"
+                        android:text="@string/statistics_period_six_months" />
+
+                    <RadioButton
+                        android:id="@+id/statisticsPeriodOneYear"
+                        style="@style/UiBodyText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:minHeight="48dp"
+                        android:text="@string/statistics_period_one_year" />
+
+                </RadioGroup>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_lg"
+                    android:background="@drawable/overview_section_background"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_md">
+
+                    <TextView
+                        style="@style/UiBodyText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/statistics_total_title"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/statisticsTotalLaunches"
+                        style="@style/UiScreenTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:text="0"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/backupManagement"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

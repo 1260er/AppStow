@@ -27,6 +27,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -90,6 +91,8 @@ public class MainActivity extends Activity {
     private static final String STATE_EXPANDED_SECTION = "expanded_section";
     private static final String STATE_HELP_SCROLL = "help_scroll";
     private static final String STATE_ABOUT_SCROLL = "about_scroll";
+    private static final String STATE_STATISTICS_PERIOD =
+            "statistics_period";
 
     private static final String STATE_SHORTCUT_EDITOR =
             "shortcut_editor";
@@ -119,6 +122,7 @@ public class MainActivity extends Activity {
     private static final String PAGE_APPS = "apps";
     private static final String PAGE_CATEGORIES = "categories";
     private static final String PAGE_SHORTCUTS = "shortcuts";
+    private static final String PAGE_STATISTICS = "statistics";
     private static final String PAGE_BACKUP = "backup";
     private static final String PAGE_HELP = "help";
     private static final String PAGE_ABOUT = "about";
@@ -139,6 +143,13 @@ public class MainActivity extends Activity {
     private RecyclerView shortcutList;
     private View shortcutManagement;
     private TextView shortcutEmptyMessage;
+
+    private View statisticsManagement;
+    private RadioGroup statisticsPeriodGroup;
+    private TextView statisticsTotalLaunches;
+    private UsageStatisticsStore.Period statisticsPeriod =
+            UsageStatisticsStore.Period.ONE_MONTH;
+
     private View backupManagement;
 
     private ViewStub helpStub;
@@ -309,6 +320,15 @@ public class MainActivity extends Activity {
                 findViewById(R.id.shortcutManagement);
         shortcutEmptyMessage =
                 findViewById(R.id.shortcutEmptyMessage);
+
+        statisticsManagement =
+                findViewById(R.id.statisticsManagement);
+
+        statisticsPeriodGroup =
+                findViewById(R.id.statisticsPeriodGroup);
+
+        statisticsTotalLaunches =
+                findViewById(R.id.statisticsTotalLaunches);
 
         backupManagement =
                 findViewById(R.id.backupManagement);
@@ -641,6 +661,41 @@ public class MainActivity extends Activity {
         shortcutHelpButton.setOnClickListener(v ->
                 showHelp(true));
 
+        statisticsPeriodGroup.setOnCheckedChangeListener(
+                (group, checkedId) -> {
+
+                    if (checkedId
+                            == R.id.statisticsPeriodOneMonth) {
+
+                        statisticsPeriod =
+                                UsageStatisticsStore.Period.ONE_MONTH;
+
+                    } else if (checkedId
+                            == R.id.statisticsPeriodThreeMonths) {
+
+                        statisticsPeriod =
+                                UsageStatisticsStore.Period.THREE_MONTHS;
+
+                    } else if (checkedId
+                            == R.id.statisticsPeriodSixMonths) {
+
+                        statisticsPeriod =
+                                UsageStatisticsStore.Period.SIX_MONTHS;
+
+                    } else if (checkedId
+                            == R.id.statisticsPeriodOneYear) {
+
+                        statisticsPeriod =
+                                UsageStatisticsStore.Period.ONE_YEAR;
+                    }
+
+                    if (PAGE_STATISTICS.equals(
+                            currentPage)) {
+
+                        refreshStatistics();
+                    }
+                });
+
         findViewById(R.id.navApps).setOnClickListener(v ->
                 showApps());
 
@@ -650,6 +705,10 @@ public class MainActivity extends Activity {
         findViewById(R.id.navShortcuts)
                 .setOnClickListener(v ->
                         showShortcutManagement());
+
+        findViewById(R.id.navStatistics)
+                .setOnClickListener(v ->
+                        showStatisticsManagement());
 
         findViewById(R.id.navBackup)
                 .setOnClickListener(v ->
@@ -746,6 +805,23 @@ public class MainActivity extends Activity {
                             STATE_OVERVIEW_SEARCH,
                             "");
 
+            int statisticsPeriodIndex =
+                    savedInstanceState.getInt(
+                            STATE_STATISTICS_PERIOD,
+                            0);
+
+            UsageStatisticsStore.Period[] periods =
+                    UsageStatisticsStore.Period.values();
+
+            if (statisticsPeriodIndex >= 0
+                    && statisticsPeriodIndex
+                    < periods.length) {
+
+                statisticsPeriod =
+                        periods[
+                                statisticsPeriodIndex];
+            }
+
             restorePage(
                     savedInstanceState.getString(
                             STATE_PAGE,
@@ -830,6 +906,10 @@ public class MainActivity extends Activity {
         outState.putBoolean(
                 STATE_APP_FILTER,
                 showOnlyUnassignedApps);
+
+        outState.putInt(
+                STATE_STATISTICS_PERIOD,
+                statisticsPeriod.ordinal());
 
         for (OverviewSection section :
                 overviewSections) {
@@ -1017,6 +1097,8 @@ public class MainActivity extends Activity {
             showCategoryManagement();
         } else if (PAGE_SHORTCUTS.equals(page)) {
             showShortcutManagement();
+        } else if (PAGE_STATISTICS.equals(page)) {
+            showStatisticsManagement();
         } else if (PAGE_BACKUP.equals(page)) {
             showBackupManagement();
         } else if (PAGE_HELP.equals(page)) {
@@ -1648,6 +1730,91 @@ public class MainActivity extends Activity {
         refreshCategories();
 
         drawerLayout.closeDrawer(GravityCompat.END);
+    }
+
+    private void showStatisticsManagement() {
+        currentPage = PAGE_STATISTICS;
+        setTopNavigation(false);
+
+        shortcutHelpButton.setVisibility(
+                View.GONE);
+
+        hideOverviewSortMode();
+
+        categoryManagement.setVisibility(
+                View.GONE);
+
+        shortcutManagement.setVisibility(
+                View.GONE);
+
+        backupManagement.setVisibility(
+                View.GONE);
+
+        hideHelpPage();
+        hideAboutPage();
+
+        overviewList.setVisibility(
+                View.GONE);
+
+        appList.setVisibility(
+                View.GONE);
+
+        pageMessage.setVisibility(
+                View.GONE);
+
+        appSearchContainer.setVisibility(
+                View.GONE);
+
+        appSearchClear.setVisibility(
+                View.GONE);
+
+        appSearch.clearFocus();
+
+        pageTitle.setText(
+                R.string.nav_statistics);
+
+        statisticsPeriodGroup.check(
+                getStatisticsPeriodButtonId());
+
+        statisticsManagement.setVisibility(
+                View.VISIBLE);
+
+        refreshStatistics();
+
+        drawerLayout.closeDrawer(
+                GravityCompat.END);
+    }
+
+    private int getStatisticsPeriodButtonId() {
+        if (statisticsPeriod
+                == UsageStatisticsStore.Period.THREE_MONTHS) {
+
+            return R.id.statisticsPeriodThreeMonths;
+        }
+
+        if (statisticsPeriod
+                == UsageStatisticsStore.Period.SIX_MONTHS) {
+
+            return R.id.statisticsPeriodSixMonths;
+        }
+
+        if (statisticsPeriod
+                == UsageStatisticsStore.Period.ONE_YEAR) {
+
+            return R.id.statisticsPeriodOneYear;
+        }
+
+        return R.id.statisticsPeriodOneMonth;
+    }
+
+    private void refreshStatistics() {
+        UsageStatisticsStore.Snapshot snapshot =
+                usageStatisticsStore.getSnapshot(
+                        statisticsPeriod);
+
+        statisticsTotalLaunches.setText(
+                String.valueOf(
+                        snapshot.getTotalLaunches()));
     }
 
     private List<CategoryEntry> getCategoriesInOverviewOrder() {
@@ -3691,6 +3858,9 @@ public class MainActivity extends Activity {
             boolean overview) {
 
         mainHeader.setVisibility(View.VISIBLE);
+
+        statisticsManagement.setVisibility(
+                View.GONE);
 
         ViewGroup.MarginLayoutParams contentParams =
                 (ViewGroup.MarginLayoutParams)
