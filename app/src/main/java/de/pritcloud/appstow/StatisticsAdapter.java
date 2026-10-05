@@ -249,19 +249,15 @@ final class StatisticsAdapter
                 label.setText(
                         row.label);
 
-                if (row.showFavoriteSlot) {
-                    favorite.setVisibility(
-                            View.VISIBLE);
+                favorite.setVisibility(
+                        row.favorite
+                                ? View.VISIBLE
+                                : View.INVISIBLE);
 
-                    favorite.setText(
-                            row.favorite
-                                    ? "★"
-                                    : "");
-
-                } else {
-                    favorite.setVisibility(
-                            View.GONE);
-                }
+                favorite.setText(
+                        row.favorite
+                                ? "★"
+                                : "");
 
                 if (row.count == null) {
                     count.setVisibility(

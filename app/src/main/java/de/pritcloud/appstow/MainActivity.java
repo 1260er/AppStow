@@ -57,7 +57,8 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
 
-    private static final int STATISTICS_TOP_LIMIT = 10;
+    private static final int DEFAULT_STATISTICS_TOP_LIMIT = 10;
+    private static final int STATISTICS_TOP_LIMIT_ALL = -1;
 
     private static final int REQUEST_CREATE_BACKUP = 1001;
     private static final int REQUEST_RESTORE_BACKUP = 1002;
@@ -88,6 +89,8 @@ public class MainActivity extends Activity {
             "statistics_period";
     private static final String KEY_STATISTICS_CARD_ORDER =
             "statistics_card_order_v2";
+    private static final String KEY_STATISTICS_TOP_LIMIT =
+            "statistics_top_limit";
     private static final String KEY_GRID_MODE =
             "grid_mode";
     private static final String KEY_GRID_COLUMNS =
@@ -152,13 +155,16 @@ public class MainActivity extends Activity {
     private TextView shortcutEmptyMessage;
 
     private View statisticsManagement;
-    private TextView statisticsPeriodLabel;
+    private TextView statisticsSummaryLabel;
     private RecyclerView statisticsList;
     private StatisticsAdapter statisticsAdapter;
     private ItemTouchHelper statisticsItemTouchHelper;
     private ImageButton statisticsSortButton;
     private ImageButton statisticsPeriodButton;
+    private ImageButton statisticsLimitButton;
     private boolean statisticsSortMode;
+    private int statisticsTopLimit =
+            DEFAULT_STATISTICS_TOP_LIMIT;
     private UsageStatisticsStore.Period statisticsPeriod =
             UsageStatisticsStore.Period.ONE_MONTH;
 
@@ -337,8 +343,8 @@ public class MainActivity extends Activity {
         statisticsManagement =
                 findViewById(R.id.statisticsManagement);
 
-        statisticsPeriodLabel =
-                findViewById(R.id.statisticsPeriodLabel);
+        statisticsSummaryLabel =
+                findViewById(R.id.statisticsSummaryLabel);
 
         statisticsList =
                 findViewById(R.id.statisticsList);
@@ -366,6 +372,9 @@ public class MainActivity extends Activity {
 
         statisticsPeriodButton =
                 findViewById(R.id.buttonStatisticsPeriod);
+
+        statisticsLimitButton =
+                findViewById(R.id.buttonStatisticsLimit);
 
         appFilterButton =
                 findViewById(R.id.buttonFilterApps);
@@ -410,6 +419,17 @@ public class MainActivity extends Activity {
             statisticsPeriod =
                     UsageStatisticsStore.Period.ONE_MONTH;
         }
+
+        int savedStatisticsTopLimit =
+                statisticsDisplayPreferences.getInt(
+                        KEY_STATISTICS_TOP_LIMIT,
+                        DEFAULT_STATISTICS_TOP_LIMIT);
+
+        statisticsTopLimit =
+                isValidStatisticsTopLimit(
+                        savedStatisticsTopLimit)
+                        ? savedStatisticsTopLimit
+                        : DEFAULT_STATISTICS_TOP_LIMIT;
 
         overviewGridColumns = Math.max(
                 3,
@@ -775,12 +795,15 @@ public class MainActivity extends Activity {
         shortcutHelpButton.setOnClickListener(v ->
                 showHelp(true));
 
-        statisticsSortButton.setOnClickListener(v ->
-                setStatisticsSortMode(
-                        !statisticsSortMode));
+        statisticsLimitButton.setOnClickListener(v ->
+                showStatisticsLimitDialog());
 
         statisticsPeriodButton.setOnClickListener(v ->
                 showStatisticsPeriodDialog());
+
+        statisticsSortButton.setOnClickListener(v ->
+                setStatisticsSortMode(
+                        !statisticsSortMode));
 
         findViewById(R.id.navApps).setOnClickListener(v ->
                 showApps());
@@ -1859,14 +1882,17 @@ public class MainActivity extends Activity {
         pageTitle.setText(
                 R.string.nav_statistics);
 
-        statisticsSortButton.setVisibility(
+        statisticsLimitButton.setVisibility(
                 View.VISIBLE);
 
         statisticsPeriodButton.setVisibility(
                 View.VISIBLE);
 
+        statisticsSortButton.setVisibility(
+                View.VISIBLE);
+
         setStatisticsSortMode(false);
-        updateStatisticsPeriodLabel();
+        updateStatisticsSummary();
 
         statisticsManagement.setVisibility(
                 View.VISIBLE);
@@ -1926,11 +1952,167 @@ public class MainActivity extends Activity {
                 R.string.statistics_period_one_month);
     }
 
-    private void updateStatisticsPeriodLabel() {
-        statisticsPeriodLabel.setText(
+    private static boolean isValidStatisticsTopLimit(
+            int value) {
+
+        return value == 5
+                || value == 10
+                || value == 25
+                || value == 50
+                || value == STATISTICS_TOP_LIMIT_ALL;
+    }
+
+    private int getStatisticsLimitIndex() {
+        if (statisticsTopLimit == 5) {
+            return 0;
+        }
+
+        if (statisticsTopLimit == 10) {
+            return 1;
+        }
+
+        if (statisticsTopLimit == 25) {
+            return 2;
+        }
+
+        if (statisticsTopLimit == 50) {
+            return 3;
+        }
+
+        return 4;
+    }
+
+    private void updateStatisticsSummary() {
+        if (!appsLoaded
+                && apps.isEmpty()) {
+
+            statisticsSummaryLabel.setText(
+                    R.string.statistics_summary_loading);
+
+            return;
+        }
+
+        int appCount =
+                apps.size();
+
+        boolean allApps =
+                statisticsTopLimit
+                        == STATISTICS_TOP_LIMIT_ALL
+                        || (appsLoaded
+                        && statisticsTopLimit
+                        >= appCount);
+
+        int textResource;
+
+        if (allApps) {
+            if (statisticsPeriod
+                    == UsageStatisticsStore.Period.THREE_MONTHS) {
+
+                textResource =
+                        R.string.statistics_summary_all_three_months;
+
+            } else if (statisticsPeriod
+                    == UsageStatisticsStore.Period.SIX_MONTHS) {
+
+                textResource =
+                        R.string.statistics_summary_all_six_months;
+
+            } else if (statisticsPeriod
+                    == UsageStatisticsStore.Period.ONE_YEAR) {
+
+                textResource =
+                        R.string.statistics_summary_all_one_year;
+
+            } else {
+                textResource =
+                        R.string.statistics_summary_all_one_month;
+            }
+
+            statisticsSummaryLabel.setText(
+                    getString(
+                            textResource,
+                            appCount));
+
+            return;
+        }
+
+        if (statisticsPeriod
+                == UsageStatisticsStore.Period.THREE_MONTHS) {
+
+            textResource =
+                    R.string.statistics_summary_top_three_months;
+
+        } else if (statisticsPeriod
+                == UsageStatisticsStore.Period.SIX_MONTHS) {
+
+            textResource =
+                    R.string.statistics_summary_top_six_months;
+
+        } else if (statisticsPeriod
+                == UsageStatisticsStore.Period.ONE_YEAR) {
+
+            textResource =
+                    R.string.statistics_summary_top_one_year;
+
+        } else {
+            textResource =
+                    R.string.statistics_summary_top_one_month;
+        }
+
+        statisticsSummaryLabel.setText(
                 getString(
-                        R.string.statistics_period_selected,
-                        getStatisticsPeriodLabel()));
+                        textResource,
+                        statisticsTopLimit,
+                        appCount));
+    }
+
+    private void showStatisticsLimitDialog() {
+        CharSequence[] choices = {
+                getString(
+                        R.string.statistics_limit_5),
+                getString(
+                        R.string.statistics_limit_10),
+                getString(
+                        R.string.statistics_limit_25),
+                getString(
+                        R.string.statistics_limit_50),
+                getString(
+                        R.string.statistics_limit_all)
+        };
+
+        int[] values = {
+                5,
+                10,
+                25,
+                50,
+                STATISTICS_TOP_LIMIT_ALL
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle(
+                        R.string.statistics_limit_title)
+                .setSingleChoiceItems(
+                        choices,
+                        getStatisticsLimitIndex(),
+                        (dialog, selected) -> {
+
+                            statisticsTopLimit =
+                                    values[selected];
+
+                            statisticsDisplayPreferences
+                                    .edit()
+                                    .putInt(
+                                            KEY_STATISTICS_TOP_LIMIT,
+                                            statisticsTopLimit)
+                                    .apply();
+
+                            refreshStatistics();
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
     }
 
     private void showStatisticsPeriodDialog() {
@@ -1970,7 +2152,7 @@ public class MainActivity extends Activity {
                                             statisticsPeriod.name())
                                     .apply();
 
-                            updateStatisticsPeriodLabel();
+                            updateStatisticsSummary();
                             refreshStatistics();
                             dialog.dismiss();
                         })
@@ -2167,6 +2349,9 @@ public class MainActivity extends Activity {
         Map<String, String> combinedShortcutLabels =
                 new HashMap<>();
 
+        Set<String> combinedFavoriteEntries =
+                new HashSet<>();
+
         for (Map.Entry<String, Integer> entry :
                 snapshot.getAppCounts().entrySet()) {
 
@@ -2185,6 +2370,13 @@ public class MainActivity extends Activity {
                 combinedShortcutLabels.put(
                         key,
                         label);
+            }
+
+            if (favoriteApps.contains(
+                    entry.getKey())) {
+
+                combinedFavoriteEntries.add(
+                        key);
             }
         }
 
@@ -2220,8 +2412,8 @@ public class MainActivity extends Activity {
                         buildStatisticsRows(
                                 combinedShortcutCounts,
                                 combinedShortcutLabels,
-                                null,
-                                false,
+                                combinedFavoriteEntries,
+                                true,
                                 R.string.statistics_no_shortcut_launches),
                         null));
 
@@ -2295,7 +2487,7 @@ public class MainActivity extends Activity {
                         cards,
                         order));
 
-        updateStatisticsPeriodLabel();
+        updateStatisticsSummary();
     }
 
     private List<StatisticsAdapter.Row>
@@ -2359,9 +2551,12 @@ public class MainActivity extends Activity {
         }
 
         int limit =
-                Math.min(
-                        STATISTICS_TOP_LIMIT,
-                        entries.size());
+                statisticsTopLimit
+                        == STATISTICS_TOP_LIMIT_ALL
+                        ? entries.size()
+                        : Math.min(
+                                statisticsTopLimit,
+                                entries.size());
 
         for (int i = 0;
              i < limit;
@@ -2406,7 +2601,7 @@ public class MainActivity extends Activity {
             return rows;
         }
 
-        List<String> unusedLabels =
+        List<AppEntry> unusedApps =
                 new ArrayList<>();
 
         for (AppEntry app : apps) {
@@ -2417,14 +2612,16 @@ public class MainActivity extends Activity {
                 continue;
             }
 
-            unusedLabels.add(
-                    app.label);
+            unusedApps.add(
+                    app);
         }
 
-        unusedLabels.sort(
-                String.CASE_INSENSITIVE_ORDER);
+        unusedApps.sort(
+                (first, second) ->
+                        first.label.compareToIgnoreCase(
+                                second.label));
 
-        if (unusedLabels.isEmpty()) {
+        if (unusedApps.isEmpty()) {
             rows.add(
                     StatisticsAdapter.Row.message(
                             getString(
@@ -2433,15 +2630,16 @@ public class MainActivity extends Activity {
             return rows;
         }
 
-        for (String label :
-                unusedLabels) {
+        for (AppEntry app :
+                unusedApps) {
 
             rows.add(
                     new StatisticsAdapter.Row(
-                            label,
+                            app.label,
                             null,
-                            false,
-                            false));
+                            true,
+                            favoritesStore.isFavorite(
+                                    app.packageName)));
         }
 
         return rows;
@@ -4507,6 +4705,9 @@ public class MainActivity extends Activity {
                     View.GONE);
 
             statisticsPeriodButton.setVisibility(
+                    View.GONE);
+
+            statisticsLimitButton.setVisibility(
                     View.GONE);
         }
 

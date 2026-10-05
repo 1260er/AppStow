@@ -59,6 +59,16 @@
                 android:visibility="gone" />
 
             <ImageButton
+                android:id="@+id/buttonStatisticsLimit"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_select_statistics_limit"
+                android:padding="10dp"
+                android:src="@drawable/ic_statistics_limit"
+                android:visibility="gone" />
+
+            <ImageButton
                 android:id="@+id/buttonStatisticsPeriod"
                 android:layout_width="@dimen/icon_button_size"
                 android:layout_height="@dimen/icon_button_size"
@@ -253,19 +263,11 @@
                 android:visibility="gone">
 
                 <TextView
+                    android:id="@+id/statisticsSummaryLabel"
                     style="@style/UiBodyText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/statistics_description"
-                    android:textColor="@color/ui_text_secondary" />
-
-                <TextView
-                    android:id="@+id/statisticsPeriodLabel"
-                    style="@style/UiBodyText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_sm"
-                    android:text="@string/statistics_period_default"
+                    android:text="@string/statistics_summary_loading"
                     android:textColor="@color/ui_text_secondary" />
 
                 <androidx.recyclerview.widget.RecyclerView
