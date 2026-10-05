@@ -16,6 +16,18 @@
     <string name="statistics_period_six_months">6 mo</string>
     <string name="statistics_period_one_year">1 yr</string>
     <string name="statistics_total_title">Launches via AppStow</string>
+    <string name="statistics_top_apps_title">Most used apps (Top 10)</string>
+    <string name="statistics_unused_apps_title">Not launched via AppStow in this period</string>
+    <string name="statistics_top_categories_title">Most used categories (Top 10)</string>
+    <string name="statistics_top_shortcuts_title">Most used shortcuts (Top 10)</string>
+    <string name="statistics_rank_line">%1$d. %2$s — %3$d</string>
+    <string name="statistics_unused_app_line">• %1$s</string>
+    <string name="statistics_no_app_launches">No app launches in this period.</string>
+    <string name="statistics_no_category_launches">No category launches in this period.</string>
+    <string name="statistics_no_shortcut_launches">No shortcut launches in this period.</string>
+    <string name="statistics_all_apps_used">All currently installed apps were launched via AppStow in this period.</string>
+    <string name="statistics_apps_loading">Loading installed apps …</string>
+    <string name="statistics_apps_unavailable">Installed apps could not be loaded.</string>
     <string name="nav_help">Help</string>
     <string name="nav_about">About</string>
 

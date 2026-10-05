@@ -58,6 +58,8 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
 
+    private static final int STATISTICS_TOP_LIMIT = 10;
+
     private static final int REQUEST_CREATE_BACKUP = 1001;
     private static final int REQUEST_RESTORE_BACKUP = 1002;
 
@@ -151,6 +153,10 @@ public class MainActivity extends Activity {
     private View statisticsManagement;
     private RadioGroup statisticsPeriodGroup;
     private TextView statisticsTotalLaunches;
+    private TextView statisticsTopApps;
+    private TextView statisticsUnusedApps;
+    private TextView statisticsTopCategories;
+    private TextView statisticsTopShortcuts;
     private UsageStatisticsStore.Period statisticsPeriod =
             UsageStatisticsStore.Period.ONE_MONTH;
 
@@ -334,6 +340,18 @@ public class MainActivity extends Activity {
 
         statisticsTotalLaunches =
                 findViewById(R.id.statisticsTotalLaunches);
+
+        statisticsTopApps =
+                findViewById(R.id.statisticsTopApps);
+
+        statisticsUnusedApps =
+                findViewById(R.id.statisticsUnusedApps);
+
+        statisticsTopCategories =
+                findViewById(R.id.statisticsTopCategories);
+
+        statisticsTopShortcuts =
+                findViewById(R.id.statisticsTopShortcuts);
 
         backupManagement =
                 findViewById(R.id.backupManagement);
@@ -1812,6 +1830,7 @@ public class MainActivity extends Activity {
         statisticsManagement.setVisibility(
                 View.VISIBLE);
 
+        loadAppsAsync();
         refreshStatistics();
 
         drawerLayout.closeDrawer(
@@ -1848,6 +1867,196 @@ public class MainActivity extends Activity {
         statisticsTotalLaunches.setText(
                 String.valueOf(
                         snapshot.getTotalLaunches()));
+
+        Map<String, String> appLabels =
+                new HashMap<>();
+
+        for (AppEntry app : apps) {
+            appLabels.put(
+                    app.packageName,
+                    app.label);
+        }
+
+        Map<String, String> categoryLabels =
+                new HashMap<>();
+
+        for (CategoryEntry category :
+                categoryStore.getCategories()) {
+
+            categoryLabels.put(
+                    category.id,
+                    category.name);
+        }
+
+        Map<String, String> shortcutLabels =
+                new HashMap<>();
+
+        for (ShortcutEntry shortcut :
+                shortcutStore.getShortcuts()) {
+
+            shortcutLabels.put(
+                    shortcut.id,
+                    shortcut.name);
+        }
+
+        statisticsTopApps.setText(
+                buildStatisticsRanking(
+                        snapshot.getAppCounts(),
+                        appLabels,
+                        R.string.statistics_no_app_launches));
+
+        statisticsTopCategories.setText(
+                buildStatisticsRanking(
+                        snapshot.getCategoryCounts(),
+                        categoryLabels,
+                        R.string.statistics_no_category_launches));
+
+        statisticsTopShortcuts.setText(
+                buildStatisticsRanking(
+                        snapshot.getShortcutCounts(),
+                        shortcutLabels,
+                        R.string.statistics_no_shortcut_launches));
+
+        statisticsUnusedApps.setText(
+                buildUnusedAppsText(
+                        snapshot.getAppCounts()));
+    }
+
+    private String buildStatisticsRanking(
+            Map<String, Integer> counts,
+            Map<String, String> labels,
+            int emptyTextResource) {
+
+        List<Map.Entry<String, Integer>> entries =
+                new ArrayList<>();
+
+        for (Map.Entry<String, Integer> entry :
+                counts.entrySet()) {
+
+            String label =
+                    labels.get(
+                            entry.getKey());
+
+            if (label == null
+                    || entry.getValue() == null
+                    || entry.getValue() <= 0) {
+
+                continue;
+            }
+
+            entries.add(entry);
+        }
+
+        entries.sort(
+                (first, second) -> {
+
+                    int countComparison =
+                            Integer.compare(
+                                    second.getValue(),
+                                    first.getValue());
+
+                    if (countComparison != 0) {
+                        return countComparison;
+                    }
+
+                    String firstLabel =
+                            labels.get(
+                                    first.getKey());
+
+                    String secondLabel =
+                            labels.get(
+                                    second.getKey());
+
+                    return firstLabel.compareToIgnoreCase(
+                            secondLabel);
+                });
+
+        if (entries.isEmpty()) {
+            return getString(
+                    emptyTextResource);
+        }
+
+        StringBuilder text =
+                new StringBuilder();
+
+        int limit =
+                Math.min(
+                        STATISTICS_TOP_LIMIT,
+                        entries.size());
+
+        for (int i = 0;
+             i < limit;
+             i++) {
+
+            Map.Entry<String, Integer> entry =
+                    entries.get(i);
+
+            if (text.length() > 0) {
+                text.append("\n");
+            }
+
+            text.append(
+                    getString(
+                            R.string.statistics_rank_line,
+                            i + 1,
+                            labels.get(
+                                    entry.getKey()),
+                            entry.getValue()));
+        }
+
+        return text.toString();
+    }
+
+    private String buildUnusedAppsText(
+            Map<String, Integer> appCounts) {
+
+        if (!appsLoaded) {
+            return getString(
+                    appsLoading
+                            ? R.string.statistics_apps_loading
+                            : R.string.statistics_apps_unavailable);
+        }
+
+        List<String> unusedLabels =
+                new ArrayList<>();
+
+        for (AppEntry app : apps) {
+            if (appCounts.getOrDefault(
+                    app.packageName,
+                    0) > 0) {
+
+                continue;
+            }
+
+            unusedLabels.add(
+                    app.label);
+        }
+
+        unusedLabels.sort(
+                String.CASE_INSENSITIVE_ORDER);
+
+        if (unusedLabels.isEmpty()) {
+            return getString(
+                    R.string.statistics_all_apps_used);
+        }
+
+        StringBuilder text =
+                new StringBuilder();
+
+        for (String label :
+                unusedLabels) {
+
+            if (text.length() > 0) {
+                text.append("\n");
+            }
+
+            text.append(
+                    getString(
+                            R.string.statistics_unused_app_line,
+                            label));
+        }
+
+        return text.toString();
     }
 
     private List<CategoryEntry> getCategoriesInOverviewOrder() {
@@ -3201,6 +3410,12 @@ public class MainActivity extends Activity {
                     renderApps(
                             appSearch.getText()
                                     .toString());
+                }
+
+                if (PAGE_STATISTICS.equals(
+                        currentPage)) {
+
+                    refreshStatistics();
                 }
 
                 if (reloadAgain) {
