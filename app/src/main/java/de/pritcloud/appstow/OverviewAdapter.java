@@ -715,6 +715,20 @@ final class OverviewAdapter
                 sectionColumnsListener
                         .onSectionColumns(section));
 
+        holder.backButton.setVisibility(
+                gridMode
+                        && section.id.equals(
+                                gridOpenSectionId)
+                        && searchQuery.isEmpty()
+                        && !sortMode
+                        && !itemSortMode
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        holder.backButton.setOnClickListener(v ->
+                gridSectionCloseListener
+                        .onGridSectionClose());
+
         holder.sortButton.setVisibility(
                 sortMode || !searchQuery.isEmpty()
                         ? View.GONE
@@ -1344,6 +1358,7 @@ final class OverviewAdapter
         final TextView title;
         final ImageButton layoutButton;
         final ImageButton sortButton;
+        final ImageButton backButton;
         final ImageView chevron;
         final ImageView dragHandle;
 
@@ -1363,6 +1378,10 @@ final class OverviewAdapter
             sortButton =
                     itemView.findViewById(
                             R.id.overviewSectionSort);
+
+            backButton =
+                    itemView.findViewById(
+                            R.id.overviewSectionBack);
 
             chevron =
                     itemView.findViewById(
