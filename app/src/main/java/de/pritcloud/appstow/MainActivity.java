@@ -81,6 +81,10 @@ public class MainActivity extends Activity {
 
     private static final String OVERVIEW_DISPLAY_PREFS =
             "overview_display";
+    private static final String STATISTICS_DISPLAY_PREFS =
+            "statistics_display";
+    private static final String KEY_STATISTICS_PERIOD =
+            "statistics_period";
     private static final String KEY_GRID_MODE =
             "grid_mode";
     private static final String KEY_GRID_COLUMNS =
@@ -170,6 +174,7 @@ public class MainActivity extends Activity {
     private GridLayoutManager overviewGridLayoutManager;
     private GridLayoutManager appGridLayoutManager;
     private SharedPreferences overviewDisplayPreferences;
+    private SharedPreferences statisticsDisplayPreferences;
     private int overviewGridColumns = 4;
     private ImageButton appFilterButton;
     private ImageButton shortcutHelpButton;
@@ -370,6 +375,27 @@ public class MainActivity extends Activity {
                 getSharedPreferences(
                         OVERVIEW_DISPLAY_PREFS,
                         MODE_PRIVATE);
+
+        statisticsDisplayPreferences =
+                getSharedPreferences(
+                        STATISTICS_DISPLAY_PREFS,
+                        MODE_PRIVATE);
+
+        String savedStatisticsPeriod =
+                statisticsDisplayPreferences.getString(
+                        KEY_STATISTICS_PERIOD,
+                        UsageStatisticsStore.Period
+                                .ONE_MONTH
+                                .name());
+
+        try {
+            statisticsPeriod =
+                    UsageStatisticsStore.Period.valueOf(
+                            savedStatisticsPeriod);
+        } catch (IllegalArgumentException exception) {
+            statisticsPeriod =
+                    UsageStatisticsStore.Period.ONE_MONTH;
+        }
 
         overviewGridColumns = Math.max(
                 3,
@@ -689,6 +715,13 @@ public class MainActivity extends Activity {
                                 UsageStatisticsStore.Period.ONE_YEAR;
                     }
 
+                    statisticsDisplayPreferences
+                            .edit()
+                            .putString(
+                                    KEY_STATISTICS_PERIOD,
+                                    statisticsPeriod.name())
+                            .apply();
+
                     if (PAGE_STATISTICS.equals(
                             currentPage)) {
 
@@ -808,7 +841,7 @@ public class MainActivity extends Activity {
             int statisticsPeriodIndex =
                     savedInstanceState.getInt(
                             STATE_STATISTICS_PERIOD,
-                            0);
+                            statisticsPeriod.ordinal());
 
             UsageStatisticsStore.Period[] periods =
                     UsageStatisticsStore.Period.values();
