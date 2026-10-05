@@ -60,6 +60,12 @@ public class MainActivityRecreationTest {
 
         context.deleteSharedPreferences(
                 "overview_display");
+
+        context.deleteSharedPreferences(
+                "usage_statistics");
+
+        context.deleteSharedPreferences(
+                "statistics_display");
     }
 
     @Test
@@ -134,6 +140,245 @@ public class MainActivityRecreationTest {
                         assertEquals(
                                 "💼 Work",
                                 section.title);
+                    });
+        }
+    }
+
+    @Test
+    public void statisticsCountCategoriesOnlyForCategoryLaunches() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        UsageStatisticsStore store =
+                                getPrivateField(
+                                        activity,
+                                        "usageStatisticsStore",
+                                        UsageStatisticsStore.class);
+
+                        AppEntry app =
+                                new AppEntry(
+                                        "Mail",
+                                        "com.example.mail",
+                                        new ResolveInfo(),
+                                        null,
+                                        1);
+
+                        ShortcutEntry shortcut =
+                                new ShortcutEntry(
+                                        "shortcut-weather",
+                                        "Weather",
+                                        ShortcutEntry.TYPE_WEBSITE,
+                                        "https://example.com",
+                                        java.util.Collections.emptySet(),
+                                        false);
+
+                        OverviewSection category =
+                                new OverviewSection(
+                                        "category:work",
+                                        "Work",
+                                        "Empty");
+
+                        OverviewSection favorites =
+                                new OverviewSection(
+                                        "favorites",
+                                        "Favorites",
+                                        "Empty");
+
+                        invoke(
+                                activity,
+                                "recordAppLaunch",
+                                new Class<?>[] {
+                                        OverviewSection.class,
+                                        AppEntry.class
+                                },
+                                new Object[] {
+                                        category,
+                                        app
+                                });
+
+                        invoke(
+                                activity,
+                                "recordAppLaunch",
+                                new Class<?>[] {
+                                        OverviewSection.class,
+                                        AppEntry.class
+                                },
+                                new Object[] {
+                                        favorites,
+                                        app
+                                });
+
+                        invoke(
+                                activity,
+                                "recordShortcutLaunch",
+                                new Class<?>[] {
+                                        OverviewSection.class,
+                                        ShortcutEntry.class
+                                },
+                                new Object[] {
+                                        category,
+                                        shortcut
+                                });
+
+                        invoke(
+                                activity,
+                                "recordShortcutLaunch",
+                                new Class<?>[] {
+                                        OverviewSection.class,
+                                        ShortcutEntry.class
+                                },
+                                new Object[] {
+                                        favorites,
+                                        shortcut
+                                });
+
+                        UsageStatisticsStore.Snapshot snapshot =
+                                store.getSnapshot(
+                                        UsageStatisticsStore.Period.ONE_MONTH);
+
+                        assertEquals(
+                                2,
+                                snapshot.getAppCounts()
+                                        .get(
+                                                "com.example.mail")
+                                        .intValue());
+
+                        assertEquals(
+                                2,
+                                snapshot.getShortcutCounts()
+                                        .get(
+                                                "shortcut-weather")
+                                        .intValue());
+
+                        assertEquals(
+                                2,
+                                snapshot.getCategoryCounts()
+                                        .get(
+                                                "work")
+                                        .intValue());
+
+                        assertEquals(
+                                4,
+                                snapshot.getTotalLaunches());
+                    });
+        }
+    }
+
+    @Test
+    public void statisticsResetKeepsDisplaySettings() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        SharedPreferences display =
+                context.getSharedPreferences(
+                        "statistics_display",
+                        Context.MODE_PRIVATE);
+
+        assertTrue(
+                display.edit()
+                        .putString(
+                                "statistics_period",
+                                UsageStatisticsStore.Period
+                                        .THREE_MONTHS
+                                        .name())
+                        .putInt(
+                                "statistics_top_limit",
+                                25)
+                        .putString(
+                                "statistics_card_order_v2",
+                                "top_apps,total")
+                        .commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        UsageStatisticsStore store =
+                                getPrivateField(
+                                        activity,
+                                        "usageStatisticsStore",
+                                        UsageStatisticsStore.class);
+
+                        store.recordAppLaunch(
+                                "com.example.reset",
+                                "work");
+
+                        assertEquals(
+                                1,
+                                store.getSnapshot(
+                                                UsageStatisticsStore.Period.ONE_YEAR)
+                                        .getTotalLaunches());
+
+                        invoke(
+                                activity,
+                                "showStatisticsResetDialog",
+                                new Class<?>[0],
+                                new Object[0]);
+
+                        AlertDialog dialog =
+                                latestDialog();
+
+                        assertNotNull(
+                                dialog.getButton(
+                                        AlertDialog.BUTTON_POSITIVE));
+
+                        assertNotNull(
+                                dialog.getButton(
+                                        AlertDialog.BUTTON_NEGATIVE));
+
+                        dialog.dismiss();
+
+                        invoke(
+                                activity,
+                                "resetStatistics",
+                                new Class<?>[0],
+                                new Object[0]);
+
+                        UsageStatisticsStore.Snapshot snapshot =
+                                store.getSnapshot(
+                                        UsageStatisticsStore.Period.ONE_YEAR);
+
+                        assertTrue(
+                                snapshot.getAppCounts()
+                                        .isEmpty());
+
+                        assertTrue(
+                                snapshot.getShortcutCounts()
+                                        .isEmpty());
+
+                        assertTrue(
+                                snapshot.getCategoryCounts()
+                                        .isEmpty());
+
+                        assertEquals(
+                                UsageStatisticsStore.Period
+                                        .THREE_MONTHS
+                                        .name(),
+                                display.getString(
+                                        "statistics_period",
+                                        null));
+
+                        assertEquals(
+                                25,
+                                display.getInt(
+                                        "statistics_top_limit",
+                                        -1));
+
+                        assertEquals(
+                                "top_apps,total",
+                                display.getString(
+                                        "statistics_card_order_v2",
+                                        null));
                     });
         }
     }

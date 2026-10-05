@@ -13,9 +13,19 @@
     <string name="action_select_statistics_period">Zeitraum auswählen</string>
     <string name="action_select_statistics_limit">Anzahl der Statistik-Einträge auswählen</string>
     <string name="action_drag_statistics_card">Statistikkarte verschieben</string>
+    <string name="action_reset_statistics">Statistik zurücksetzen</string>
 
     <string name="help_statistics_title">Statistik</string>
-    <string name="help_statistics_text">AppStow erfasst ausschließlich Starts, die über AppStow ausgelöst werden. Apps und Custom Shortcuts werden getrennt gezählt. Eine Kategorie wird nur gezählt, wenn ein Eintrag aus ihrem Kategorienbereich gestartet wird; Starts aus Favoriten erhöhen keine Kategorie. Die Statistik bleibt lokal auf diesem Gerät, ist nicht Bestandteil des Backups und wird höchstens ein Jahr gespeichert. Über die Symbole auf der Statistikseite legst du die Anzahl der meistgenutzten Einträge, den Zeitraum und die Kartenreihenfolge fest. Ein Stern kennzeichnet eine App, die aktuell als Favorit markiert ist. Nicht gestartete Apps bedeutet, dass diese Apps im gewählten Zeitraum nicht über AppStow gestartet wurden.</string>
+    <string name="help_statistics_counting_title">Was wird gezählt?</string>
+    <string name="help_statistics_counting_text">AppStow erfasst ausschließlich Starts, die über AppStow ausgelöst werden. Apps und Custom Shortcuts werden getrennt gezählt. Eine Kategorie wird nur gezählt, wenn eine App oder ein Custom Shortcut direkt aus ihrem Kategorienbereich gestartet wird. Starts aus Favoriten erhöhen keine Kategorie. Gesamtstarts umfasst die Starts von Apps und Custom Shortcuts im gewählten Zeitraum. Die Statistik bleibt lokal auf diesem Gerät, ist nicht Bestandteil des Backups und wird höchstens ein Jahr gespeichert.</string>
+    <string name="help_statistics_display_title">Anzeige</string>
+    <string name="help_statistics_display_text">Meistgenutzte Einträge fasst Apps und Custom Shortcuts in einer gemeinsamen Rangliste zusammen. Über die Anzahl wählst du Top 5, 10, 25, 50 oder Alle; beim Zeitraum stehen 1, 3, 6 oder 12 Monate zur Verfügung. Ein Stern kennzeichnet eine App, die aktuell als Favorit markiert ist. Nicht gestartete Apps zeigt installierte Apps, die im gewählten Zeitraum nicht über AppStow gestartet wurden. Die Statistikkarten lassen sich über das Sortiersymbol anordnen.</string>
+    <string name="help_statistics_reset_title">Statistik zurücksetzen</string>
+    <string name="help_statistics_reset_text">Über das Reset-Symbol löschst du nach einer Sicherheitsabfrage ausschließlich die erfassten Nutzungsdaten. Zeitraum, Anzahl der Einträge und Kartenreihenfolge bleiben erhalten.</string>
+
+    <string name="statistics_reset_title">Statistik zurücksetzen?</string>
+    <string name="statistics_reset_message">Alle gespeicherten Nutzungsstatistiken werden gelöscht. Zeitraum, Anzahl der meistgenutzten Einträge und Kartenreihenfolge bleiben erhalten.</string>
+    <string name="statistics_reset_confirm">Zurücksetzen</string>
     <string name="statistics_period_title">Zeitraum</string>
     <string name="statistics_period_one_month">1 Monat</string>
     <string name="statistics_period_three_months">3 Monate</string>

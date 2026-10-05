@@ -13,9 +13,19 @@
     <string name="action_select_statistics_period">Select statistics period</string>
     <string name="action_select_statistics_limit">Select number of statistics entries</string>
     <string name="action_drag_statistics_card">Move statistics card</string>
+    <string name="action_reset_statistics">Reset statistics</string>
 
     <string name="help_statistics_title">Statistics</string>
-    <string name="help_statistics_text">AppStow records only launches started through AppStow. Apps and custom shortcuts are counted separately. A category is counted only when an item is launched from that category section; launches from Favorites do not increase a category count. Statistics stay locally on this device, are not included in backups, and are kept for at most one year. The controls on the Statistics page select the number of most-used entries, the period, and the card order. A star marks an app that is currently a favorite. Apps not launched means apps not launched through AppStow during the selected period.</string>
+    <string name="help_statistics_counting_title">What is counted?</string>
+    <string name="help_statistics_counting_text">AppStow records only launches started through AppStow. Apps and custom shortcuts are counted separately. A category is counted only when an app or custom shortcut is launched from that category section. Launches from Favorites do not increase a category count. Total launches combine app and custom shortcut launches for the selected period. Statistics remain locally on this device, are not included in backups, and are kept for at most one year.</string>
+    <string name="help_statistics_display_title">Display</string>
+    <string name="help_statistics_display_text">Most used entries combines apps and custom shortcuts in one ranking. The number control selects Top 5, 10, 25, 50 or All; the period control selects 1, 3, 6 or 12 months. A star marks an app that is currently a favorite. Apps not launched lists installed apps that were not launched through AppStow during the selected period. Statistics cards can be rearranged with the sort icon.</string>
+    <string name="help_statistics_reset_title">Reset statistics</string>
+    <string name="help_statistics_reset_text">The reset icon deletes the recorded usage history after confirmation. The selected period, number of entries and statistics card order are kept.</string>
+
+    <string name="statistics_reset_title">Reset statistics?</string>
+    <string name="statistics_reset_message">All recorded usage statistics will be deleted. The selected period, number of entries and card order will be kept.</string>
+    <string name="statistics_reset_confirm">Reset</string>
     <string name="statistics_period_title">Period</string>
     <string name="statistics_period_one_month">1 month</string>
     <string name="statistics_period_three_months">3 months</string>

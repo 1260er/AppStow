@@ -279,15 +279,33 @@ public class UsageStatisticsStoreTest {
 
         store.recordAppLaunch(
                 "com.example.app",
-                null);
+                "work");
+
+        store.recordShortcutLaunch(
+                "shortcut-example",
+                "tools");
 
         store.clear();
 
-        assertTrue(
+        UsageStatisticsStore.Snapshot snapshot =
                 store.getSnapshot(
-                                UsageStatisticsStore.Period.ONE_YEAR)
-                        .getAppCounts()
+                        UsageStatisticsStore.Period.ONE_YEAR);
+
+        assertTrue(
+                snapshot.getAppCounts()
                         .isEmpty());
+
+        assertTrue(
+                snapshot.getShortcutCounts()
+                        .isEmpty());
+
+        assertTrue(
+                snapshot.getCategoryCounts()
+                        .isEmpty());
+
+        assertEquals(
+                0,
+                snapshot.getTotalLaunches());
     }
 
     private UsageStatisticsStore storeAt(

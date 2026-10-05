@@ -157,6 +157,7 @@ public class MainActivity extends Activity {
     private ImageButton statisticsSortButton;
     private ImageButton statisticsPeriodButton;
     private ImageButton statisticsLimitButton;
+    private ImageButton statisticsResetButton;
     private boolean statisticsSortMode;
     private int statisticsTopLimit =
             DEFAULT_STATISTICS_TOP_LIMIT;
@@ -363,6 +364,9 @@ public class MainActivity extends Activity {
 
         statisticsLimitButton =
                 findViewById(R.id.buttonStatisticsLimit);
+
+        statisticsResetButton =
+                findViewById(R.id.buttonStatisticsReset);
 
         appFilterButton =
                 findViewById(R.id.buttonFilterApps);
@@ -765,6 +769,9 @@ public class MainActivity extends Activity {
 
         shortcutHelpButton.setOnClickListener(v ->
                 showHelp(true));
+
+        statisticsResetButton.setOnClickListener(v ->
+                showStatisticsResetDialog());
 
         statisticsLimitButton.setOnClickListener(v ->
                 showStatisticsLimitDialog());
@@ -1842,6 +1849,9 @@ public class MainActivity extends Activity {
         pageTitle.setText(
                 R.string.nav_statistics);
 
+        statisticsResetButton.setVisibility(
+                View.VISIBLE);
+
         statisticsLimitButton.setVisibility(
                 View.VISIBLE);
 
@@ -2120,6 +2130,27 @@ public class MainActivity extends Activity {
                         R.string.action_cancel,
                         null)
                 .show();
+    }
+
+    private void showStatisticsResetDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle(
+                        R.string.statistics_reset_title)
+                .setMessage(
+                        R.string.statistics_reset_message)
+                .setPositiveButton(
+                        R.string.statistics_reset_confirm,
+                        (dialog, which) ->
+                                resetStatistics())
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
+    private void resetStatistics() {
+        usageStatisticsStore.clear();
+        refreshStatistics();
     }
 
     private void startStatisticsDrag(
@@ -4668,6 +4699,9 @@ public class MainActivity extends Activity {
                     View.GONE);
 
             statisticsLimitButton.setVisibility(
+                    View.GONE);
+
+            statisticsResetButton.setVisibility(
                     View.GONE);
         }
 
