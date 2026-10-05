@@ -59,16 +59,6 @@
                 android:visibility="gone" />
 
             <ImageButton
-                android:id="@+id/buttonSortStatistics"
-                android:layout_width="@dimen/icon_button_size"
-                android:layout_height="@dimen/icon_button_size"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/action_sort_statistics"
-                android:padding="10dp"
-                android:src="@drawable/ic_sort_overview"
-                android:visibility="gone" />
-
-            <ImageButton
                 android:id="@+id/buttonStatisticsPeriod"
                 android:layout_width="@dimen/icon_button_size"
                 android:layout_height="@dimen/icon_button_size"
@@ -76,6 +66,16 @@
                 android:contentDescription="@string/action_select_statistics_period"
                 android:padding="10dp"
                 android:src="@drawable/ic_statistics_period"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/buttonSortStatistics"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_sort_statistics"
+                android:padding="10dp"
+                android:src="@drawable/ic_sort_overview"
                 android:visibility="gone" />
 
             <ImageButton

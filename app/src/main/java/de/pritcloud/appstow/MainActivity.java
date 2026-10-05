@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
     private static final String KEY_STATISTICS_PERIOD =
             "statistics_period";
     private static final String KEY_STATISTICS_CARD_ORDER =
-            "statistics_card_order";
+            "statistics_card_order_v2";
     private static final String KEY_GRID_MODE =
             "grid_mode";
     private static final String KEY_GRID_COLUMNS =
@@ -2123,10 +2123,20 @@ public class MainActivity extends Activity {
         Map<String, String> appLabels =
                 new HashMap<>();
 
+        Set<String> favoriteApps =
+                new HashSet<>();
+
         for (AppEntry app : apps) {
             appLabels.put(
                     app.packageName,
                     app.label);
+
+            if (favoritesStore.isFavorite(
+                    app.packageName)) {
+
+                favoriteApps.add(
+                        app.packageName);
+            }
         }
 
         Map<String, String> categoryLabels =
@@ -2151,59 +2161,126 @@ public class MainActivity extends Activity {
                     shortcut.name);
         }
 
+        Map<String, Integer> combinedShortcutCounts =
+                new HashMap<>();
+
+        Map<String, String> combinedShortcutLabels =
+                new HashMap<>();
+
+        for (Map.Entry<String, Integer> entry :
+                snapshot.getAppCounts().entrySet()) {
+
+            String key =
+                    "app:" + entry.getKey();
+
+            combinedShortcutCounts.put(
+                    key,
+                    entry.getValue());
+
+            String label =
+                    appLabels.get(
+                            entry.getKey());
+
+            if (label != null) {
+                combinedShortcutLabels.put(
+                        key,
+                        label);
+            }
+        }
+
+        for (Map.Entry<String, Integer> entry :
+                snapshot.getShortcutCounts().entrySet()) {
+
+            String key =
+                    "custom:" + entry.getKey();
+
+            combinedShortcutCounts.put(
+                    key,
+                    entry.getValue());
+
+            String label =
+                    shortcutLabels.get(
+                            entry.getKey());
+
+            if (label != null) {
+                combinedShortcutLabels.put(
+                        key,
+                        label);
+            }
+        }
+
         List<StatisticsAdapter.Card> cards =
                 new ArrayList<>();
-
-        cards.add(
-                new StatisticsAdapter.Card(
-                        StatisticsAdapter.CARD_TOTAL,
-                        getString(
-                                R.string.statistics_total_title),
-                        String.valueOf(
-                                snapshot.getTotalLaunches()),
-                        true));
-
-        cards.add(
-                new StatisticsAdapter.Card(
-                        StatisticsAdapter.CARD_TOP_APPS,
-                        getString(
-                                R.string.statistics_top_apps_title),
-                        buildStatisticsRanking(
-                                snapshot.getAppCounts(),
-                                appLabels,
-                                R.string.statistics_no_app_launches),
-                        false));
-
-        cards.add(
-                new StatisticsAdapter.Card(
-                        StatisticsAdapter.CARD_UNUSED_APPS,
-                        getString(
-                                R.string.statistics_unused_apps_title),
-                        buildUnusedAppsText(
-                                snapshot.getAppCounts()),
-                        false));
-
-        cards.add(
-                new StatisticsAdapter.Card(
-                        StatisticsAdapter.CARD_TOP_CATEGORIES,
-                        getString(
-                                R.string.statistics_top_categories_title),
-                        buildStatisticsRanking(
-                                snapshot.getCategoryCounts(),
-                                categoryLabels,
-                                R.string.statistics_no_category_launches),
-                        false));
 
         cards.add(
                 new StatisticsAdapter.Card(
                         StatisticsAdapter.CARD_TOP_SHORTCUTS,
                         getString(
                                 R.string.statistics_top_shortcuts_title),
-                        buildStatisticsRanking(
+                        buildStatisticsRows(
+                                combinedShortcutCounts,
+                                combinedShortcutLabels,
+                                null,
+                                false,
+                                R.string.statistics_no_shortcut_launches),
+                        null));
+
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_TOP_CATEGORIES,
+                        getString(
+                                R.string.statistics_top_categories_title),
+                        buildStatisticsRows(
+                                snapshot.getCategoryCounts(),
+                                categoryLabels,
+                                null,
+                                false,
+                                R.string.statistics_no_category_launches),
+                        null));
+
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_TOP_APPS,
+                        getString(
+                                R.string.statistics_apps_title),
+                        buildStatisticsRows(
+                                snapshot.getAppCounts(),
+                                appLabels,
+                                favoriteApps,
+                                true,
+                                R.string.statistics_no_app_launches),
+                        null));
+
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_CUSTOM_SHORTCUTS,
+                        getString(
+                                R.string.statistics_custom_shortcuts_title),
+                        buildStatisticsRows(
                                 snapshot.getShortcutCounts(),
                                 shortcutLabels,
-                                R.string.statistics_no_shortcut_launches),
-                        false));
+                                null,
+                                false,
+                                R.string.statistics_no_custom_shortcut_launches),
+                        null));
+
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_UNUSED_APPS,
+                        getString(
+                                R.string.statistics_unused_apps_short_title),
+                        buildUnusedAppRows(
+                                snapshot.getAppCounts()),
+                        null));
+
+        cards.add(
+                new StatisticsAdapter.Card(
+                        StatisticsAdapter.CARD_TOTAL,
+                        getString(
+                                R.string.statistics_total_title),
+                        new ArrayList<>(),
+                        String.valueOf(
+                                snapshot.getTotalLaunches())));
 
         List<String> order =
                 statisticsAdapter.getOrder();
@@ -2221,10 +2298,13 @@ public class MainActivity extends Activity {
         updateStatisticsPeriodLabel();
     }
 
-    private String buildStatisticsRanking(
-            Map<String, Integer> counts,
-            Map<String, String> labels,
-            int emptyTextResource) {
+    private List<StatisticsAdapter.Row>
+            buildStatisticsRows(
+                    Map<String, Integer> counts,
+                    Map<String, String> labels,
+                    Set<String> favorites,
+                    boolean showFavoriteSlot,
+                    int emptyTextResource) {
 
         List<Map.Entry<String, Integer>> entries =
                 new ArrayList<>();
@@ -2243,7 +2323,8 @@ public class MainActivity extends Activity {
                 continue;
             }
 
-            entries.add(entry);
+            entries.add(
+                    entry);
         }
 
         entries.sort(
@@ -2258,25 +2339,24 @@ public class MainActivity extends Activity {
                         return countComparison;
                     }
 
-                    String firstLabel =
-                            labels.get(
-                                    first.getKey());
-
-                    String secondLabel =
-                            labels.get(
-                                    second.getKey());
-
-                    return firstLabel.compareToIgnoreCase(
-                            secondLabel);
+                    return labels.get(
+                                    first.getKey())
+                            .compareToIgnoreCase(
+                                    labels.get(
+                                            second.getKey()));
                 });
 
-        if (entries.isEmpty()) {
-            return getString(
-                    emptyTextResource);
-        }
+        List<StatisticsAdapter.Row> rows =
+                new ArrayList<>();
 
-        StringBuilder text =
-                new StringBuilder();
+        if (entries.isEmpty()) {
+            rows.add(
+                    StatisticsAdapter.Row.message(
+                            getString(
+                                    emptyTextResource)));
+
+            return rows;
+        }
 
         int limit =
                 Math.min(
@@ -2290,30 +2370,40 @@ public class MainActivity extends Activity {
             Map.Entry<String, Integer> entry =
                     entries.get(i);
 
-            if (text.length() > 0) {
-                text.append("\n");
-            }
+            boolean favorite =
+                    favorites != null
+                            && favorites.contains(
+                                    entry.getKey());
 
-            text.append(
-                    getString(
-                            R.string.statistics_rank_line,
-                            i + 1,
+            rows.add(
+                    new StatisticsAdapter.Row(
                             labels.get(
                                     entry.getKey()),
-                            entry.getValue()));
+                            String.valueOf(
+                                    entry.getValue()),
+                            showFavoriteSlot,
+                            favorite));
         }
 
-        return text.toString();
+        return rows;
     }
 
-    private String buildUnusedAppsText(
-            Map<String, Integer> appCounts) {
+    private List<StatisticsAdapter.Row>
+            buildUnusedAppRows(
+                    Map<String, Integer> appCounts) {
+
+        List<StatisticsAdapter.Row> rows =
+                new ArrayList<>();
 
         if (!appsLoaded) {
-            return getString(
-                    appsLoading
-                            ? R.string.statistics_apps_loading
-                            : R.string.statistics_apps_unavailable);
+            rows.add(
+                    StatisticsAdapter.Row.message(
+                            getString(
+                                    appsLoading
+                                            ? R.string.statistics_apps_loading
+                                            : R.string.statistics_apps_unavailable)));
+
+            return rows;
         }
 
         List<String> unusedLabels =
@@ -2335,27 +2425,26 @@ public class MainActivity extends Activity {
                 String.CASE_INSENSITIVE_ORDER);
 
         if (unusedLabels.isEmpty()) {
-            return getString(
-                    R.string.statistics_all_apps_used);
-        }
+            rows.add(
+                    StatisticsAdapter.Row.message(
+                            getString(
+                                    R.string.statistics_all_apps_used)));
 
-        StringBuilder text =
-                new StringBuilder();
+            return rows;
+        }
 
         for (String label :
                 unusedLabels) {
 
-            if (text.length() > 0) {
-                text.append("\n");
-            }
-
-            text.append(
-                    getString(
-                            R.string.statistics_unused_app_line,
-                            label));
+            rows.add(
+                    new StatisticsAdapter.Row(
+                            label,
+                            null,
+                            false,
+                            false));
         }
 
-        return text.toString();
+        return rows;
     }
 
     private List<CategoryEntry> getCategoriesInOverviewOrder() {

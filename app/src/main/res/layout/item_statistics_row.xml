@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="30dp"
+    android:orientation="horizontal"
+    android:paddingVertical="3dp">
+
+    <TextView
+        android:id="@+id/statisticsRowFavorite"
+        android:layout_width="18dp"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:maxLines="1"
+        android:textSize="10sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/statisticsRowLabel"
+        style="@style/UiBodyText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/ui_text_secondary" />
+
+    <TextView
+        android:id="@+id/statisticsRowCount"
+        style="@style/UiBodyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textColor="@color/ui_text_primary"
+        android:textStyle="bold" />
+
+</LinearLayout>

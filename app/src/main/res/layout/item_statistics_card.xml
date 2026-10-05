@@ -22,6 +22,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textStyle="bold" />
 
         <ImageView
@@ -44,12 +46,11 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/statisticsCardContent"
-        style="@style/UiBodyText"
+    <LinearLayout
+        android:id="@+id/statisticsCardRows"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_sm"
-        android:textColor="@color/ui_text_secondary" />
+        android:orientation="vertical" />
 
 </LinearLayout>

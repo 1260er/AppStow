@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,43 +19,79 @@ import java.util.List;
 final class StatisticsAdapter
         extends RecyclerView.Adapter<StatisticsAdapter.ViewHolder> {
 
-    static final String CARD_TOTAL =
-            "total";
-
-    static final String CARD_TOP_APPS =
-            "top_apps";
-
-    static final String CARD_UNUSED_APPS =
-            "unused_apps";
+    static final String CARD_TOP_SHORTCUTS =
+            "top_shortcuts";
 
     static final String CARD_TOP_CATEGORIES =
             "top_categories";
 
-    static final String CARD_TOP_SHORTCUTS =
-            "top_shortcuts";
+    static final String CARD_TOP_APPS =
+            "top_apps";
+
+    static final String CARD_CUSTOM_SHORTCUTS =
+            "custom_shortcuts";
+
+    static final String CARD_UNUSED_APPS =
+            "unused_apps";
+
+    static final String CARD_TOTAL =
+            "total";
 
     interface OnDragStartListener {
         void onDragStart(
                 RecyclerView.ViewHolder holder);
     }
 
+    static final class Row {
+
+        final String label;
+        final String count;
+        final boolean showFavoriteSlot;
+        final boolean favorite;
+
+        Row(
+                String label,
+                String count,
+                boolean showFavoriteSlot,
+                boolean favorite) {
+
+            this.label = label;
+            this.count = count;
+            this.showFavoriteSlot = showFavoriteSlot;
+            this.favorite = favorite;
+        }
+
+        static Row message(
+                String text) {
+
+            return new Row(
+                    text,
+                    null,
+                    false,
+                    false);
+        }
+    }
+
     static final class Card {
 
         final String id;
         final String title;
-        final String content;
-        final boolean prominent;
+        final List<Row> rows;
+        final String prominentContent;
 
         Card(
                 String id,
                 String title,
-                String content,
-                boolean prominent) {
+                List<Row> rows,
+                String prominentContent) {
 
             this.id = id;
             this.title = title;
-            this.content = content;
-            this.prominent = prominent;
+            this.rows =
+                    new ArrayList<>(
+                            rows);
+            this.prominentContent =
+                    prominentContent;
         }
     }
 
@@ -167,24 +204,79 @@ final class StatisticsAdapter
         holder.title.setText(
                 card.title);
 
-        if (card.prominent) {
-            holder.content.setVisibility(
+        holder.rows.removeAllViews();
+
+        if (card.prominentContent != null) {
+            holder.rows.setVisibility(
                     View.GONE);
 
             holder.prominentContent.setVisibility(
                     View.VISIBLE);
 
             holder.prominentContent.setText(
-                    card.content);
+                    card.prominentContent);
+
         } else {
             holder.prominentContent.setVisibility(
                     View.GONE);
 
-            holder.content.setVisibility(
+            holder.rows.setVisibility(
                     View.VISIBLE);
 
-            holder.content.setText(
-                    card.content);
+            for (Row row :
+                    card.rows) {
+
+                View rowView =
+                        LayoutInflater.from(
+                                        holder.itemView.getContext())
+                                .inflate(
+                                        R.layout.item_statistics_row,
+                                        holder.rows,
+                                        false);
+
+                TextView favorite =
+                        rowView.findViewById(
+                                R.id.statisticsRowFavorite);
+
+                TextView label =
+                        rowView.findViewById(
+                                R.id.statisticsRowLabel);
+
+                TextView count =
+                        rowView.findViewById(
+                                R.id.statisticsRowCount);
+
+                label.setText(
+                        row.label);
+
+                if (row.showFavoriteSlot) {
+                    favorite.setVisibility(
+                            View.VISIBLE);
+
+                    favorite.setText(
+                            row.favorite
+                                    ? "★"
+                                    : "");
+
+                } else {
+                    favorite.setVisibility(
+                            View.GONE);
+                }
+
+                if (row.count == null) {
+                    count.setVisibility(
+                            View.GONE);
+                } else {
+                    count.setVisibility(
+                            View.VISIBLE);
+
+                    count.setText(
+                            row.count);
+                }
+
+                holder.rows.addView(
+                        rowView);
+            }
         }
 
         holder.dragHandle.setVisibility(
@@ -222,7 +314,7 @@ final class StatisticsAdapter
             extends RecyclerView.ViewHolder {
 
         final TextView title;
-        final TextView content;
+        final LinearLayout rows;
         final TextView prominentContent;
         final ImageView dragHandle;
 
@@ -235,9 +327,9 @@ final class StatisticsAdapter
                     itemView.findViewById(
                             R.id.statisticsCardTitle);
 
-            content =
+            rows =
                     itemView.findViewById(
-                            R.id.statisticsCardContent);
+                            R.id.statisticsCardRows);
 
             prominentContent =
                     itemView.findViewById(
