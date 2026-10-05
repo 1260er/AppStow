@@ -33,11 +33,14 @@ final class OverviewAdapter
             "category:";
 
     interface OnAppClickListener {
-        void onAppClick(AppEntry app);
+        void onAppClick(
+                OverviewSection section,
+                AppEntry app);
     }
 
     interface OnShortcutClickListener {
         void onShortcutClick(
+                OverviewSection section,
                 ShortcutEntry shortcut);
     }
 
@@ -913,7 +916,9 @@ final class OverviewAdapter
             holder.itemView
                     .setOnClickListener(v ->
                             appClickListener
-                                    .onAppClick(app));
+                                    .onAppClick(
+                                            section,
+                                            app));
 
             holder.itemView
                     .setOnLongClickListener(v -> {
@@ -1031,6 +1036,7 @@ final class OverviewAdapter
                     .setOnClickListener(v ->
                             shortcutClickListener
                                     .onShortcutClick(
+                                            section,
                                             shortcut));
         }
 

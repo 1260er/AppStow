@@ -243,6 +243,7 @@ public class MainActivity extends Activity {
 
     private ShortcutStore shortcutStore;
     private ShortcutAdapter shortcutAdapter;
+    private UsageStatisticsStore usageStatisticsStore;
     private OverviewOrderStore overviewOrderStore;
     private SectionItemOrderStore sectionItemOrderStore;
     private ItemTouchHelper overviewItemTouchHelper;
@@ -339,6 +340,8 @@ public class MainActivity extends Activity {
         favoritesStore = new FavoritesStore(this);
         categoryStore = new CategoryStore(this);
         shortcutStore = new ShortcutStore(this);
+        usageStatisticsStore =
+                new UsageStatisticsStore(this);
 
         overviewOrderStore =
                 new OverviewOrderStore(this);
@@ -3352,7 +3355,42 @@ public class MainActivity extends Activity {
                 false);
     }
 
+    private String getStatisticsCategoryId(
+            OverviewSection section) {
+
+        if (section == null
+                || !section.id.startsWith(
+                        "category:")) {
+
+            return null;
+        }
+
+        return section.id.substring(
+                "category:".length());
+    }
+
+    private void recordAppLaunch(
+            OverviewSection section,
+            AppEntry app) {
+
+        usageStatisticsStore.recordAppLaunch(
+                app.packageName,
+                getStatisticsCategoryId(
+                        section));
+    }
+
+    private void recordShortcutLaunch(
+            OverviewSection section,
+            ShortcutEntry shortcut) {
+
+        usageStatisticsStore.recordShortcutLaunch(
+                shortcut.id,
+                getStatisticsCategoryId(
+                        section));
+    }
+
     private void launchShortcut(
+            OverviewSection section,
             ShortcutEntry shortcut) {
 
         try {
@@ -3362,14 +3400,23 @@ public class MainActivity extends Activity {
                 launchWebShortcut(
                         shortcut.target);
 
+                recordShortcutLaunch(
+                        section,
+                        shortcut);
+
                 return;
             }
 
             if (ShortcutEntry.TYPE_WEB_APP.equals(
                     shortcut.type)) {
 
-                launchWebAppShortcut(
-                        shortcut.target);
+                if (launchWebAppShortcut(
+                        shortcut.target)) {
+
+                    recordShortcutLaunch(
+                            section,
+                            shortcut);
+                }
 
                 return;
             }
@@ -3379,6 +3426,10 @@ public class MainActivity extends Activity {
 
                 launchAppSettings(
                         shortcut.target);
+
+                recordShortcutLaunch(
+                        section,
+                        shortcut);
 
                 return;
             }
@@ -3391,6 +3442,10 @@ public class MainActivity extends Activity {
 
                 launchAppSettings(
                         target);
+
+                recordShortcutLaunch(
+                        section,
+                        shortcut);
 
                 return;
             }
@@ -3417,6 +3472,10 @@ public class MainActivity extends Activity {
 
             startActivity(intent);
 
+            recordShortcutLaunch(
+                    section,
+                    shortcut);
+
         } catch (Exception exception) {
             Toast.makeText(
                     this,
@@ -3425,14 +3484,14 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void launchWebAppShortcut(
+    private boolean launchWebAppShortcut(
             String target) {
 
         if (!NetworkAccess.hasUsableNetwork(
                 this)) {
 
             showWebAppNetworkDialog();
-            return;
+            return false;
         }
 
         Intent intent =
@@ -3450,6 +3509,8 @@ public class MainActivity extends Activity {
 
         startActivity(
                 intent);
+
+        return true;
     }
 
     private void showWebAppNetworkDialog() {
@@ -3533,7 +3594,10 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
-    private void launchApp(AppEntry app) {
+    private void launchApp(
+            OverviewSection section,
+            AppEntry app) {
+
         Intent launchIntent =
                 new Intent(Intent.ACTION_MAIN);
 
@@ -3550,6 +3614,11 @@ public class MainActivity extends Activity {
 
         try {
             startActivity(launchIntent);
+
+            recordAppLaunch(
+                    section,
+                    app);
+
             return;
 
         } catch (RuntimeException ignored) {
@@ -3575,6 +3644,10 @@ public class MainActivity extends Activity {
             try {
                 startActivity(
                         fallbackIntent);
+
+                recordAppLaunch(
+                        section,
+                        app);
 
                 return;
 
