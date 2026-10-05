@@ -21,7 +21,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -64,7 +63,24 @@ public class MainActivityRecreationTest {
     }
 
     @Test
-    public void categorySymbolPreferenceWinsOverSavedViewState() {
+    public void categorySymbolsAreAlwaysShownAfterRecreation() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        assertTrue(
+                context.getSharedPreferences(
+                                "categories",
+                                Context.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean(
+                                "category_symbols_enabled",
+                                false)
+                        .commit());
+
+        AtomicReference<String> categoryId =
+                new AtomicReference<>();
 
         try (ActivityScenario<MainActivity> scenario =
                      ActivityScenario.launch(
@@ -79,18 +95,30 @@ public class MainActivityRecreationTest {
                                         "categoryStore",
                                         CategoryStore.class);
 
-                        Switch symbolsSwitch =
-                                activity.findViewById(
-                                        R.id.categorySymbolsSwitch);
-
                         assertTrue(
-                                !symbolsSwitch.isChecked());
+                                store.addCategory(
+                                        "Work",
+                                        "💼"));
 
-                        store.setSymbolsEnabled(
-                                true);
+                        categoryId.set(
+                                store.getCategories()
+                                        .get(0)
+                                        .id);
 
-                        assertTrue(
-                                store.areSymbolsEnabled());
+                        invoke(
+                                activity,
+                                "rebuildOverviewSections",
+                                new Class<?>[0],
+                                new Object[0]);
+
+                        OverviewSection section =
+                                findCategorySection(
+                                        activity,
+                                        categoryId.get());
+
+                        assertEquals(
+                                "💼 Work",
+                                section.title);
                     });
 
             scenario.recreate();
@@ -98,24 +126,14 @@ public class MainActivityRecreationTest {
             scenario.onActivity(
                     activity -> {
 
-                        CategoryStore store =
-                                getPrivateField(
+                        OverviewSection section =
+                                findCategorySection(
                                         activity,
-                                        "categoryStore",
-                                        CategoryStore.class);
+                                        categoryId.get());
 
-                        Switch symbolsSwitch =
-                                activity.findViewById(
-                                        R.id.categorySymbolsSwitch);
-
-                        assertTrue(
-                                store.areSymbolsEnabled());
-
-                        assertTrue(
-                                symbolsSwitch.isChecked());
-
-                        assertTrue(
-                                !symbolsSwitch.isSaveEnabled());
+                        assertEquals(
+                                "💼 Work",
+                                section.title);
                     });
         }
     }

@@ -97,8 +97,6 @@
     <string name="emoji_category_objects">Objects</string>
     <string name="emoji_category_symbols">Symbols</string>
     <string name="emoji_category_flags">Flags</string>
-    <string name="category_symbols_show">Show symbols in overview</string>
-    <string name="category_symbols_description">Every category has a symbol. This switch controls whether symbols are shown in the overview.</string>
     <string name="category_name_hint">Category name</string>
     <string name="category_add_title">Add category</string>
     <string name="category_rename_title">Edit category</string>

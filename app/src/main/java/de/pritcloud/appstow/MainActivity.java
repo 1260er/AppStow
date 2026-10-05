@@ -1,6 +1,5 @@
 package de.pritcloud.appstow;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -28,7 +27,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -147,9 +145,6 @@ public class MainActivity extends Activity {
     private RecyclerView categoryList;
     private View categoryManagement;
     private TextView categoryEmptyMessage;
-    @SuppressLint("UseSwitchCompatOrMaterialCode")
-    private Switch categorySymbolsSwitch;
-
     private RecyclerView shortcutList;
     private View shortcutManagement;
     private TextView shortcutEmptyMessage;
@@ -326,13 +321,6 @@ public class MainActivity extends Activity {
         categoryList = findViewById(R.id.categoryList);
         categoryManagement = findViewById(R.id.categoryManagement);
         categoryEmptyMessage = findViewById(R.id.categoryEmptyMessage);
-        categorySymbolsSwitch =
-                findViewById(
-                        R.id.categorySymbolsSwitch);
-
-        categorySymbolsSwitch.setSaveEnabled(
-                false);
-
         shortcutList =
                 findViewById(R.id.shortcutList);
         shortcutManagement =
@@ -536,23 +524,6 @@ public class MainActivity extends Activity {
         findViewById(R.id.categoryAddButton)
                 .setOnClickListener(v ->
                         showAddCategoryDialog());
-
-        categorySymbolsSwitch.setChecked(
-                categoryStore.areSymbolsEnabled());
-
-        categorySymbolsSwitch
-                .setOnCheckedChangeListener(
-                        (buttonView, enabled) -> {
-                            categoryStore.setSymbolsEnabled(
-                                    enabled);
-
-                            rebuildOverviewSections();
-
-                            if (overviewAdapter != null) {
-                                overviewAdapter.setApps(
-                                        apps);
-                            }
-                        });
 
         shortcutAdapter =
                 new ShortcutAdapter(
@@ -1319,15 +1290,9 @@ public class MainActivity extends Activity {
 
         overviewSections.clear();
 
-        boolean showSymbols =
-                categoryStore.areSymbolsEnabled();
-
         String favoritesTitle =
-                showSymbols
-                        ? "⭐ "
+                "⭐ "
                         + getString(
-                                R.string.overview_favorites)
-                        : getString(
                                 R.string.overview_favorites);
 
         OverviewSection favorites =
@@ -1349,11 +1314,9 @@ public class MainActivity extends Activity {
                 categoryStore.getCategories()) {
 
             String categoryTitle =
-                    showSymbols
-                            ? category.symbol
+                    category.symbol
                             + " "
-                            + category.name
-                            : category.name;
+                            + category.name;
 
             OverviewSection section =
                     new OverviewSection(
@@ -1373,11 +1336,8 @@ public class MainActivity extends Activity {
         }
 
         String shortcutsTitle =
-                showSymbols
-                        ? "⚡ "
+                "⚡ "
                         + getString(
-                                R.string.overview_shortcuts)
-                        : getString(
                                 R.string.overview_shortcuts);
 
         OverviewSection shortcuts =

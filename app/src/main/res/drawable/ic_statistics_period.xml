@@ -5,12 +5,20 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
-    <path
-        android:fillColor="@android:color/transparent"
-        android:pathData="M5,6 L19,6 L19,19 L5,19 Z M8,4 L8,8 M16,4 L16,8 M5,10 L19,10 M12,13 L12,16 L15,16"
-        android:strokeColor="@color/ui_text_primary"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:strokeWidth="1.8" />
+    <group
+        android:pivotX="12"
+        android:pivotY="12"
+        android:scaleX="0.76"
+        android:scaleY="0.76">
+
+        <path
+            android:fillColor="@android:color/transparent"
+            android:pathData="M5,6 L19,6 L19,19 L5,19 Z M8,4 L8,8 M16,4 L16,8 M5,10 L19,10 M12,13 L12,16 L15,16"
+            android:strokeColor="@color/ui_text_primary"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.8" />
+
+    </group>
 
 </vector>
