@@ -126,10 +126,6 @@ final class OverviewAdapter
 
     private boolean automaticTimeProfileEnabled;
 
-    private final Map<String, List<String>>
-            manualBaselineOrders =
-            new HashMap<>();
-
     OverviewAdapter(
             List<OverviewSection> sections,
             FavoritesStore favoritesStore,
@@ -219,10 +215,6 @@ final class OverviewAdapter
                 automaticProfileLaunches.putAll(
                         profileLaunches);
             }
-        }
-
-        if (!enabled) {
-            manualBaselineOrders.clear();
         }
 
         rebuildRows();
@@ -350,7 +342,118 @@ final class OverviewAdapter
         return result;
     }
 
+    private void materializeSemiAutomaticOrders() {
+
+        if (!semiAutomaticSorting) {
+            return;
+        }
+
+        for (OverviewSection section :
+                sections) {
+
+            List<String> currentIds =
+                    new ArrayList<>();
+
+            if ("favorites".equals(
+                    section.id)) {
+
+                for (AppEntry app :
+                        favoriteApps) {
+
+                    currentIds.add(
+                            SectionItemOrderStore
+                                    .appItemId(
+                                            app.packageName));
+                }
+
+                for (ShortcutEntry shortcut :
+                        getFavoriteShortcuts()) {
+
+                    currentIds.add(
+                            SectionItemOrderStore
+                                    .shortcutItemId(
+                                            shortcut.id));
+                }
+
+            } else if (section.id.startsWith(
+                    CATEGORY_PREFIX)) {
+
+                String categoryId =
+                        section.id.substring(
+                                CATEGORY_PREFIX.length());
+
+                for (AppEntry app :
+                        getCategoryApps(
+                                categoryId)) {
+
+                    currentIds.add(
+                            SectionItemOrderStore
+                                    .appItemId(
+                                            app.packageName));
+                }
+
+                for (ShortcutEntry shortcut :
+                        getCategoryShortcuts(
+                                categoryId)) {
+
+                    currentIds.add(
+                            SectionItemOrderStore
+                                    .shortcutItemId(
+                                            shortcut.id));
+                }
+
+            } else if ("shortcuts".equals(
+                    section.id)) {
+
+                for (ShortcutEntry shortcut :
+                        allShortcuts) {
+
+                    currentIds.add(
+                            SectionItemOrderStore
+                                    .shortcutItemId(
+                                            shortcut.id));
+                }
+            }
+
+            if (currentIds.isEmpty()) {
+                continue;
+            }
+
+            List<String> baselineIds =
+                    sectionItemOrderStore
+                            .getOrderedIds(
+                                    section.id,
+                                    currentIds);
+
+            Set<String> automaticIds =
+                    getAutomaticItemIds(
+                            section,
+                            baselineIds);
+
+            if (automaticIds.isEmpty()) {
+                continue;
+            }
+
+            List<String> rankedIds =
+                    AutomaticSortEngine
+                            .rankSelectedIds(
+                                    baselineIds,
+                                    automaticIds,
+                                    automaticOverallScores,
+                                    automaticProfileScores,
+                                    automaticProfileLaunches,
+                                    automaticTimeProfileEnabled);
+
+            sectionItemOrderStore.saveOrder(
+                    section.id,
+                    rankedIds);
+        }
+    }
+
     private void rebuildRows() {
+
+        materializeSemiAutomaticOrders();
+
         rows.clear();
 
         if (!searchQuery.isEmpty()) {
@@ -555,13 +658,6 @@ final class OverviewAdapter
                         section.id,
                         currentIds);
 
-        if (searchQuery.isEmpty()) {
-            manualBaselineOrders.put(
-                    section.id,
-                    new ArrayList<>(
-                            baselineIds));
-        }
-
         Set<String> automaticIds =
                 getAutomaticItemIds(
                         section,
@@ -695,9 +791,7 @@ final class OverviewAdapter
 
         return semiAutomaticSorting
                 && automaticCategories
-                && section != null
-                && section.id.startsWith(
-                CATEGORY_PREFIX);
+                && section != null;
     }
 
     private boolean isSectionItemsFullyAutomatic(
@@ -712,7 +806,9 @@ final class OverviewAdapter
         if ("favorites".equals(
                 section.id)) {
 
-            return automaticFavorites;
+            return automaticFavorites
+                    && automaticApps
+                    && automaticShortcuts;
         }
 
         if ("shortcuts".equals(
@@ -1577,42 +1673,9 @@ final class OverviewAdapter
             }
         }
 
-        OverviewSection section =
-                findSection(
-                        itemSortSectionId);
-
-        Set<String> automaticIds =
-                getAutomaticItemIds(
-                        section,
-                        itemIds);
-
-        List<String> orderToSave =
-                itemIds;
-
-        if (!automaticIds.isEmpty()) {
-
-            List<String> baseline =
-                    manualBaselineOrders.get(
-                            itemSortSectionId);
-
-            if (baseline != null) {
-                orderToSave =
-                        AutomaticSortEngine
-                                .preserveSelectedBaselineOrder(
-                                        itemIds,
-                                        baseline,
-                                        automaticIds);
-            }
-        }
-
         sectionItemOrderStore.saveOrder(
                 itemSortSectionId,
-                orderToSave);
-
-        manualBaselineOrders.put(
-                itemSortSectionId,
-                new ArrayList<>(
-                        orderToSave));
+                itemIds);
     }
 
     boolean moveSection(

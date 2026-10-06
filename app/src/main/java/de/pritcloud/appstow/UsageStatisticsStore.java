@@ -32,6 +32,9 @@ final class UsageStatisticsStore {
     private static final String KEY_CATEGORIES =
             "categories";
 
+    private static final String KEY_SECTIONS =
+            "sections";
+
     private static final String KEY_HOURS =
             "hours";
 
@@ -110,10 +113,22 @@ final class UsageStatisticsStore {
         private final Snapshot profileWeighted;
         private final Snapshot profileLaunches;
 
+        private final Map<String, Integer>
+                overallSectionCounts;
+
+        private final Map<String, Integer>
+                profileSectionCounts;
+
+        private final Map<String, Integer>
+                profileSectionLaunches;
+
         SortingSnapshot(
                 Snapshot overallWeighted,
                 Snapshot profileWeighted,
-                Snapshot profileLaunches) {
+                Snapshot profileLaunches,
+                Map<String, Integer> overallSectionCounts,
+                Map<String, Integer> profileSectionCounts,
+                Map<String, Integer> profileSectionLaunches) {
 
             this.overallWeighted =
                     overallWeighted;
@@ -123,6 +138,21 @@ final class UsageStatisticsStore {
 
             this.profileLaunches =
                     profileLaunches;
+
+            this.overallSectionCounts =
+                    Collections.unmodifiableMap(
+                            new HashMap<>(
+                                    overallSectionCounts));
+
+            this.profileSectionCounts =
+                    Collections.unmodifiableMap(
+                            new HashMap<>(
+                                    profileSectionCounts));
+
+            this.profileSectionLaunches =
+                    Collections.unmodifiableMap(
+                            new HashMap<>(
+                                    profileSectionLaunches));
         }
 
         Snapshot getOverallWeighted() {
@@ -135,6 +165,18 @@ final class UsageStatisticsStore {
 
         Snapshot getProfileLaunches() {
             return profileLaunches;
+        }
+
+        Map<String, Integer> getOverallSectionCounts() {
+            return overallSectionCounts;
+        }
+
+        Map<String, Integer> getProfileSectionCounts() {
+            return profileSectionCounts;
+        }
+
+        Map<String, Integer> getProfileSectionLaunches() {
+            return profileSectionLaunches;
         }
     }
 
@@ -163,20 +205,59 @@ final class UsageStatisticsStore {
             String packageName,
             String categoryId) {
 
+        recordAppLaunch(
+                packageName,
+                categoryId,
+                categorySectionId(
+                        categoryId));
+    }
+
+    void recordAppLaunch(
+            String packageName,
+            String categoryId,
+            String sectionId) {
+
         recordLaunch(
                 KEY_APPS,
                 packageName,
-                categoryId);
+                categoryId,
+                sectionId);
     }
 
     void recordShortcutLaunch(
             String shortcutId,
             String categoryId) {
 
+        recordShortcutLaunch(
+                shortcutId,
+                categoryId,
+                categorySectionId(
+                        categoryId));
+    }
+
+    void recordShortcutLaunch(
+            String shortcutId,
+            String categoryId,
+            String sectionId) {
+
         recordLaunch(
                 KEY_SHORTCUTS,
                 shortcutId,
-                categoryId);
+                categoryId,
+                sectionId);
+    }
+
+    private static String categorySectionId(
+            String categoryId) {
+
+        if (categoryId == null
+                || categoryId.isBlank()) {
+
+            return null;
+        }
+
+        return "category:"
+                + categoryId;
     }
 
     TimeProfile getCurrentTimeProfile(
@@ -427,6 +508,9 @@ final class UsageStatisticsStore {
         Map<String, Integer> overallCategories =
                 new HashMap<>();
 
+        Map<String, Integer> overallSections =
+                new HashMap<>();
+
         Map<String, Integer> profileApps =
                 new HashMap<>();
 
@@ -436,6 +520,9 @@ final class UsageStatisticsStore {
         Map<String, Integer> profileCategories =
                 new HashMap<>();
 
+        Map<String, Integer> profileSections =
+                new HashMap<>();
+
         Map<String, Integer> profileAppLaunches =
                 new HashMap<>();
 
@@ -443,6 +530,9 @@ final class UsageStatisticsStore {
                 new HashMap<>();
 
         Map<String, Integer> profileCategoryLaunches =
+                new HashMap<>();
+
+        Map<String, Integer> profileSectionLaunches =
                 new HashMap<>();
 
         for (Map.Entry<String, ?>
@@ -497,6 +587,12 @@ final class UsageStatisticsStore {
                             KEY_CATEGORIES),
                     weight);
 
+            mergeCountsWeighted(
+                    overallSections,
+                    day.optJSONObject(
+                            KEY_SECTIONS),
+                    weight);
+
             JSONObject hours =
                     day.optJSONObject(
                             KEY_HOURS);
@@ -539,6 +635,10 @@ final class UsageStatisticsStore {
                         hourly.optJSONObject(
                                 KEY_CATEGORIES);
 
+                JSONObject sections =
+                        hourly.optJSONObject(
+                                KEY_SECTIONS);
+
                 mergeCountsWeighted(
                         profileApps,
                         apps,
@@ -554,6 +654,11 @@ final class UsageStatisticsStore {
                         categories,
                         weight);
 
+                mergeCountsWeighted(
+                        profileSections,
+                        sections,
+                        weight);
+
                 mergeCounts(
                         profileAppLaunches,
                         apps);
@@ -565,6 +670,10 @@ final class UsageStatisticsStore {
                 mergeCounts(
                         profileCategoryLaunches,
                         categories);
+
+                mergeCounts(
+                        profileSectionLaunches,
+                        sections);
             }
         }
 
@@ -580,7 +689,10 @@ final class UsageStatisticsStore {
                 new Snapshot(
                         profileAppLaunches,
                         profileShortcutLaunches,
-                        profileCategoryLaunches));
+                        profileCategoryLaunches),
+                overallSections,
+                profileSections,
+                profileSectionLaunches);
     }
 
     private static int getSortingWeight(
@@ -646,7 +758,8 @@ final class UsageStatisticsStore {
     private void recordLaunch(
             String targetGroup,
             String targetId,
-            String categoryId) {
+            String categoryId,
+            String sectionId) {
 
         if (targetId == null
                 || targetId.isBlank()) {
@@ -691,6 +804,15 @@ final class UsageStatisticsStore {
                     categoryId);
         }
 
+        if (sectionId != null
+                && !sectionId.isBlank()) {
+
+            increment(
+                    day,
+                    KEY_SECTIONS,
+                    sectionId);
+        }
+
         JSONObject hours =
                 getOrCreateObject(
                         day,
@@ -714,6 +836,15 @@ final class UsageStatisticsStore {
                     hourly,
                     KEY_CATEGORIES,
                     categoryId);
+        }
+
+        if (sectionId != null
+                && !sectionId.isBlank()) {
+
+            increment(
+                    hourly,
+                    KEY_SECTIONS,
+                    sectionId);
         }
 
         preferences.edit()

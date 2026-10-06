@@ -556,6 +556,84 @@ public class UsageStatisticsStoreTest {
     }
 
     @Test
+    public void sortingSnapshotTracksAllOverviewAreas() {
+
+        UsageStatisticsStore store =
+                storeAt(
+                        "2026-10-05T12:00:00Z");
+
+        store.recordAppLaunch(
+                "app.favorite",
+                null,
+                "favorites");
+
+        store.recordAppLaunch(
+                "app.favorite",
+                null,
+                "favorites");
+
+        store.recordShortcutLaunch(
+                "shortcut.direct",
+                null,
+                "shortcuts");
+
+        store.recordAppLaunch(
+                "app.work",
+                "work",
+                "category:work");
+
+        UsageStatisticsStore.SortingSnapshot sorting =
+                store.getSortingSnapshot(
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        8,
+                        21);
+
+        assertEquals(
+                8,
+                sorting.getOverallSectionCounts()
+                        .get("favorites")
+                        .intValue());
+
+        assertEquals(
+                4,
+                sorting.getOverallSectionCounts()
+                        .get("shortcuts")
+                        .intValue());
+
+        assertEquals(
+                4,
+                sorting.getOverallSectionCounts()
+                        .get("category:work")
+                        .intValue());
+
+        assertEquals(
+                2,
+                sorting.getProfileSectionLaunches()
+                        .get("favorites")
+                        .intValue());
+
+        assertEquals(
+                1,
+                sorting.getProfileSectionLaunches()
+                        .get("shortcuts")
+                        .intValue());
+
+        assertEquals(
+                1,
+                sorting.getProfileSectionLaunches()
+                        .get("category:work")
+                        .intValue());
+
+        assertEquals(
+                1,
+                store.getSnapshot(
+                                UsageStatisticsStore.Period.ONE_MONTH)
+                        .getCategoryCounts()
+                        .get("work")
+                        .intValue());
+    }
+
+    @Test
     public void currentTimeProfileUsesConfiguredBoundaries() {
 
         UsageStatisticsStore beforeBoundary =

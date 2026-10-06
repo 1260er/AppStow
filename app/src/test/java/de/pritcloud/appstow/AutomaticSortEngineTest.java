@@ -288,6 +288,42 @@ public class AutomaticSortEngineTest {
                 ranked);
     }
 
+    @Test
+    public void allOverviewAreasCanBeRankedTogether() {
+
+        Map<String, Integer> scores =
+                counts(
+                        "favorites", 8,
+                        "category:work", 20,
+                        "shortcuts", 12);
+
+        Set<String> automatic =
+                new HashSet<>(
+                        Arrays.asList(
+                                "favorites",
+                                "category:work",
+                                "shortcuts"));
+
+        List<String> ranked =
+                AutomaticSortEngine.rankSelectedIds(
+                        Arrays.asList(
+                                "favorites",
+                                "category:work",
+                                "shortcuts"),
+                        automatic,
+                        scores,
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        false);
+
+        assertEquals(
+                Arrays.asList(
+                        "category:work",
+                        "shortcuts",
+                        "favorites"),
+                ranked);
+    }
+
     private static Map<String, Integer> counts(
             Object... values) {
 

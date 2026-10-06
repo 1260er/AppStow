@@ -10,7 +10,7 @@
     <string name="nav_statistics">Statistics</string>
     <string name="nav_sorting">Sorting</string>
 
-    <string name="sorting_description">Choose how AppStow manages the order of favorites, categories, apps and custom shortcuts.</string>
+    <string name="sorting_description">Choose how AppStow manages overview areas, favorites, apps and custom shortcuts.</string>
     <string name="sorting_mode_manual">Manual</string>
     <string name="sorting_mode_semi">Semi-automatic</string>
     <string name="sorting_mode_automatic">Automatic</string>
@@ -18,7 +18,7 @@
     <string name="sorting_semi_description">Only the selected areas are sorted automatically. All other areas remain manual.</string>
     <string name="sorting_automatic_description">AppStow manages the complete order and the automatic favorites.</string>
     <string name="sorting_area_favorites">Favorites</string>
-    <string name="sorting_area_categories">Categories</string>
+    <string name="sorting_area_categories">Overview areas</string>
     <string name="sorting_area_apps">Apps</string>
     <string name="sorting_area_shortcuts">Custom shortcuts</string>
     <string name="sorting_time_profile">Use day and evening/night profiles</string>

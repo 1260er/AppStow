@@ -1565,10 +1565,10 @@ public class MainActivity extends Activity {
                 sorting.getProfileLaunches();
 
         if (settings.semiCategories) {
-            applySemiAutomaticCategoryOrder(
-                    overall.getCategoryCounts(),
-                    profile.getCategoryCounts(),
-                    profileLaunches.getCategoryCounts(),
+            applySemiAutomaticSectionOrder(
+                    sorting.getOverallSectionCounts(),
+                    sorting.getProfileSectionCounts(),
+                    sorting.getProfileSectionLaunches(),
                     settings.timeProfileEnabled);
         }
 
@@ -1619,23 +1619,14 @@ public class MainActivity extends Activity {
         return result;
     }
 
-    private void applySemiAutomaticCategoryOrder(
-            Map<String, Integer> overallCategoryCounts,
-            Map<String, Integer> profileCategoryCounts,
-            Map<String, Integer> profileCategoryLaunches,
+    private void applySemiAutomaticSectionOrder(
+            Map<String, Integer> overallSectionCounts,
+            Map<String, Integer> profileSectionCounts,
+            Map<String, Integer> profileSectionLaunches,
             boolean timeProfileEnabled) {
 
-        Set<String> categorySectionIds =
+        Set<String> automaticSectionIds =
                 new HashSet<>();
-
-        Map<String, Integer> overallScores =
-                new HashMap<>();
-
-        Map<String, Integer> profileScores =
-                new HashMap<>();
-
-        Map<String, Integer> profileLaunchScores =
-                new HashMap<>();
 
         Map<String, OverviewSection> sectionsById =
                 new HashMap<>();
@@ -1643,49 +1634,21 @@ public class MainActivity extends Activity {
         for (OverviewSection section :
                 overviewSections) {
 
+            automaticSectionIds.add(
+                    section.id);
+
             sectionsById.put(
                     section.id,
                     section);
-
-            if (!section.id.startsWith(
-                    "category:")) {
-
-                continue;
-            }
-
-            categorySectionIds.add(
-                    section.id);
-
-            String categoryId =
-                    section.id.substring(
-                            "category:".length());
-
-            overallScores.put(
-                    section.id,
-                    overallCategoryCounts.getOrDefault(
-                            categoryId,
-                            0));
-
-            profileScores.put(
-                    section.id,
-                    profileCategoryCounts.getOrDefault(
-                            categoryId,
-                            0));
-
-            profileLaunchScores.put(
-                    section.id,
-                    profileCategoryLaunches.getOrDefault(
-                            categoryId,
-                            0));
         }
 
         List<String> ranked =
                 AutomaticSortEngine.rankSelectedIds(
                         manualOverviewBaselineOrder,
-                        categorySectionIds,
-                        overallScores,
-                        profileScores,
-                        profileLaunchScores,
+                        automaticSectionIds,
+                        overallSectionCounts,
+                        profileSectionCounts,
+                        profileSectionLaunches,
                         timeProfileEnabled);
 
         List<OverviewSection> reordered =
@@ -1695,7 +1658,8 @@ public class MainActivity extends Activity {
                 ranked) {
 
             OverviewSection section =
-                    sectionsById.get(id);
+                    sectionsById.get(
+                            id);
 
             if (section != null) {
                 reordered.add(
@@ -1704,12 +1668,24 @@ public class MainActivity extends Activity {
         }
 
         if (reordered.size()
-                == overviewSections.size()) {
+                != overviewSections.size()) {
 
-            overviewSections.clear();
-            overviewSections.addAll(
-                    reordered);
+            return;
         }
+
+        overviewSections.clear();
+        overviewSections.addAll(
+                reordered);
+
+        /*
+         * Halbautomatik ist für aktivierte Bereiche
+         * die Wahrheit. Der sichtbare automatische
+         * Stand wird deshalb zur neuen Basis.
+         */
+        overviewOrderStore.saveOrder(
+                overviewSections);
+
+        captureManualOverviewBaseline();
     }
 
     private void refreshOverviewForSortingSettingsChange() {
@@ -1780,54 +1756,10 @@ public class MainActivity extends Activity {
 
     private void saveOverviewOrderPreservingAutomation() {
 
-        List<String> displayed =
-                new ArrayList<>();
+        overviewOrderStore.saveOrder(
+                overviewSections);
 
-        for (OverviewSection section :
-                overviewSections) {
-
-            displayed.add(
-                    section.id);
-        }
-
-        SortingSettingsStore.Settings settings =
-                sortingSettingsStore.load();
-
-        List<String> orderToSave =
-                displayed;
-
-        if (settings.mode
-                == SortingSettingsStore.Mode.SEMI_AUTOMATIC
-                && settings.semiCategories) {
-
-            Set<String> automaticCategories =
-                    new HashSet<>();
-
-            for (String id :
-                    displayed) {
-
-                if (id.startsWith(
-                        "category:")) {
-
-                    automaticCategories.add(
-                            id);
-                }
-            }
-
-            orderToSave =
-                    AutomaticSortEngine
-                            .preserveSelectedBaselineOrder(
-                                    displayed,
-                                    manualOverviewBaselineOrder,
-                                    automaticCategories);
-        }
-
-        overviewOrderStore.saveOrderIds(
-                orderToSave);
-
-        manualOverviewBaselineOrder.clear();
-        manualOverviewBaselineOrder.addAll(
-                orderToSave);
+        captureManualOverviewBaseline();
     }
 
     private void startOverviewDrag(
@@ -1844,6 +1776,12 @@ public class MainActivity extends Activity {
 
     private void setOverviewSortMode(
             boolean enabled) {
+
+        if (enabled
+                && isSemiAutomaticSectionOrderEnabled()) {
+
+            return;
+        }
 
         if (!enabled
                 && overviewAdapter.isSortMode()) {
@@ -2058,6 +1996,16 @@ public class MainActivity extends Activity {
         appFilterButton.setVisibility(View.GONE);
     }
 
+    private boolean isSemiAutomaticSectionOrderEnabled() {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        return settings.mode
+                == SortingSettingsStore.Mode.SEMI_AUTOMATIC
+                && settings.semiCategories;
+    }
+
     private void showOverview() {
         currentPage = PAGE_OVERVIEW;
         setTopNavigation(true);
@@ -2089,6 +2037,7 @@ public class MainActivity extends Activity {
 
         overviewSortButton.setVisibility(
                 overviewSearchQuery.trim().isEmpty()
+                        && !isSemiAutomaticSectionOrderEnabled()
                         ? View.VISIBLE
                         : View.GONE);
 
@@ -4757,6 +4706,26 @@ public class MainActivity extends Activity {
                 "category:".length());
     }
 
+    private String getStatisticsSectionId(
+            OverviewSection section) {
+
+        if (section == null) {
+            return null;
+        }
+
+        if ("favorites".equals(
+                section.id)
+                || "shortcuts".equals(
+                section.id)
+                || section.id.startsWith(
+                "category:")) {
+
+            return section.id;
+        }
+
+        return null;
+    }
+
     private void recordAppLaunch(
             OverviewSection section,
             AppEntry app) {
@@ -4764,6 +4733,8 @@ public class MainActivity extends Activity {
         usageStatisticsStore.recordAppLaunch(
                 app.packageName,
                 getStatisticsCategoryId(
+                        section),
+                getStatisticsSectionId(
                         section));
     }
 
@@ -4774,6 +4745,8 @@ public class MainActivity extends Activity {
         usageStatisticsStore.recordShortcutLaunch(
                 shortcut.id,
                 getStatisticsCategoryId(
+                        section),
+                getStatisticsSectionId(
                         section));
     }
 
