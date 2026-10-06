@@ -27,6 +27,7 @@ public class AppAdapter
     private final AppIconLoader appIconLoader;
     private final OnAppClickListener clickListener;
     private boolean gridMode;
+    private boolean favoriteEditingEnabled = true;
 
     AppAdapter(
             FavoritesStore favoritesStore,
@@ -40,6 +41,21 @@ public class AppAdapter
         this.categoryStore = categoryStore;
         this.appIconLoader = appIconLoader;
         this.clickListener = clickListener;
+    }
+
+    void setFavoriteEditingEnabled(
+            boolean enabled) {
+
+        if (favoriteEditingEnabled
+                == enabled) {
+
+            return;
+        }
+
+        favoriteEditingEnabled =
+                enabled;
+
+        notifyDataSetChanged();
     }
 
     boolean isGridMode() {
@@ -135,34 +151,49 @@ public class AppAdapter
                                 : View.INVISIBLE
                         : View.VISIBLE);
 
-        updateFavoriteButton(holder, app);
+        updateFavoriteButton(
+                holder,
+                app);
 
-        holder.favorite.setOnClickListener(v -> {
-            if (!favoritesStore.isFavorite(
-                    app.packageName)) {
+        holder.favorite.setVisibility(
+                favoriteEditingEnabled
+                        ? View.VISIBLE
+                        : View.GONE);
 
-                favoritesStore.toggle(
-                        app.packageName);
+        if (favoriteEditingEnabled) {
 
-                updateFavoriteButton(
-                        holder,
-                        app);
+            holder.favorite.setOnClickListener(v -> {
+                if (!favoritesStore.isFavorite(
+                        app.packageName)) {
 
-                return;
-            }
+                    favoritesStore.toggle(
+                            app.packageName);
 
-            FavoriteConfirmation.confirmRemoval(
-                    holder.itemView.getContext(),
-                    app.label,
-                    () -> {
-                        favoritesStore.toggle(
-                                app.packageName);
+                    updateFavoriteButton(
+                            holder,
+                            app);
 
-                        updateFavoriteButton(
-                                holder,
-                                app);
-                    });
-        });
+                    return;
+                }
+
+                FavoriteConfirmation.confirmRemoval(
+                        holder.itemView.getContext(),
+                        app.label,
+                        () -> {
+                            favoritesStore.toggle(
+                                    app.packageName);
+
+                            updateFavoriteButton(
+                                    holder,
+                                    app);
+                        });
+            });
+
+        } else {
+
+            holder.favorite.setOnClickListener(
+                    null);
+        }
 
         holder.itemView.setClickable(true);
         holder.itemView.setFocusable(true);

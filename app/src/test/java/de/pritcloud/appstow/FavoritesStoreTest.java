@@ -9,6 +9,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import java.util.Set;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -53,6 +55,38 @@ public class FavoritesStoreTest {
         assertTrue(
                 reloaded.isFavorite(
                         "com.example.app"));
+    }
+
+    @Test
+    public void replaceAllMaterializesExactFavoriteSet() {
+
+        FavoritesStore store =
+                new FavoritesStore(
+                        context);
+
+        store.toggle(
+                "old.app");
+
+        store.replaceAll(
+                Set.of(
+                        "new.a",
+                        "new.b"));
+
+        FavoritesStore reloaded =
+                new FavoritesStore(
+                        context);
+
+        assertFalse(
+                reloaded.isFavorite(
+                        "old.app"));
+
+        assertTrue(
+                reloaded.isFavorite(
+                        "new.a"));
+
+        assertTrue(
+                reloaded.isFavorite(
+                        "new.b"));
     }
 
     @Test

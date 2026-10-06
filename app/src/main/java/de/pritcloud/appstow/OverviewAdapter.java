@@ -107,6 +107,12 @@ final class OverviewAdapter
     private String itemSortSectionId;
 
     private boolean semiAutomaticSorting;
+    private boolean fullAutomaticSorting;
+
+    private final Set<String>
+            automaticFavoritePackages =
+            new HashSet<>();
+
     private boolean automaticFavorites;
     private boolean automaticCategories;
     private boolean automaticApps;
@@ -172,6 +178,11 @@ final class OverviewAdapter
             Map<String, Integer> profileLaunches,
             boolean timeProfileEnabled) {
 
+        fullAutomaticSorting =
+                false;
+
+        automaticFavoritePackages.clear();
+
         semiAutomaticSorting =
                 enabled;
 
@@ -216,6 +227,77 @@ final class OverviewAdapter
                         profileLaunches);
             }
         }
+
+        refreshFavoriteApps();
+        refreshShortcutEntries();
+
+        rebuildRows();
+        notifyStructureChanged();
+    }
+
+    void setFullAutomaticSorting(
+            Set<String> favoritePackages,
+            Map<String, Integer> overallScores,
+            Map<String, Integer> profileScores,
+            Map<String, Integer> profileLaunches,
+            boolean timeProfileEnabled) {
+
+        semiAutomaticSorting =
+                false;
+
+        fullAutomaticSorting =
+                true;
+
+        sortMode =
+                false;
+
+        itemSortSectionId =
+                null;
+
+        automaticFavorites =
+                true;
+
+        automaticCategories =
+                true;
+
+        automaticApps =
+                true;
+
+        automaticShortcuts =
+                true;
+
+        automaticTimeProfileEnabled =
+                timeProfileEnabled;
+
+        automaticFavoritePackages.clear();
+
+        if (favoritePackages != null) {
+
+            automaticFavoritePackages.addAll(
+                    favoritePackages);
+        }
+
+        automaticOverallScores.clear();
+        automaticProfileScores.clear();
+        automaticProfileLaunches.clear();
+
+        if (overallScores != null) {
+            automaticOverallScores.putAll(
+                    overallScores);
+        }
+
+        if (profileScores != null) {
+            automaticProfileScores.putAll(
+                    profileScores);
+        }
+
+        if (profileLaunches != null) {
+            automaticProfileLaunches.putAll(
+                    profileLaunches);
+        }
+
+        refreshFavoriteApps();
+        refreshShortcutEntries();
 
         rebuildRows();
         notifyStructureChanged();
@@ -310,13 +392,24 @@ final class OverviewAdapter
     }
 
     private void refreshFavoriteApps() {
+
         favoriteApps.clear();
 
-        for (AppEntry app : allApps) {
-            if (favoritesStore.isFavorite(
-                    app.packageName)) {
+        for (AppEntry app :
+                allApps) {
 
-                favoriteApps.add(app);
+            boolean favorite =
+                    fullAutomaticSorting
+                            ? automaticFavoritePackages
+                                    .contains(
+                                            app.packageName)
+                            : favoritesStore.isFavorite(
+                                    app.packageName);
+
+            if (favorite) {
+
+                favoriteApps.add(
+                        app);
             }
         }
     }
@@ -328,8 +421,13 @@ final class OverviewAdapter
     }
 
     private List<ShortcutEntry> getFavoriteShortcuts() {
+
         List<ShortcutEntry> result =
                 new ArrayList<>();
+
+        if (fullAutomaticSorting) {
+            return result;
+        }
 
         for (ShortcutEntry shortcut :
                 allShortcuts) {
@@ -342,6 +440,111 @@ final class OverviewAdapter
         return result;
     }
 
+    private List<String> getCurrentItemIds(
+            OverviewSection section) {
+
+        List<String> currentIds =
+                new ArrayList<>();
+
+        if ("favorites".equals(
+                section.id)) {
+
+            for (AppEntry app :
+                    favoriteApps) {
+
+                currentIds.add(
+                        SectionItemOrderStore
+                                .appItemId(
+                                        app.packageName));
+            }
+
+            for (ShortcutEntry shortcut :
+                    getFavoriteShortcuts()) {
+
+                currentIds.add(
+                        SectionItemOrderStore
+                                .shortcutItemId(
+                                        shortcut.id));
+            }
+
+            return currentIds;
+        }
+
+        if (section.id.startsWith(
+                CATEGORY_PREFIX)) {
+
+            String categoryId =
+                    section.id.substring(
+                            CATEGORY_PREFIX.length());
+
+            for (AppEntry app :
+                    getCategoryApps(
+                            categoryId)) {
+
+                currentIds.add(
+                        SectionItemOrderStore
+                                .appItemId(
+                                        app.packageName));
+            }
+
+            for (ShortcutEntry shortcut :
+                    getCategoryShortcuts(
+                            categoryId)) {
+
+                currentIds.add(
+                        SectionItemOrderStore
+                                .shortcutItemId(
+                                        shortcut.id));
+            }
+
+            return currentIds;
+        }
+
+        if ("shortcuts".equals(
+                section.id)) {
+
+            for (ShortcutEntry shortcut :
+                    allShortcuts) {
+
+                currentIds.add(
+                        SectionItemOrderStore
+                                .shortcutItemId(
+                                        shortcut.id));
+            }
+        }
+
+        return currentIds;
+    }
+
+    private List<String> getRankedItemIds(
+            OverviewSection section,
+            List<String> currentIds) {
+
+        List<String> baselineIds =
+                sectionItemOrderStore
+                        .getOrderedIds(
+                                section.id,
+                                currentIds);
+
+        Set<String> automaticIds =
+                getAutomaticItemIds(
+                        section,
+                        baselineIds);
+
+        if (automaticIds.isEmpty()) {
+            return baselineIds;
+        }
+
+        return AutomaticSortEngine
+                .rankSelectedIds(
+                        baselineIds,
+                        automaticIds,
+                        automaticOverallScores,
+                        automaticProfileScores,
+                        automaticProfileLaunches,
+                        automaticTimeProfileEnabled);
+    }
+
     private void materializeSemiAutomaticOrders() {
 
         if (!semiAutomaticSorting) {
@@ -352,101 +555,39 @@ final class OverviewAdapter
                 sections) {
 
             List<String> currentIds =
-                    new ArrayList<>();
-
-            if ("favorites".equals(
-                    section.id)) {
-
-                for (AppEntry app :
-                        favoriteApps) {
-
-                    currentIds.add(
-                            SectionItemOrderStore
-                                    .appItemId(
-                                            app.packageName));
-                }
-
-                for (ShortcutEntry shortcut :
-                        getFavoriteShortcuts()) {
-
-                    currentIds.add(
-                            SectionItemOrderStore
-                                    .shortcutItemId(
-                                            shortcut.id));
-                }
-
-            } else if (section.id.startsWith(
-                    CATEGORY_PREFIX)) {
-
-                String categoryId =
-                        section.id.substring(
-                                CATEGORY_PREFIX.length());
-
-                for (AppEntry app :
-                        getCategoryApps(
-                                categoryId)) {
-
-                    currentIds.add(
-                            SectionItemOrderStore
-                                    .appItemId(
-                                            app.packageName));
-                }
-
-                for (ShortcutEntry shortcut :
-                        getCategoryShortcuts(
-                                categoryId)) {
-
-                    currentIds.add(
-                            SectionItemOrderStore
-                                    .shortcutItemId(
-                                            shortcut.id));
-                }
-
-            } else if ("shortcuts".equals(
-                    section.id)) {
-
-                for (ShortcutEntry shortcut :
-                        allShortcuts) {
-
-                    currentIds.add(
-                            SectionItemOrderStore
-                                    .shortcutItemId(
-                                            shortcut.id));
-                }
-            }
+                    getCurrentItemIds(
+                            section);
 
             if (currentIds.isEmpty()) {
                 continue;
             }
 
-            List<String> baselineIds =
-                    sectionItemOrderStore
-                            .getOrderedIds(
-                                    section.id,
-                                    currentIds);
-
-            Set<String> automaticIds =
-                    getAutomaticItemIds(
+            sectionItemOrderStore.saveOrder(
+                    section.id,
+                    getRankedItemIds(
                             section,
-                            baselineIds);
+                            currentIds));
+        }
+    }
 
-            if (automaticIds.isEmpty()) {
-                continue;
-            }
+    void materializeFullAutomaticOrders() {
 
-            List<String> rankedIds =
-                    AutomaticSortEngine
-                            .rankSelectedIds(
-                                    baselineIds,
-                                    automaticIds,
-                                    automaticOverallScores,
-                                    automaticProfileScores,
-                                    automaticProfileLaunches,
-                                    automaticTimeProfileEnabled);
+        if (!fullAutomaticSorting) {
+            return;
+        }
+
+        for (OverviewSection section :
+                sections) {
+
+            List<String> currentIds =
+                    getCurrentItemIds(
+                            section);
 
             sectionItemOrderStore.saveOrder(
                     section.id,
-                    rankedIds);
+                    getRankedItemIds(
+                            section,
+                            currentIds));
         }
     }
 
@@ -690,9 +831,18 @@ final class OverviewAdapter
         Set<String> result =
                 new HashSet<>();
 
-        if (!semiAutomaticSorting
+        if ((!semiAutomaticSorting
+                && !fullAutomaticSorting)
                 || section == null
                 || itemIds == null) {
+
+            return result;
+        }
+
+        if (fullAutomaticSorting) {
+
+            result.addAll(
+                    itemIds);
 
             return result;
         }
@@ -789,17 +939,24 @@ final class OverviewAdapter
     private boolean isSectionOrderAutomatic(
             OverviewSection section) {
 
-        return semiAutomaticSorting
-                && automaticCategories
-                && section != null;
+        return section != null
+                && (fullAutomaticSorting
+                || (semiAutomaticSorting
+                && automaticCategories));
     }
 
     private boolean isSectionItemsFullyAutomatic(
             OverviewSection section) {
 
-        if (!semiAutomaticSorting
-                || section == null) {
+        if (section == null) {
+            return false;
+        }
 
+        if (fullAutomaticSorting) {
+            return true;
+        }
+
+        if (!semiAutomaticSorting) {
             return false;
         }
 
@@ -1321,8 +1478,12 @@ final class OverviewAdapter
                                 : View.VISIBLE);
 
         boolean favorite =
-                favoritesStore.isFavorite(
-                        app.packageName);
+                fullAutomaticSorting
+                        ? automaticFavoritePackages
+                                .contains(
+                                        app.packageName)
+                        : favoritesStore.isFavorite(
+                                app.packageName);
 
         updateFavoriteButton(
                 holder,
@@ -1330,6 +1491,7 @@ final class OverviewAdapter
 
         holder.favorite.setVisibility(
                 itemSortMode
+                        || fullAutomaticSorting
                         ? View.GONE
                         : View.VISIBLE);
 
@@ -1364,29 +1526,37 @@ final class OverviewAdapter
         } else {
             holder.itemDragHandle.setOnTouchListener(null);
 
-            holder.favorite
-                    .setOnClickListener(v -> {
-                        Runnable toggleFavorite = () -> {
-                            favoritesStore.toggle(
-                                    app.packageName);
+            if (fullAutomaticSorting) {
 
-                            refreshFavoriteApps();
-                            rebuildRows();
-                            notifyStructureChanged();
-                        };
+                holder.favorite.setOnClickListener(
+                        null);
 
-                        if (!favoritesStore.isFavorite(
-                                app.packageName)) {
+            } else {
 
-                            toggleFavorite.run();
-                            return;
-                        }
+                holder.favorite
+                        .setOnClickListener(v -> {
+                            Runnable toggleFavorite = () -> {
+                                favoritesStore.toggle(
+                                        app.packageName);
 
-                        FavoriteConfirmation.confirmRemoval(
-                                holder.itemView.getContext(),
-                                app.label,
-                                toggleFavorite);
-                    });
+                                refreshFavoriteApps();
+                                rebuildRows();
+                                notifyStructureChanged();
+                            };
+
+                            if (!favoritesStore.isFavorite(
+                                    app.packageName)) {
+
+                                toggleFavorite.run();
+                                return;
+                            }
+
+                            FavoriteConfirmation.confirmRemoval(
+                                    holder.itemView.getContext(),
+                                    app.label,
+                                    toggleFavorite);
+                        });
+            }
 
             holder.itemView
                     .setOnClickListener(v ->
@@ -1468,6 +1638,7 @@ final class OverviewAdapter
 
         holder.favorite.setVisibility(
                 itemSortMode
+                        || fullAutomaticSorting
                         ? View.GONE
                         : View.VISIBLE);
 
@@ -1499,27 +1670,35 @@ final class OverviewAdapter
         } else {
             holder.itemDragHandle.setOnTouchListener(null);
 
-            holder.favorite
-                    .setOnClickListener(v -> {
-                        Runnable toggleFavorite = () -> {
-                            shortcutStore.toggleFavorite(
-                                    shortcut.id);
+            if (fullAutomaticSorting) {
 
-                            refreshShortcutEntries();
-                            rebuildRows();
-                            notifyStructureChanged();
-                        };
+                holder.favorite.setOnClickListener(
+                        null);
 
-                        if (!shortcut.favorite) {
-                            toggleFavorite.run();
-                            return;
-                        }
+            } else {
 
-                        FavoriteConfirmation.confirmRemoval(
-                                holder.itemView.getContext(),
-                                shortcut.name,
-                                toggleFavorite);
-                    });
+                holder.favorite
+                        .setOnClickListener(v -> {
+                            Runnable toggleFavorite = () -> {
+                                shortcutStore.toggleFavorite(
+                                        shortcut.id);
+
+                                refreshShortcutEntries();
+                                rebuildRows();
+                                notifyStructureChanged();
+                            };
+
+                            if (!shortcut.favorite) {
+                                toggleFavorite.run();
+                                return;
+                            }
+
+                            FavoriteConfirmation.confirmRemoval(
+                                    holder.itemView.getContext(),
+                                    shortcut.name,
+                                    toggleFavorite);
+                        });
+            }
 
             holder.itemView
                     .setOnClickListener(v ->
@@ -1567,6 +1746,12 @@ final class OverviewAdapter
             boolean enabled) {
 
         if (sortMode == enabled) {
+            return;
+        }
+
+        if (enabled
+                && fullAutomaticSorting) {
+
             return;
         }
 

@@ -120,6 +120,18 @@ final class ShortcutEditorDialog {
                 view.findViewById(
                         R.id.shortcutEditFavorite);
 
+        boolean favoriteEditingEnabled =
+                new SortingSettingsStore(
+                        activity)
+                        .load()
+                        .mode
+                        != SortingSettingsStore.Mode.AUTOMATIC;
+
+        favorite.setVisibility(
+                favoriteEditingEnabled
+                        ? View.VISIBLE
+                        : View.GONE);
+
         networkHelp.setPaintFlags(
                 networkHelp.getPaintFlags()
                         | Paint.UNDERLINE_TEXT_FLAG);

@@ -199,6 +199,146 @@ public class MainActivityRecreationTest {
     }
 
     @Test
+    public void fullAutomaticModeKeepsOverviewSortButtonHidden() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        new SortingSettingsStore(
+                context)
+                .save(
+                        new SortingSettingsStore.Settings(
+                                SortingSettingsStore.Mode.AUTOMATIC,
+                                true,
+                                true,
+                                true,
+                                true,
+                                false,
+                                8,
+                                21,
+                                10,
+                                false));
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        EditText search =
+                                activity.findViewById(
+                                        R.id.appSearch);
+
+                        search.setText(
+                                "test");
+
+                        search.setText(
+                                "");
+
+                        ImageButton sort =
+                                activity.findViewById(
+                                        R.id.buttonSortOverview);
+
+                        assertEquals(
+                                View.GONE,
+                                sort.getVisibility());
+                    });
+        }
+    }
+
+    @Test
+    public void automaticStartupFavoritesCountOnceAcrossRecreation() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        new SortingSettingsStore(
+                context)
+                .save(
+                        new SortingSettingsStore.Settings(
+                                SortingSettingsStore.Mode.AUTOMATIC,
+                                true,
+                                true,
+                                true,
+                                true,
+                                false,
+                                8,
+                                21,
+                                10,
+                                true));
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        UsageStatisticsStore store =
+                                getPrivateField(
+                                        activity,
+                                        "usageStatisticsStore",
+                                        UsageStatisticsStore.class);
+
+                        UsageStatisticsStore.TimeProfile profile =
+                                store.getCurrentTimeProfile(
+                                        8,
+                                        21);
+
+                        UsageStatisticsStore.SortingSnapshot sorting =
+                                store.getSortingSnapshot(
+                                        profile,
+                                        8,
+                                        21);
+
+                        assertEquals(
+                                1,
+                                sorting.getProfileSectionLaunches()
+                                        .get("favorites")
+                                        .intValue());
+
+                        assertEquals(
+                                0,
+                                store.getSnapshot(
+                                                UsageStatisticsStore.Period.ONE_MONTH)
+                                        .getTotalLaunches());
+                    });
+
+            scenario.recreate();
+
+            scenario.onActivity(
+                    activity -> {
+
+                        UsageStatisticsStore store =
+                                getPrivateField(
+                                        activity,
+                                        "usageStatisticsStore",
+                                        UsageStatisticsStore.class);
+
+                        UsageStatisticsStore.TimeProfile profile =
+                                store.getCurrentTimeProfile(
+                                        8,
+                                        21);
+
+                        UsageStatisticsStore.SortingSnapshot sorting =
+                                store.getSortingSnapshot(
+                                        profile,
+                                        8,
+                                        21);
+
+                        assertEquals(
+                                1,
+                                sorting.getProfileSectionLaunches()
+                                        .get("favorites")
+                                        .intValue());
+                    });
+        }
+    }
+
+    @Test
     public void categoryManagementUsesGlobalGridMode() {
 
         Context context =

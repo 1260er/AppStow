@@ -304,6 +304,66 @@ final class UsageStatisticsStore {
                 + categoryId;
     }
 
+    void recordSectionAccess(
+            String sectionId) {
+
+        Set<String> sectionIds =
+                singleSectionSet(
+                        sectionId);
+
+        if (sectionIds.isEmpty()) {
+            return;
+        }
+
+        ZonedDateTime now =
+                ZonedDateTime.now(
+                        clock);
+
+        LocalDate today =
+                now.toLocalDate();
+
+        int hour =
+                now.getHour();
+
+        pruneOldDays(
+                today);
+
+        String key =
+                dayKey(
+                        today);
+
+        JSONObject day =
+                parseDay(
+                        preferences.getString(
+                                key,
+                                null));
+
+        incrementSections(
+                day,
+                sectionIds);
+
+        JSONObject hours =
+                getOrCreateObject(
+                        day,
+                        KEY_HOURS);
+
+        JSONObject hourly =
+                getOrCreateObject(
+                        hours,
+                        Integer.toString(
+                                hour));
+
+        incrementSections(
+                hourly,
+                sectionIds);
+
+        preferences.edit()
+                .putString(
+                        key,
+                        day.toString())
+                .apply();
+    }
+
     TimeProfile getCurrentTimeProfile(
             int dayStartHour,
             int eveningStartHour) {

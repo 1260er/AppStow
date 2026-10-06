@@ -51,6 +51,7 @@ final class ShortcutAdapter
 
     private final CategoryStore categoryStore;
     private final Listener listener;
+    private boolean favoriteEditingEnabled = true;
 
     ShortcutAdapter(
             CategoryStore categoryStore,
@@ -60,6 +61,21 @@ final class ShortcutAdapter
 
         this.categoryStore = categoryStore;
         this.listener = listener;
+    }
+
+    void setFavoriteEditingEnabled(
+            boolean enabled) {
+
+        if (favoriteEditingEnabled
+                == enabled) {
+
+            return;
+        }
+
+        favoriteEditingEnabled =
+                enabled;
+
+        notifyDataSetChanged();
     }
 
     void setShortcuts(List<ShortcutEntry> items) {
@@ -146,21 +162,34 @@ final class ShortcutAdapter
         holder.content.setOnClickListener(v ->
                 listener.onEdit(shortcut));
 
-        holder.favorite.setOnClickListener(v -> {
-            if (!shortcut.favorite) {
-                listener.onFavorite(
-                        shortcut);
+        holder.favorite.setVisibility(
+                favoriteEditingEnabled
+                        ? View.VISIBLE
+                        : View.GONE);
 
-                return;
-            }
+        if (favoriteEditingEnabled) {
 
-            FavoriteConfirmation.confirmRemoval(
-                    holder.itemView.getContext(),
-                    shortcut.name,
-                    () ->
-                            listener.onFavorite(
-                                    shortcut));
-        });
+            holder.favorite.setOnClickListener(v -> {
+                if (!shortcut.favorite) {
+                    listener.onFavorite(
+                            shortcut);
+
+                    return;
+                }
+
+                FavoriteConfirmation.confirmRemoval(
+                        holder.itemView.getContext(),
+                        shortcut.name,
+                        () ->
+                                listener.onFavorite(
+                                        shortcut));
+            });
+
+        } else {
+
+            holder.favorite.setOnClickListener(
+                    null);
+        }
 
         holder.delete.setOnClickListener(v ->
                 listener.onDelete(shortcut));

@@ -315,6 +315,13 @@ public class MainActivity extends Activity {
     private final List<String> manualOverviewBaselineOrder =
             new ArrayList<>();
 
+    private final Set<String>
+            currentAutomaticFavoritePackages =
+            new HashSet<>();
+
+    private UsageStatisticsStore.TimeProfile
+            lastAppliedSortingProfile;
+
     private final Handler sortingProfileHandler =
             new Handler(
                     Looper.getMainLooper());
@@ -692,7 +699,7 @@ public class MainActivity extends Activity {
                         this::showOverview,
                         this::showSectionGridColumnsDialog);
 
-        applySemiAutomaticOverviewSorting();
+        applyOverviewSorting();
 
         overviewAdapter.setGridMode(
                 overviewDisplayPreferences.getBoolean(
@@ -917,7 +924,7 @@ public class MainActivity extends Activity {
 
                     overviewSortButton.setVisibility(
                             query.trim().isEmpty()
-                                    && !isSemiAutomaticSectionOrderEnabled()
+                                    && !isAutomaticSectionOrderEnabled()
                                     ? View.VISIBLE
                                     : View.GONE);
 
@@ -943,6 +950,7 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState == null) {
             showOverview();
+            applyAutomaticStartupFavorites();
         } else {
             showOnlyUnassignedApps =
                     savedInstanceState.getBoolean(
@@ -1441,7 +1449,7 @@ public class MainActivity extends Activity {
         applySavedOverviewOrder();
 
         captureManualOverviewBaseline();
-        applySemiAutomaticOverviewSorting();
+        applyOverviewSorting();
     }
 
     private void applySavedOverviewOrder() {
@@ -1526,15 +1534,21 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void applySemiAutomaticOverviewSorting() {
+    private void applyOverviewSorting() {
 
         SortingSettingsStore.Settings settings =
                 sortingSettingsStore.load();
 
+        updateFavoriteEditingState();
+
         if (settings.mode
-                != SortingSettingsStore.Mode.SEMI_AUTOMATIC) {
+                == SortingSettingsStore.Mode.MANUAL) {
+
+            currentAutomaticFavoritePackages.clear();
+            lastAppliedSortingProfile = null;
 
             if (overviewAdapter != null) {
+
                 overviewAdapter.setSemiAutomaticSorting(
                         false,
                         false,
@@ -1558,6 +1572,11 @@ public class MainActivity extends Activity {
                                         settings.eveningStartHour)
                         : UsageStatisticsStore.TimeProfile.DAY;
 
+        lastAppliedSortingProfile =
+                settings.timeProfileEnabled
+                        ? activeProfile
+                        : null;
+
         UsageStatisticsStore.SortingSnapshot sorting =
                 usageStatisticsStore.getSortingSnapshot(
                         activeProfile,
@@ -1573,7 +1592,42 @@ public class MainActivity extends Activity {
         UsageStatisticsStore.Snapshot profileLaunches =
                 sorting.getProfileLaunches();
 
+        if (settings.mode
+                == SortingSettingsStore.Mode.AUTOMATIC) {
+
+            currentAutomaticFavoritePackages.clear();
+
+            currentAutomaticFavoritePackages.addAll(
+                    buildAutomaticFavoritePackages(
+                            settings,
+                            sorting));
+
+            applyAutomaticSectionOrder(
+                    sorting.getOverallSectionCounts(),
+                    sorting.getProfileSectionCounts(),
+                    sorting.getProfileSectionLaunches(),
+                    settings.timeProfileEnabled);
+
+            if (overviewAdapter != null) {
+
+                overviewAdapter.setFullAutomaticSorting(
+                        currentAutomaticFavoritePackages,
+                        createItemScoreMap(
+                                overall),
+                        createItemScoreMap(
+                                profile),
+                        createItemScoreMap(
+                                profileLaunches),
+                        settings.timeProfileEnabled);
+            }
+
+            return;
+        }
+
+        currentAutomaticFavoritePackages.clear();
+
         if (settings.semiCategories) {
+
             applySemiAutomaticSectionOrder(
                     sorting.getOverallSectionCounts(),
                     sorting.getProfileSectionCounts(),
@@ -1626,6 +1680,112 @@ public class MainActivity extends Activity {
         }
 
         return result;
+    }
+
+    private Set<String> buildAutomaticFavoritePackages(
+            SortingSettingsStore.Settings settings,
+            UsageStatisticsStore.SortingSnapshot sorting) {
+
+        List<String> allAppItemIds =
+                new ArrayList<>();
+
+        for (AppEntry app :
+                apps) {
+
+            allAppItemIds.add(
+                    SectionItemOrderStore.appItemId(
+                            app.packageName));
+        }
+
+        List<String> orderedAppItemIds =
+                sectionItemOrderStore
+                        .getOrderedIds(
+                                "favorites",
+                                allAppItemIds);
+
+        List<String> baselinePackages =
+                new ArrayList<>();
+
+        for (String id :
+                orderedAppItemIds) {
+
+            if (id.startsWith(
+                    "app:")) {
+
+                baselinePackages.add(
+                        id.substring(
+                                "app:".length()));
+            }
+        }
+
+        List<String> ranked =
+                AutomaticSortingPlanner
+                        .selectTopUsedIds(
+                                baselinePackages,
+                                settings.automaticFavoriteCount,
+                                sorting.getOverallWeighted()
+                                        .getAppCounts(),
+                                sorting.getProfileWeighted()
+                                        .getAppCounts(),
+                                sorting.getProfileLaunches()
+                                        .getAppCounts(),
+                                settings.timeProfileEnabled);
+
+        return new HashSet<>(
+                ranked);
+    }
+
+    private void applyAutomaticSectionOrder(
+            Map<String, Integer> overallSectionCounts,
+            Map<String, Integer> profileSectionCounts,
+            Map<String, Integer> profileSectionLaunches,
+            boolean timeProfileEnabled) {
+
+        Map<String, OverviewSection> sectionsById =
+                new HashMap<>();
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            sectionsById.put(
+                    section.id,
+                    section);
+        }
+
+        List<String> ranked =
+                AutomaticSortingPlanner
+                        .rankSections(
+                                manualOverviewBaselineOrder,
+                                overallSectionCounts,
+                                profileSectionCounts,
+                                profileSectionLaunches,
+                                timeProfileEnabled);
+
+        List<OverviewSection> reordered =
+                new ArrayList<>();
+
+        for (String id :
+                ranked) {
+
+            OverviewSection section =
+                    sectionsById.get(
+                            id);
+
+            if (section != null) {
+
+                reordered.add(
+                        section);
+            }
+        }
+
+        if (reordered.size()
+                == overviewSections.size()) {
+
+            overviewSections.clear();
+
+            overviewSections.addAll(
+                    reordered);
+        }
     }
 
     private void applySemiAutomaticSectionOrder(
@@ -1697,6 +1857,72 @@ public class MainActivity extends Activity {
         captureManualOverviewBaseline();
     }
 
+    private void materializeFullAutomaticState() {
+
+        if (overviewAdapter != null) {
+
+            overviewAdapter
+                    .materializeFullAutomaticOrders();
+        }
+
+        overviewOrderStore.saveOrder(
+                overviewSections);
+
+        favoritesStore.replaceAll(
+                currentAutomaticFavoritePackages);
+
+        /*
+         * Vollautomatische Favoriten bestehen
+         * ausschließlich aus Apps.
+         */
+        shortcutStore.clearFavorites();
+
+        captureManualOverviewBaseline();
+    }
+
+    private void updateFavoriteEditingState() {
+
+        if (sortingSettingsStore == null) {
+            return;
+        }
+
+        boolean enabled =
+                sortingSettingsStore
+                        .load()
+                        .mode
+                        != SortingSettingsStore.Mode.AUTOMATIC;
+
+        if (appAdapter != null) {
+
+            appAdapter.setFavoriteEditingEnabled(
+                    enabled);
+        }
+
+        if (shortcutAdapter != null) {
+
+            shortcutAdapter.setFavoriteEditingEnabled(
+                    enabled);
+        }
+    }
+
+    private boolean isCurrentFavoriteApp(
+            String packageName) {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        if (settings.mode
+                == SortingSettingsStore.Mode.AUTOMATIC) {
+
+            return currentAutomaticFavoritePackages
+                    .contains(
+                            packageName);
+        }
+
+        return favoritesStore.isFavorite(
+                packageName);
+    }
+
     private void refreshOverviewForSortingSettingsChange() {
 
         if (overviewAdapter == null) {
@@ -1722,11 +1948,31 @@ public class MainActivity extends Activity {
                 sortingSettingsStore.load();
 
         if (settings.mode
-                == SortingSettingsStore.Mode.SEMI_AUTOMATIC
-                && settings.timeProfileEnabled) {
+                == SortingSettingsStore.Mode.MANUAL
+                || !settings.timeProfileEnabled) {
 
-            refreshOverviewForSortingSettingsChange();
+            lastAppliedSortingProfile = null;
+            return;
         }
+
+        UsageStatisticsStore.TimeProfile current =
+                usageStatisticsStore
+                        .getCurrentTimeProfile(
+                                settings.dayStartHour,
+                                settings.eveningStartHour);
+
+        /*
+         * Rückkehr aus einer gestarteten App soll
+         * nicht sofort umsortieren. Nur ein echter
+         * Profilwechsel löst hier neu aus.
+         */
+        if (current
+                == lastAppliedSortingProfile) {
+
+            return;
+        }
+
+        refreshOverviewForSortingSettingsChange();
     }
 
     private void scheduleNextSortingProfileBoundary() {
@@ -1746,7 +1992,7 @@ public class MainActivity extends Activity {
                 sortingSettingsStore.load();
 
         if (settings.mode
-                != SortingSettingsStore.Mode.SEMI_AUTOMATIC
+                == SortingSettingsStore.Mode.MANUAL
                 || !settings.timeProfileEnabled) {
 
             return;
@@ -1787,7 +2033,7 @@ public class MainActivity extends Activity {
             boolean enabled) {
 
         if (enabled
-                && isSemiAutomaticSectionOrderEnabled()) {
+                && isAutomaticSectionOrderEnabled()) {
 
             return;
         }
@@ -2005,14 +2251,93 @@ public class MainActivity extends Activity {
         appFilterButton.setVisibility(View.GONE);
     }
 
-    private boolean isSemiAutomaticSectionOrderEnabled() {
+    private void applyAutomaticStartupFavorites() {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        if (settings.mode
+                != SortingSettingsStore.Mode.AUTOMATIC
+                || !settings.alwaysStartFavorites) {
+
+            return;
+        }
+
+        /*
+         * Dieser Zugriff beeinflusst ausschließlich
+         * die Sortierbewertung. Sichtbare Statistik-
+         * Zähler und Gesamtstarts bleiben unverändert.
+         */
+        usageStatisticsStore.recordSectionAccess(
+                "favorites");
+
+        refreshOverviewForSortingSettingsChange();
+
+        OverviewSection favorites =
+                null;
+
+        int favoritesIndex =
+                -1;
+
+        for (int i = 0;
+             i < overviewSections.size();
+             i++) {
+
+            OverviewSection section =
+                    overviewSections.get(i);
+
+            if ("favorites".equals(
+                    section.id)) {
+
+                favorites =
+                        section;
+
+                favoritesIndex =
+                        i;
+
+                break;
+            }
+        }
+
+        if (favorites == null) {
+            return;
+        }
+
+        if (overviewAdapter.isGridMode()) {
+
+            openGridSection(
+                    favorites);
+
+            return;
+        }
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            section.expanded =
+                    section == favorites;
+        }
+
+        overviewAdapter.setApps(
+                apps);
+
+        if (favoritesIndex >= 0) {
+
+            overviewList.scrollToPosition(
+                    favoritesIndex);
+        }
+    }
+
+    private boolean isAutomaticSectionOrderEnabled() {
 
         SortingSettingsStore.Settings settings =
                 sortingSettingsStore.load();
 
         return settings.mode
+                == SortingSettingsStore.Mode.AUTOMATIC
+                || (settings.mode
                 == SortingSettingsStore.Mode.SEMI_AUTOMATIC
-                && settings.semiCategories;
+                && settings.semiCategories);
     }
 
     private void showOverview() {
@@ -2046,7 +2371,7 @@ public class MainActivity extends Activity {
 
         overviewSortButton.setVisibility(
                 overviewSearchQuery.trim().isEmpty()
-                        && !isSemiAutomaticSectionOrderEnabled()
+                        && !isAutomaticSectionOrderEnabled()
                         ? View.VISIBLE
                         : View.GONE);
 
@@ -2684,7 +3009,7 @@ public class MainActivity extends Activity {
                     app.packageName,
                     app.label);
 
-            if (favoritesStore.isFavorite(
+            if (isCurrentFavoriteApp(
                     app.packageName)) {
 
                 favoriteApps.add(
@@ -3009,7 +3334,7 @@ public class MainActivity extends Activity {
                             app.label,
                             null,
                             true,
-                            favoritesStore.isFavorite(
+                            isCurrentFavoriteApp(
                                     app.packageName)));
         }
 
@@ -3021,7 +3346,23 @@ public class MainActivity extends Activity {
                 categoryStore.getCategories();
 
         List<String> savedOrder =
-                overviewOrderStore.getOrder();
+                new ArrayList<>();
+
+        if (sortingSettingsStore.load().mode
+                == SortingSettingsStore.Mode.AUTOMATIC) {
+
+            for (OverviewSection section :
+                    overviewSections) {
+
+                savedOrder.add(
+                        section.id);
+            }
+
+        } else {
+
+            savedOrder.addAll(
+                    overviewOrderStore.getOrder());
+        }
 
         if (savedOrder.isEmpty()) {
             return categories;
@@ -5490,8 +5831,18 @@ public class MainActivity extends Activity {
                         current.automaticFavoriteCount,
                         sortingAlwaysStartFavorites.isChecked());
 
+        if (current.mode
+                == SortingSettingsStore.Mode.AUTOMATIC
+                && updated.mode
+                != SortingSettingsStore.Mode.AUTOMATIC) {
+
+            materializeFullAutomaticState();
+        }
+
         sortingSettingsStore.save(
                 updated);
+
+        updateFavoriteEditingState();
 
         updateSortingModeVisibility(
                 updated);
@@ -5734,6 +6085,10 @@ public class MainActivity extends Activity {
                                                     updated);
 
                                             refreshSortingSettingsUi();
+
+                                            refreshOverviewForSortingSettingsChange();
+                                            scheduleNextSortingProfileBoundary();
+
                                             dialog.dismiss();
                                         }));
 

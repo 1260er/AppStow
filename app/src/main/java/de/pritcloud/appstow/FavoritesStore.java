@@ -30,6 +30,33 @@ final class FavoritesStore {
         return favorites.contains(packageName);
     }
 
+    void replaceAll(
+            Set<String> packageNames) {
+
+        favorites.clear();
+
+        if (packageNames != null) {
+
+            for (String packageName :
+                    packageNames) {
+
+                if (packageName != null
+                        && !packageName.isBlank()) {
+
+                    favorites.add(
+                            packageName);
+                }
+            }
+        }
+
+        preferences.edit()
+                .putStringSet(
+                        KEY_PACKAGES,
+                        new HashSet<>(
+                                favorites))
+                .apply();
+    }
+
     boolean toggle(String packageName) {
         boolean favorite;
 

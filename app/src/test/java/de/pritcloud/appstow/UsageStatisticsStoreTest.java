@@ -666,6 +666,55 @@ public class UsageStatisticsStoreTest {
     }
 
     @Test
+    public void sectionAccessAffectsOnlySortingCounters() {
+
+        UsageStatisticsStore store =
+                storeAt(
+                        "2026-10-05T12:00:00Z");
+
+        store.recordSectionAccess(
+                "favorites");
+
+        UsageStatisticsStore.Snapshot visible =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH);
+
+        assertEquals(
+                0,
+                visible.getTotalLaunches());
+
+        assertTrue(
+                visible.getAppCounts()
+                        .isEmpty());
+
+        assertTrue(
+                visible.getShortcutCounts()
+                        .isEmpty());
+
+        assertTrue(
+                visible.getCategoryCounts()
+                        .isEmpty());
+
+        UsageStatisticsStore.SortingSnapshot sorting =
+                store.getSortingSnapshot(
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        8,
+                        21);
+
+        assertEquals(
+                4,
+                sorting.getOverallSectionCounts()
+                        .get("favorites")
+                        .intValue());
+
+        assertEquals(
+                1,
+                sorting.getProfileSectionLaunches()
+                        .get("favorites")
+                        .intValue());
+    }
+
+    @Test
     public void sortingSnapshotTracksAllOverviewAreas() {
 
         UsageStatisticsStore store =

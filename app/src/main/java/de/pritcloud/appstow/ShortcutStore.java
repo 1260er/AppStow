@@ -97,6 +97,40 @@ final class ShortcutStore {
         }
     }
 
+    void clearFavorites() {
+
+        boolean changed =
+                false;
+
+        for (int i = 0;
+             i < shortcuts.size();
+             i++) {
+
+            ShortcutEntry shortcut =
+                    shortcuts.get(i);
+
+            if (!shortcut.favorite) {
+                continue;
+            }
+
+            shortcuts.set(
+                    i,
+                    new ShortcutEntry(
+                            shortcut.id,
+                            shortcut.name,
+                            shortcut.type,
+                            shortcut.target,
+                            shortcut.categoryIds,
+                            false));
+
+            changed = true;
+        }
+
+        if (changed) {
+            save();
+        }
+    }
+
     void removeCategory(String categoryId) {
         boolean changed = false;
 

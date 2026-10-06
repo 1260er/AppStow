@@ -131,6 +131,39 @@ public class ShortcutStoreTest {
     }
 
     @Test
+    public void clearFavoritesMaterializesAutomaticState() {
+
+        store.add(
+                "Favorite",
+                ShortcutEntry.TYPE_WEBSITE,
+                "https://favorite.example",
+                Set.of(),
+                true);
+
+        store.add(
+                "Normal",
+                ShortcutEntry.TYPE_WEBSITE,
+                "https://normal.example",
+                Set.of(),
+                false);
+
+        store.clearFavorites();
+
+        List<ShortcutEntry> shortcuts =
+                new ShortcutStore(
+                        context)
+                        .getShortcuts();
+
+        assertFalse(
+                shortcuts.get(0)
+                        .favorite);
+
+        assertFalse(
+                shortcuts.get(1)
+                        .favorite);
+    }
+
+    @Test
     public void removeCategoryUpdatesAllAffectedShortcuts() {
         store.add(
                 "One",
