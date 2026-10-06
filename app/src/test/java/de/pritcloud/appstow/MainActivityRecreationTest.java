@@ -291,13 +291,25 @@ public class MainActivityRecreationTest {
                                         null,
                                         1);
 
+                        CategoryStore categoryStore =
+                                getPrivateField(
+                                        activity,
+                                        "categoryStore",
+                                        CategoryStore.class);
+
+                        categoryStore.setAssignedCategoryIds(
+                                "com.example.mail",
+                                java.util.Set.of(
+                                        "work"));
+
                         ShortcutEntry shortcut =
                                 new ShortcutEntry(
                                         "shortcut-weather",
                                         "Weather",
                                         ShortcutEntry.TYPE_WEBSITE,
                                         "https://example.com",
-                                        java.util.Collections.emptySet(),
+                                        java.util.Set.of(
+                                                "work"),
                                         false);
 
                         OverviewSection category =
@@ -388,6 +400,41 @@ public class MainActivityRecreationTest {
                         assertEquals(
                                 4,
                                 snapshot.getTotalLaunches());
+
+                        UsageStatisticsStore.TimeProfile profile =
+                                store.getCurrentTimeProfile(
+                                        8,
+                                        21);
+
+                        UsageStatisticsStore.SortingSnapshot sorting =
+                                store.getSortingSnapshot(
+                                        profile,
+                                        8,
+                                        21);
+
+                        /*
+                         * Vier erfolgreiche Starts:
+                         * App direkt aus Work,
+                         * App aus Favoriten,
+                         * Shortcut direkt aus Work,
+                         * Shortcut aus Favoriten.
+                         *
+                         * Da beide Einträge Work zugeordnet sind,
+                         * zählt Work für die Sortierung bei allen vier.
+                         * Die sichtbare Kategorienstatistik oben
+                         * bleibt dagegen bei den zwei direkten Starts.
+                         */
+                        assertEquals(
+                                4,
+                                sorting.getProfileSectionLaunches()
+                                        .get("category:work")
+                                        .intValue());
+
+                        assertEquals(
+                                2,
+                                sorting.getProfileSectionLaunches()
+                                        .get("favorites")
+                                        .intValue());
                     });
         }
     }

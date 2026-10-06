@@ -13,7 +13,9 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 final class UsageStatisticsStore {
 
@@ -208,8 +210,9 @@ final class UsageStatisticsStore {
         recordAppLaunch(
                 packageName,
                 categoryId,
-                categorySectionId(
-                        categoryId));
+                singleSectionSet(
+                        categorySectionId(
+                                categoryId)));
     }
 
     void recordAppLaunch(
@@ -217,11 +220,23 @@ final class UsageStatisticsStore {
             String categoryId,
             String sectionId) {
 
+        recordAppLaunch(
+                packageName,
+                categoryId,
+                singleSectionSet(
+                        sectionId));
+    }
+
+    void recordAppLaunch(
+            String packageName,
+            String categoryId,
+            Set<String> sectionIds) {
+
         recordLaunch(
                 KEY_APPS,
                 packageName,
                 categoryId,
-                sectionId);
+                sectionIds);
     }
 
     void recordShortcutLaunch(
@@ -231,8 +246,9 @@ final class UsageStatisticsStore {
         recordShortcutLaunch(
                 shortcutId,
                 categoryId,
-                categorySectionId(
-                        categoryId));
+                singleSectionSet(
+                        categorySectionId(
+                                categoryId)));
     }
 
     void recordShortcutLaunch(
@@ -240,11 +256,39 @@ final class UsageStatisticsStore {
             String categoryId,
             String sectionId) {
 
+        recordShortcutLaunch(
+                shortcutId,
+                categoryId,
+                singleSectionSet(
+                        sectionId));
+    }
+
+    void recordShortcutLaunch(
+            String shortcutId,
+            String categoryId,
+            Set<String> sectionIds) {
+
         recordLaunch(
                 KEY_SHORTCUTS,
                 shortcutId,
                 categoryId,
-                sectionId);
+                sectionIds);
+    }
+
+    private static Set<String> singleSectionSet(
+            String sectionId) {
+
+        Set<String> result =
+                new HashSet<>();
+
+        if (sectionId != null
+                && !sectionId.isBlank()) {
+
+            result.add(
+                    sectionId);
+        }
+
+        return result;
     }
 
     private static String categorySectionId(
@@ -759,7 +803,7 @@ final class UsageStatisticsStore {
             String targetGroup,
             String targetId,
             String categoryId,
-            String sectionId) {
+            Set<String> sectionIds) {
 
         if (targetId == null
                 || targetId.isBlank()) {
@@ -804,14 +848,9 @@ final class UsageStatisticsStore {
                     categoryId);
         }
 
-        if (sectionId != null
-                && !sectionId.isBlank()) {
-
-            increment(
-                    day,
-                    KEY_SECTIONS,
-                    sectionId);
-        }
+        incrementSections(
+                day,
+                sectionIds);
 
         JSONObject hours =
                 getOrCreateObject(
@@ -838,20 +877,47 @@ final class UsageStatisticsStore {
                     categoryId);
         }
 
-        if (sectionId != null
-                && !sectionId.isBlank()) {
-
-            increment(
-                    hourly,
-                    KEY_SECTIONS,
-                    sectionId);
-        }
+        incrementSections(
+                hourly,
+                sectionIds);
 
         preferences.edit()
                 .putString(
                         key,
                         day.toString())
                 .apply();
+    }
+
+    private static void incrementSections(
+            JSONObject target,
+            Set<String> sectionIds) {
+
+        if (target == null
+                || sectionIds == null
+                || sectionIds.isEmpty()) {
+
+            return;
+        }
+
+        Set<String> unique =
+                new HashSet<>();
+
+        for (String sectionId :
+                sectionIds) {
+
+            if (sectionId == null
+                    || sectionId.isBlank()
+                    || !unique.add(
+                            sectionId)) {
+
+                continue;
+            }
+
+            increment(
+                    target,
+                    KEY_SECTIONS,
+                    sectionId);
+        }
     }
 
     static TimeProfile resolveTimeProfile(

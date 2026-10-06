@@ -4761,6 +4761,44 @@ public class MainActivity extends Activity {
         return null;
     }
 
+    private Set<String> getSortingSectionIds(
+            OverviewSection sourceSection,
+            Set<String> assignedCategoryIds) {
+
+        Set<String> result =
+                new HashSet<>();
+
+        String sourceSectionId =
+                getStatisticsSectionId(
+                        sourceSection);
+
+        if (sourceSectionId != null
+                && !sourceSectionId.isBlank()) {
+
+            result.add(
+                    sourceSectionId);
+        }
+
+        if (assignedCategoryIds != null) {
+
+            for (String categoryId :
+                    assignedCategoryIds) {
+
+                if (categoryId == null
+                        || categoryId.isBlank()) {
+
+                    continue;
+                }
+
+                result.add(
+                        "category:"
+                                + categoryId);
+            }
+        }
+
+        return result;
+    }
+
     private void recordAppLaunch(
             OverviewSection section,
             AppEntry app) {
@@ -4769,8 +4807,11 @@ public class MainActivity extends Activity {
                 app.packageName,
                 getStatisticsCategoryId(
                         section),
-                getStatisticsSectionId(
-                        section));
+                getSortingSectionIds(
+                        section,
+                        categoryStore
+                                .getAssignedCategoryIds(
+                                        app.packageName)));
     }
 
     private void recordShortcutLaunch(
@@ -4781,8 +4822,9 @@ public class MainActivity extends Activity {
                 shortcut.id,
                 getStatisticsCategoryId(
                         section),
-                getStatisticsSectionId(
-                        section));
+                getSortingSectionIds(
+                        section,
+                        shortcut.categoryIds));
     }
 
     private void launchShortcut(

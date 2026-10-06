@@ -13,6 +13,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Set;
 
 import org.json.JSONObject;
 
@@ -553,6 +554,115 @@ public class UsageStatisticsStoreTest {
                                 18)
                         .getAppCounts()
                         .isEmpty());
+    }
+
+    @Test
+    public void assignedCategoriesCountForSortingButNotVisibleCategoryStatistics() {
+
+        UsageStatisticsStore store =
+                storeAt(
+                        "2026-10-05T12:00:00Z");
+
+        store.recordAppLaunch(
+                "app.office",
+                null,
+                Set.of(
+                        "favorites",
+                        "category:office",
+                        "category:communication"));
+
+        UsageStatisticsStore.Snapshot visible =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH);
+
+        assertTrue(
+                visible.getCategoryCounts()
+                        .isEmpty());
+
+        UsageStatisticsStore.SortingSnapshot sorting =
+                store.getSortingSnapshot(
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        8,
+                        21);
+
+        assertEquals(
+                4,
+                sorting.getOverallSectionCounts()
+                        .get("favorites")
+                        .intValue());
+
+        assertEquals(
+                4,
+                sorting.getOverallSectionCounts()
+                        .get("category:office")
+                        .intValue());
+
+        assertEquals(
+                4,
+                sorting.getOverallSectionCounts()
+                        .get("category:communication")
+                        .intValue());
+
+        assertEquals(
+                1,
+                sorting.getProfileSectionLaunches()
+                        .get("favorites")
+                        .intValue());
+
+        assertEquals(
+                1,
+                sorting.getProfileSectionLaunches()
+                        .get("category:office")
+                        .intValue());
+
+        assertEquals(
+                1,
+                sorting.getProfileSectionLaunches()
+                        .get("category:communication")
+                        .intValue());
+    }
+
+    @Test
+    public void directCategoryLaunchDoesNotDoubleCountItsSortingCategory() {
+
+        UsageStatisticsStore store =
+                storeAt(
+                        "2026-10-05T12:00:00Z");
+
+        store.recordAppLaunch(
+                "app.office",
+                "office",
+                Set.of(
+                        "category:office",
+                        "category:communication"));
+
+        UsageStatisticsStore.Snapshot visible =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH);
+
+        assertEquals(
+                1,
+                visible.getCategoryCounts()
+                        .get("office")
+                        .intValue());
+
+        UsageStatisticsStore.SortingSnapshot sorting =
+                store.getSortingSnapshot(
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        8,
+                        21);
+
+        assertEquals(
+                4,
+                sorting.getOverallSectionCounts()
+                        .get("category:office")
+                        .intValue());
+
+        assertEquals(
+                4,
+                sorting.getOverallSectionCounts()
+                        .get("category:communication")
+                        .intValue());
     }
 
     @Test
