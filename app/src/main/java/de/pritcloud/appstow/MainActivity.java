@@ -6162,113 +6162,64 @@ public class MainActivity extends Activity {
         SortingSettingsStore.Settings current =
                 sortingSettingsStore.load();
 
-        EditText input =
-                new EditText(this);
+        CharSequence[] choices =
+                new CharSequence[50];
 
-        input.setInputType(
-                InputType.TYPE_CLASS_NUMBER);
+        for (int index = 0;
+             index < choices.length;
+             index++) {
 
-        input.setSingleLine(
-                true);
+            choices[index] =
+                    Integer.toString(
+                            index + 1);
+        }
 
-        input.setText(
-                Integer.toString(
-                        current.automaticFavoriteCount));
+        int selected =
+                current.automaticFavoriteCount >= 1
+                        && current.automaticFavoriteCount <= choices.length
+                        ? current.automaticFavoriteCount - 1
+                        : -1;
 
-        input.setSelectAllOnFocus(
-                true);
+        new AlertDialog.Builder(this)
+                .setTitle(
+                        R.string.sorting_favorite_count_title)
+                .setSingleChoiceItems(
+                        choices,
+                        selected,
+                        (dialog, which) -> {
 
-        int padding =
-                getResources()
-                        .getDimensionPixelSize(
-                                R.dimen.spacing_md);
+                            int count =
+                                    which + 1;
 
-        FrameLayout container =
-                new FrameLayout(this);
+                            SortingSettingsStore.Settings updated =
+                                    new SortingSettingsStore.Settings(
+                                            current.mode,
+                                            current.semiFavorites,
+                                            current.semiCategories,
+                                            current.semiApps,
+                                            current.semiShortcuts,
+                                            current.timeProfileEnabled,
+                                            current.dayStartHour,
+                                            current.eveningStartHour,
+                                            count,
+                                            current.alwaysStartFavorites,
+                                            current.suggestionsEnabled,
+                                            current.suggestionIntervalDays);
 
-        container.setPadding(
-                padding,
-                0,
-                padding,
-                0);
+                            sortingSettingsStore.save(
+                                    updated);
 
-        container.addView(
-                input,
-                new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT));
+                            refreshSortingSettingsUi();
 
-        AlertDialog dialog =
-                new AlertDialog.Builder(this)
-                        .setTitle(
-                                R.string.sorting_favorite_count_title)
-                        .setView(
-                                container)
-                        .setPositiveButton(
-                                R.string.action_save,
-                                null)
-                        .setNegativeButton(
-                                R.string.action_cancel,
-                                null)
-                        .create();
+                            refreshOverviewForSortingSettingsChange();
+                            scheduleNextSortingProfileBoundary();
 
-        dialog.setOnShowListener(
-                ignored ->
-                        dialog.getButton(
-                                        DialogInterface.BUTTON_POSITIVE)
-                                .setOnClickListener(
-                                        view -> {
-
-                                            int count;
-
-                                            try {
-                                                count =
-                                                        Integer.parseInt(
-                                                                input.getText()
-                                                                        .toString()
-                                                                        .trim());
-
-                                            } catch (NumberFormatException exception) {
-                                                count = 0;
-                                            }
-
-                                            if (count < 1) {
-                                                Toast.makeText(
-                                                                this,
-                                                                R.string.sorting_favorite_count_invalid,
-                                                                Toast.LENGTH_SHORT)
-                                                        .show();
-
-                                                return;
-                                            }
-
-                                            SortingSettingsStore.Settings updated =
-                                                    new SortingSettingsStore.Settings(
-                                                            current.mode,
-                                                            current.semiFavorites,
-                                                            current.semiCategories,
-                                                            current.semiApps,
-                                                            current.semiShortcuts,
-                                                            current.timeProfileEnabled,
-                                                            current.dayStartHour,
-                                                            current.eveningStartHour,
-                                                            count,
-                                                            current.alwaysStartFavorites,
-                                                            current.suggestionsEnabled,
-                                                            current.suggestionIntervalDays);
-
-                                            sortingSettingsStore.save(
-                                                    updated);
-
-                                            refreshSortingSettingsUi();
-
-                                            refreshOverviewForSortingSettingsChange();
-                                            scheduleNextSortingProfileBoundary();
-
-                                            dialog.dismiss();
-                                        }));
-
-        dialog.show();
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
     }
 
     private void showSortingSuggestionIntervalDialog() {

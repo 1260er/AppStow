@@ -2,6 +2,7 @@ package de.pritcloud.appstow;
 
 import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -165,6 +166,59 @@ public class SortingPageTest {
 
                         assertTrue(
                                 suggestions.isChecked());
+                    });
+        }
+    }
+
+    @Test
+    public void sortingControlsUseConsistentVisualOrder() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navSorting)
+                                .performClick();
+
+                        ViewGroup manual =
+                                activity.findViewById(
+                                        R.id.sortingManualSettings);
+
+                        View manualFavoriteCount =
+                                activity.findViewById(
+                                        R.id.sortingSuggestionFavoriteCount);
+
+                        View interval =
+                                activity.findViewById(
+                                        R.id.sortingSuggestionInterval);
+
+                        assertTrue(
+                                manual.indexOfChild(
+                                        manualFavoriteCount)
+                                        < manual.indexOfChild(
+                                        interval));
+
+                        View automatic =
+                                activity.findViewById(
+                                        R.id.sortingAutomaticSettings);
+
+                        View timeSettings =
+                                activity.findViewById(
+                                        R.id.sortingTimeSettings);
+
+                        ViewGroup parent =
+                                (ViewGroup)
+                                        automatic.getParent();
+
+                        assertTrue(
+                                parent.indexOfChild(
+                                        timeSettings)
+                                        < parent.indexOfChild(
+                                        automatic));
                     });
         }
     }

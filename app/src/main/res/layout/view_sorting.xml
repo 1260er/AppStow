@@ -82,7 +82,7 @@
                 android:text="@string/sorting_suggestions_enabled" />
 
             <TextView
-                android:id="@+id/sortingSuggestionInterval"
+                android:id="@+id/sortingSuggestionFavoriteCount"
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -97,7 +97,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/sortingSuggestionFavoriteCount"
+                android:id="@+id/sortingSuggestionInterval"
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -180,38 +180,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/sortingAutomaticSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                style="@style/UiBodyText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sorting_automatic_description"
-                android:textColor="@color/ui_text_secondary" />
-
-            <TextView
-                android:id="@+id/sortingFavoriteCount"
-                style="@style/UiBodyText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_md"
-                android:background="@drawable/overview_section_background"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:gravity="center_vertical"
-                android:minHeight="56dp"
-                android:paddingHorizontal="@dimen/spacing_md"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/sortingTimeSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -265,6 +233,38 @@
                     android:textStyle="bold" />
 
             </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/sortingAutomaticSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sorting_automatic_description"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                android:id="@+id/sortingFavoriteCount"
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:background="@drawable/overview_section_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:minHeight="56dp"
+                android:paddingHorizontal="@dimen/spacing_md"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
