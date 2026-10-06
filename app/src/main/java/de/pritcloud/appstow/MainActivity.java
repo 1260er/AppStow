@@ -6058,6 +6058,11 @@ public class MainActivity extends Activity {
                         ? View.GONE
                         : View.VISIBLE);
 
+        sortingFavoriteCount.setVisibility(
+                automatic
+                        ? View.VISIBLE
+                        : View.GONE);
+
         sortingTimeDetails.setVisibility(
                 !manual
                         && settings.timeProfileEnabled

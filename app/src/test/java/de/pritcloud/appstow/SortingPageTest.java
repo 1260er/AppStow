@@ -224,6 +224,67 @@ public class SortingPageTest {
     }
 
     @Test
+    public void automaticControlsKeepSwitchBeforeValues() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navSorting)
+                                .performClick();
+
+                        activity.findViewById(
+                                        R.id.sortingModeAutomatic)
+                                .performClick();
+
+                        ViewGroup timeGroup =
+                                activity.findViewById(
+                                        R.id.sortingTimeSettings);
+
+                        View timeProfile =
+                                activity.findViewById(
+                                        R.id.sortingTimeProfileEnabled);
+
+                        View favoriteCount =
+                                activity.findViewById(
+                                        R.id.sortingFavoriteCount);
+
+                        View timeDetails =
+                                activity.findViewById(
+                                        R.id.sortingTimeDetails);
+
+                        assertEquals(
+                                View.VISIBLE,
+                                favoriteCount.getVisibility());
+
+                        assertTrue(
+                                timeGroup.indexOfChild(
+                                        timeProfile)
+                                        < timeGroup.indexOfChild(
+                                        favoriteCount));
+
+                        assertTrue(
+                                timeGroup.indexOfChild(
+                                        favoriteCount)
+                                        < timeGroup.indexOfChild(
+                                        timeDetails));
+
+                        activity.findViewById(
+                                        R.id.sortingModeSemi)
+                                .performClick();
+
+                        assertEquals(
+                                View.GONE,
+                                favoriteCount.getVisibility());
+                    });
+        }
+    }
+
+    @Test
     public void semiAutomaticControlsPersistAcrossRecreation() {
 
         try (ActivityScenario<MainActivity> scenario =
