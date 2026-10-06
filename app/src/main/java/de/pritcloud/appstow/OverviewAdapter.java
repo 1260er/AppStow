@@ -694,9 +694,6 @@ final class OverviewAdapter
             SectionViewHolder holder,
             OverviewSection section) {
 
-        holder.title.setText(
-                section.title);
-
         boolean itemSortMode =
                 section.id.equals(
                         itemSortSectionId);
@@ -706,6 +703,11 @@ final class OverviewAdapter
                         && section.id.equals(
                                 gridOpenSectionId)
                         && searchQuery.isEmpty();
+
+        holder.title.setText(
+                openGridHeader
+                        ? section.gridLabel
+                        : section.title);
 
         holder.itemView.setMinimumHeight(
                 openGridHeader
