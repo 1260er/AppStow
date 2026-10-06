@@ -17,6 +17,9 @@ import java.util.List;
 final class CategoryAdapter
         extends ListAdapter<CategoryEntry, CategoryAdapter.CategoryViewHolder> {
 
+    private static final int TYPE_LIST = 0;
+    private static final int TYPE_GRID = 1;
+
     interface Listener {
         void onRename(CategoryEntry category);
         void onDelete(CategoryEntry category);
@@ -46,15 +49,43 @@ final class CategoryAdapter
             };
 
     private final Listener listener;
+    private boolean gridMode;
 
     CategoryAdapter(Listener listener) {
         super(DIFF_CALLBACK);
         this.listener = listener;
     }
 
-    void setCategories(List<CategoryEntry> items) {
+    boolean isGridMode() {
+        return gridMode;
+    }
+
+    void setGridMode(
+            boolean enabled) {
+
+        if (gridMode == enabled) {
+            return;
+        }
+
+        gridMode = enabled;
+        notifyDataSetChanged();
+    }
+
+    void setCategories(
+            List<CategoryEntry> items) {
+
         submitList(
-                new ArrayList<>(items));
+                new ArrayList<>(
+                        items));
+    }
+
+    @Override
+    public int getItemViewType(
+            int position) {
+
+        return gridMode
+                ? TYPE_GRID
+                : TYPE_LIST;
     }
 
     @NonNull
@@ -63,14 +94,22 @@ final class CategoryAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(
-                        parent.getContext())
-                .inflate(
-                        R.layout.item_category,
-                        parent,
-                        false);
+        int layout =
+                viewType == TYPE_GRID
+                        ? R.layout.item_category_grid
+                        : R.layout.item_category;
 
-        return new CategoryViewHolder(view);
+        View view =
+                LayoutInflater.from(
+                                parent.getContext())
+                        .inflate(
+                                layout,
+                                parent,
+                                false);
+
+        return new CategoryViewHolder(
+                view,
+                viewType == TYPE_GRID);
     }
 
     @Override
@@ -79,39 +118,75 @@ final class CategoryAdapter
             int position) {
 
         CategoryEntry category =
-                getItem(position);
+                getItem(
+                        position);
 
-        holder.name.setText(
-                holder.itemView
-                        .getContext()
-                        .getString(
-                                R.string.category_list_label,
-                                category.symbol,
-                                category.name));
+        if (holder.gridTile) {
 
-        holder.name.setOnClickListener(v ->
-                listener.onRename(category));
+            holder.symbol.setText(
+                    category.symbol);
+
+            holder.name.setText(
+                    category.name);
+
+            holder.name.setOnClickListener(
+                    null);
+
+            holder.itemView.setOnClickListener(v ->
+                    listener.onRename(
+                            category));
+
+        } else {
+
+            holder.name.setText(
+                    holder.itemView
+                            .getContext()
+                            .getString(
+                                    R.string.category_list_label,
+                                    category.symbol,
+                                    category.name));
+
+            holder.name.setOnClickListener(v ->
+                    listener.onRename(
+                            category));
+
+            holder.itemView.setOnClickListener(
+                    null);
+        }
 
         holder.delete.setOnClickListener(v ->
-                listener.onDelete(category));
+                listener.onDelete(
+                        category));
     }
 
     static final class CategoryViewHolder
             extends RecyclerView.ViewHolder {
 
+        final TextView symbol;
         final TextView name;
         final ImageButton delete;
+        final boolean gridTile;
 
         CategoryViewHolder(
-                @NonNull View itemView) {
+                @NonNull View itemView,
+                boolean gridTile) {
 
             super(itemView);
 
-            name = itemView.findViewById(
-                    R.id.categoryName);
+            this.gridTile =
+                    gridTile;
 
-            delete = itemView.findViewById(
-                    R.id.categoryDelete);
+            symbol =
+                    itemView.findViewById(
+                            R.id.categorySymbol);
+
+            name =
+                    itemView.findViewById(
+                            R.id.categoryName);
+
+            delete =
+                    itemView.findViewById(
+                            R.id.categoryDelete);
         }
     }
 }

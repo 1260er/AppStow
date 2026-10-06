@@ -210,6 +210,7 @@ public class MainActivity extends Activity {
     private ImageButton overviewSortButton;
     private GridLayoutManager overviewGridLayoutManager;
     private GridLayoutManager appGridLayoutManager;
+    private GridLayoutManager categoryGridLayoutManager;
     private SharedPreferences overviewDisplayPreferences;
     private SharedPreferences statisticsDisplayPreferences;
     private int overviewGridColumns = 4;
@@ -574,9 +575,16 @@ public class MainActivity extends Activity {
                     }
                 });
 
+        categoryGridLayoutManager =
+                new GridLayoutManager(
+                        this,
+                        1);
+
         categoryList.setLayoutManager(
-                new LinearLayoutManager(this));
-        categoryList.setAdapter(categoryAdapter);
+                categoryGridLayoutManager);
+
+        categoryList.setAdapter(
+                categoryAdapter);
 
         findViewById(R.id.categoryAddButton)
                 .setOnClickListener(v ->
@@ -909,6 +917,7 @@ public class MainActivity extends Activity {
 
                     overviewSortButton.setVisibility(
                             query.trim().isEmpty()
+                                    && !isSemiAutomaticSectionOrderEnabled()
                                     ? View.VISIBLE
                                     : View.GONE);
 
@@ -2145,6 +2154,32 @@ public class MainActivity extends Activity {
         pageMessage.setVisibility(View.GONE);
 
         categoryManagement.setVisibility(View.VISIBLE);
+
+        boolean grid =
+                overviewAdapter.isGridMode();
+
+        int columns =
+                grid
+                        ? overviewGridColumns
+                        : 1;
+
+        boolean layoutChanged =
+                categoryAdapter.isGridMode()
+                        != grid
+                        || categoryGridLayoutManager
+                                .getSpanCount()
+                        != columns;
+
+        categoryAdapter.setGridMode(
+                grid);
+
+        categoryGridLayoutManager.setSpanCount(
+                columns);
+
+        if (layoutChanged) {
+            categoryList.scrollToPosition(
+                    0);
+        }
 
         refreshCategories();
 

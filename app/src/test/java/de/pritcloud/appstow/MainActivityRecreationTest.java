@@ -66,6 +66,9 @@ public class MainActivityRecreationTest {
 
         context.deleteSharedPreferences(
                 "statistics_display");
+
+        context.deleteSharedPreferences(
+                "sorting_settings");
     }
 
     @Test
@@ -140,6 +143,126 @@ public class MainActivityRecreationTest {
                         assertEquals(
                                 "💼 Work",
                                 section.title);
+                    });
+        }
+    }
+
+    @Test
+    public void automaticCategoryOrderKeepsOverviewSortButtonHidden()
+            throws Exception {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        new SortingSettingsStore(
+                context)
+                .save(
+                        new SortingSettingsStore.Settings(
+                                SortingSettingsStore.Mode.SEMI_AUTOMATIC,
+                                false,
+                                true,
+                                false,
+                                false,
+                                false,
+                                8,
+                                21,
+                                10,
+                                false));
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        EditText search =
+                                activity.findViewById(
+                                        R.id.appSearch);
+
+                        search.setText(
+                                "test");
+
+                        search.setText(
+                                "");
+
+                        ImageButton sort =
+                                activity.findViewById(
+                                        R.id.buttonSortOverview);
+
+                        assertEquals(
+                                View.GONE,
+                                sort.getVisibility());
+                    });
+        }
+    }
+
+    @Test
+    public void categoryManagementUsesGlobalGridMode() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        assertTrue(
+                context.getSharedPreferences(
+                                "overview_display",
+                                Context.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                4)
+                        .commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        CategoryStore store =
+                                getPrivateField(
+                                        activity,
+                                        "categoryStore",
+                                        CategoryStore.class);
+
+                        assertTrue(
+                                store.addCategory(
+                                        "Work",
+                                        "💼"));
+
+                        activity.findViewById(
+                                        R.id.navCategories)
+                                .performClick();
+
+                        CategoryAdapter adapter =
+                                getPrivateField(
+                                        activity,
+                                        "categoryAdapter",
+                                        CategoryAdapter.class);
+
+                        GridLayoutManager layoutManager =
+                                getPrivateField(
+                                        activity,
+                                        "categoryGridLayoutManager",
+                                        GridLayoutManager.class);
+
+                        assertTrue(
+                                adapter.isGridMode());
+
+                        assertEquals(
+                                4,
+                                layoutManager
+                                        .getSpanCount());
+
+                        assertEquals(
+                                1,
+                                adapter.getItemCount());
                     });
         }
     }
