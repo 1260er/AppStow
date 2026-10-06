@@ -408,6 +408,140 @@ public class MainActivityRecreationTest {
     }
 
     @Test
+    public void shortcutManagementUsesGlobalGridMode() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        assertTrue(
+                context.getSharedPreferences(
+                                "overview_display",
+                                Context.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean(
+                                "grid_mode",
+                                true)
+                        .putInt(
+                                "grid_columns",
+                                4)
+                        .commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        ShortcutStore store =
+                                getPrivateField(
+                                        activity,
+                                        "shortcutStore",
+                                        ShortcutStore.class);
+
+                        store.add(
+                                "Example",
+                                ShortcutEntry.TYPE_WEBSITE,
+                                "https://example.com",
+                                java.util.Set.of(
+                                        "work"),
+                                true);
+
+                        activity.findViewById(
+                                        R.id.navShortcuts)
+                                .performClick();
+
+                        ShortcutAdapter adapter =
+                                getPrivateField(
+                                        activity,
+                                        "shortcutAdapter",
+                                        ShortcutAdapter.class);
+
+                        GridLayoutManager layoutManager =
+                                getPrivateField(
+                                        activity,
+                                        "shortcutGridLayoutManager",
+                                        GridLayoutManager.class);
+
+                        assertTrue(
+                                adapter.isGridMode());
+
+                        assertEquals(
+                                4,
+                                layoutManager
+                                        .getSpanCount());
+
+                        assertEquals(
+                                1,
+                                adapter.getItemCount());
+                    });
+        }
+    }
+
+    @Test
+    public void managementGridActionsUseConsistentCorners() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        LayoutInflater inflater =
+                LayoutInflater.from(
+                        context);
+
+        View categoryGrid =
+                inflater.inflate(
+                        R.layout.item_category_grid,
+                        new FrameLayout(
+                                context),
+                        false);
+
+        ImageButton categoryDelete =
+                categoryGrid.findViewById(
+                        R.id.categoryDelete);
+
+        FrameLayout.LayoutParams categoryDeleteParams =
+                (FrameLayout.LayoutParams)
+                        categoryDelete.getLayoutParams();
+
+        assertEquals(
+                Gravity.BOTTOM | Gravity.END,
+                categoryDeleteParams.gravity);
+
+        View shortcutGrid =
+                inflater.inflate(
+                        R.layout.item_shortcut_management_grid,
+                        new FrameLayout(
+                                context),
+                        false);
+
+        ImageButton shortcutFavorite =
+                shortcutGrid.findViewById(
+                        R.id.shortcutFavorite);
+
+        ImageButton shortcutDelete =
+                shortcutGrid.findViewById(
+                        R.id.shortcutDelete);
+
+        FrameLayout.LayoutParams favoriteParams =
+                (FrameLayout.LayoutParams)
+                        shortcutFavorite.getLayoutParams();
+
+        FrameLayout.LayoutParams deleteParams =
+                (FrameLayout.LayoutParams)
+                        shortcutDelete.getLayoutParams();
+
+        assertEquals(
+                Gravity.TOP | Gravity.END,
+                favoriteParams.gravity);
+
+        assertEquals(
+                Gravity.BOTTOM | Gravity.END,
+                deleteParams.gravity);
+    }
+
+    @Test
     public void statisticsCountCategoriesOnlyForCategoryLaunches() {
 
         try (ActivityScenario<MainActivity> scenario =

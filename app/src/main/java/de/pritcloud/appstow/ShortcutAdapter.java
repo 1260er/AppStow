@@ -18,6 +18,9 @@ import java.util.List;
 final class ShortcutAdapter
         extends ListAdapter<ShortcutEntry, ShortcutAdapter.ViewHolder> {
 
+    private static final int TYPE_LIST = 0;
+    private static final int TYPE_GRID = 1;
+
     interface Listener {
         void onEdit(ShortcutEntry shortcut);
         void onDelete(ShortcutEntry shortcut);
@@ -40,10 +43,14 @@ final class ShortcutAdapter
                         @NonNull ShortcutEntry oldItem,
                         @NonNull ShortcutEntry newItem) {
 
-                    return oldItem.name.equals(newItem.name)
-                            && oldItem.type.equals(newItem.type)
-                            && oldItem.target.equals(newItem.target)
-                            && oldItem.favorite == newItem.favorite
+                    return oldItem.name.equals(
+                            newItem.name)
+                            && oldItem.type.equals(
+                                    newItem.type)
+                            && oldItem.target.equals(
+                                    newItem.target)
+                            && oldItem.favorite
+                            == newItem.favorite
                             && oldItem.categoryIds.equals(
                                     newItem.categoryIds);
                 }
@@ -51,7 +58,9 @@ final class ShortcutAdapter
 
     private final CategoryStore categoryStore;
     private final Listener listener;
+
     private boolean favoriteEditingEnabled = true;
+    private boolean gridMode;
 
     ShortcutAdapter(
             CategoryStore categoryStore,
@@ -59,8 +68,28 @@ final class ShortcutAdapter
 
         super(DIFF_CALLBACK);
 
-        this.categoryStore = categoryStore;
-        this.listener = listener;
+        this.categoryStore =
+                categoryStore;
+
+        this.listener =
+                listener;
+    }
+
+    boolean isGridMode() {
+        return gridMode;
+    }
+
+    void setGridMode(
+            boolean enabled) {
+
+        if (gridMode == enabled) {
+            return;
+        }
+
+        gridMode =
+                enabled;
+
+        notifyDataSetChanged();
     }
 
     void setFavoriteEditingEnabled(
@@ -78,17 +107,31 @@ final class ShortcutAdapter
         notifyDataSetChanged();
     }
 
-    void setShortcuts(List<ShortcutEntry> items) {
+    void setShortcuts(
+            List<ShortcutEntry> items) {
+
         submitList(
-                new ArrayList<>(items));
+                new ArrayList<>(
+                        items));
     }
 
     void refreshVisibleState() {
+
         if (getItemCount() > 0) {
+
             notifyItemRangeChanged(
                     0,
                     getItemCount());
         }
+    }
+
+    @Override
+    public int getItemViewType(
+            int position) {
+
+        return gridMode
+                ? TYPE_GRID
+                : TYPE_LIST;
     }
 
     @NonNull
@@ -97,14 +140,22 @@ final class ShortcutAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(
-                        parent.getContext())
-                .inflate(
-                        R.layout.item_shortcut_management,
-                        parent,
-                        false);
+        int layout =
+                viewType == TYPE_GRID
+                        ? R.layout.item_shortcut_management_grid
+                        : R.layout.item_shortcut_management;
 
-        return new ViewHolder(view);
+        View view =
+                LayoutInflater.from(
+                                parent.getContext())
+                        .inflate(
+                                layout,
+                                parent,
+                                false);
+
+        return new ViewHolder(
+                view,
+                viewType == TYPE_GRID);
     }
 
     @Override
@@ -113,21 +164,25 @@ final class ShortcutAdapter
             int position) {
 
         ShortcutEntry shortcut =
-                getItem(position);
+                getItem(
+                        position);
 
         holder.name.setText(
                 shortcut.name);
 
         String categories =
-                categoryStore.getCategoryLabel(
-                        shortcut.categoryIds);
+                categoryStore
+                        .getCategoryLabel(
+                                shortcut.categoryIds);
 
         holder.subtitle.setText(
                 categories);
 
         holder.subtitle.setVisibility(
                 categories.isEmpty()
-                        ? View.INVISIBLE
+                        ? holder.gridTile
+                                ? View.GONE
+                                : View.INVISIBLE
                         : View.VISIBLE);
 
         if (ShortcutEntry.TYPE_WEBSITE.equals(
@@ -154,13 +209,16 @@ final class ShortcutAdapter
                         : R.drawable.ic_star_outline);
 
         holder.favorite.setContentDescription(
-                holder.itemView.getContext().getString(
-                        shortcut.favorite
-                                ? R.string.action_remove_favorite
-                                : R.string.action_add_favorite));
+                holder.itemView
+                        .getContext()
+                        .getString(
+                                shortcut.favorite
+                                        ? R.string.action_remove_favorite
+                                        : R.string.action_add_favorite));
 
         holder.content.setOnClickListener(v ->
-                listener.onEdit(shortcut));
+                listener.onEdit(
+                        shortcut));
 
         holder.favorite.setVisibility(
                 favoriteEditingEnabled
@@ -170,7 +228,9 @@ final class ShortcutAdapter
         if (favoriteEditingEnabled) {
 
             holder.favorite.setOnClickListener(v -> {
+
                 if (!shortcut.favorite) {
+
                     listener.onFavorite(
                             shortcut);
 
@@ -192,7 +252,8 @@ final class ShortcutAdapter
         }
 
         holder.delete.setOnClickListener(v ->
-                listener.onDelete(shortcut));
+                listener.onDelete(
+                        shortcut));
     }
 
     static final class ViewHolder
@@ -204,29 +265,40 @@ final class ShortcutAdapter
         final TextView subtitle;
         final ImageButton favorite;
         final ImageButton delete;
+        final boolean gridTile;
 
         ViewHolder(
-                @NonNull View itemView) {
+                @NonNull View itemView,
+                boolean gridTile) {
 
             super(itemView);
 
-            icon = itemView.findViewById(
-                    R.id.shortcutIcon);
+            this.gridTile =
+                    gridTile;
 
-            content = itemView.findViewById(
-                    R.id.shortcutContent);
+            icon =
+                    itemView.findViewById(
+                            R.id.shortcutIcon);
 
-            name = itemView.findViewById(
-                    R.id.shortcutName);
+            content =
+                    itemView.findViewById(
+                            R.id.shortcutContent);
 
-            subtitle = itemView.findViewById(
-                    R.id.shortcutSubtitle);
+            name =
+                    itemView.findViewById(
+                            R.id.shortcutName);
 
-            favorite = itemView.findViewById(
-                    R.id.shortcutFavorite);
+            subtitle =
+                    itemView.findViewById(
+                            R.id.shortcutSubtitle);
 
-            delete = itemView.findViewById(
-                    R.id.shortcutDelete);
+            favorite =
+                    itemView.findViewById(
+                            R.id.shortcutFavorite);
+
+            delete =
+                    itemView.findViewById(
+                            R.id.shortcutDelete);
         }
     }
 }

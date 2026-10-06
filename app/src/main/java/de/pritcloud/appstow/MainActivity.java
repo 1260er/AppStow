@@ -211,6 +211,7 @@ public class MainActivity extends Activity {
     private GridLayoutManager overviewGridLayoutManager;
     private GridLayoutManager appGridLayoutManager;
     private GridLayoutManager categoryGridLayoutManager;
+    private GridLayoutManager shortcutGridLayoutManager;
     private SharedPreferences overviewDisplayPreferences;
     private SharedPreferences statisticsDisplayPreferences;
     private int overviewGridColumns = 4;
@@ -628,8 +629,13 @@ public class MainActivity extends Activity {
                             }
                         });
 
+        shortcutGridLayoutManager =
+                new GridLayoutManager(
+                        this,
+                        1);
+
         shortcutList.setLayoutManager(
-                new LinearLayoutManager(this));
+                shortcutGridLayoutManager);
 
         shortcutList.setAdapter(
                 shortcutAdapter);
@@ -3442,6 +3448,33 @@ public class MainActivity extends Activity {
 
         shortcutManagement.setVisibility(
                 View.VISIBLE);
+
+        boolean grid =
+                overviewAdapter.isGridMode();
+
+        int columns =
+                grid
+                        ? overviewGridColumns
+                        : 1;
+
+        boolean layoutChanged =
+                shortcutAdapter.isGridMode()
+                        != grid
+                        || shortcutGridLayoutManager
+                                .getSpanCount()
+                        != columns;
+
+        shortcutAdapter.setGridMode(
+                grid);
+
+        shortcutGridLayoutManager.setSpanCount(
+                columns);
+
+        if (layoutChanged) {
+
+            shortcutList.scrollToPosition(
+                    0);
+        }
 
         refreshShortcuts();
 
