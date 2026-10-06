@@ -11,7 +11,10 @@ import org.robolectric.annotation.Config;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
+
+import org.json.JSONObject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -306,6 +309,250 @@ public class UsageStatisticsStoreTest {
         assertEquals(
                 0,
                 snapshot.getTotalLaunches());
+    }
+
+    @Test
+    public void hourlyHistoryIsRecordedWithoutEnabledTimeProfile() {
+
+        storeAt(
+                "2026-10-05T06:15:00Z")
+                .recordAppLaunch(
+                        "app.work",
+                        "work");
+
+        storeAt(
+                "2026-10-05T17:45:00Z")
+                .recordAppLaunch(
+                        "app.work",
+                        "work");
+
+        storeAt(
+                "2026-10-05T18:10:00Z")
+                .recordAppLaunch(
+                        "app.home",
+                        null);
+
+        UsageStatisticsStore store =
+                storeAt(
+                        "2026-10-05T20:00:00Z");
+
+        UsageStatisticsStore.Snapshot day =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH,
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        6,
+                        18);
+
+        UsageStatisticsStore.Snapshot evening =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH,
+                        UsageStatisticsStore.TimeProfile.EVENING,
+                        6,
+                        18);
+
+        assertEquals(
+                2,
+                day.getAppCounts()
+                        .get("app.work")
+                        .intValue());
+
+        assertFalse(
+                day.getAppCounts()
+                        .containsKey(
+                                "app.home"));
+
+        assertEquals(
+                1,
+                evening.getAppCounts()
+                        .get("app.home")
+                        .intValue());
+
+        assertEquals(
+                2,
+                day.getCategoryCounts()
+                        .get("work")
+                        .intValue());
+    }
+
+    @Test
+    public void sameHistoryCanBeReevaluatedWithNewTimes() {
+
+        storeAt(
+                "2026-10-05T07:10:00Z")
+                .recordAppLaunch(
+                        "app.example",
+                        null);
+
+        storeAt(
+                "2026-10-05T07:40:00Z")
+                .recordAppLaunch(
+                        "app.example",
+                        null);
+
+        storeAt(
+                "2026-10-05T19:20:00Z")
+                .recordAppLaunch(
+                        "app.example",
+                        null);
+
+        UsageStatisticsStore store =
+                storeAt(
+                        "2026-10-05T22:00:00Z");
+
+        UsageStatisticsStore.Snapshot daySixToEighteen =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH,
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        6,
+                        18);
+
+        UsageStatisticsStore.Snapshot dayEightToTwenty =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH,
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        8,
+                        20);
+
+        assertEquals(
+                2,
+                daySixToEighteen.getAppCounts()
+                        .get("app.example")
+                        .intValue());
+
+        assertEquals(
+                1,
+                dayEightToTwenty.getAppCounts()
+                        .get("app.example")
+                        .intValue());
+
+        UsageStatisticsStore.Snapshot overall =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH);
+
+        assertEquals(
+                3,
+                overall.getAppCounts()
+                        .get("app.example")
+                        .intValue());
+    }
+
+    @Test
+    public void profileBoundariesCanCrossMidnight() {
+
+        assertEquals(
+                UsageStatisticsStore.TimeProfile.DAY,
+                UsageStatisticsStore.resolveTimeProfile(
+                        22,
+                        22,
+                        6));
+
+        assertEquals(
+                UsageStatisticsStore.TimeProfile.DAY,
+                UsageStatisticsStore.resolveTimeProfile(
+                        5,
+                        22,
+                        6));
+
+        assertEquals(
+                UsageStatisticsStore.TimeProfile.EVENING,
+                UsageStatisticsStore.resolveTimeProfile(
+                        6,
+                        22,
+                        6));
+
+        assertEquals(
+                UsageStatisticsStore.TimeProfile.EVENING,
+                UsageStatisticsStore.resolveTimeProfile(
+                        12,
+                        22,
+                        6));
+    }
+
+    @Test
+    public void legacyDaysRemainReadableWithoutInventedHours()
+            throws Exception {
+
+        JSONObject legacyDay =
+                new JSONObject()
+                        .put(
+                                "apps",
+                                new JSONObject()
+                                        .put(
+                                                "legacy.app",
+                                                3))
+                        .put(
+                                "shortcuts",
+                                new JSONObject()
+                                        .put(
+                                                "legacy.shortcut",
+                                                2))
+                        .put(
+                                "categories",
+                                new JSONObject()
+                                        .put(
+                                                "legacy.category",
+                                                4));
+
+        String key =
+                "day_"
+                        + LocalDate.of(
+                                        2026,
+                                        10,
+                                        5)
+                                .toEpochDay();
+
+        context.getSharedPreferences(
+                        "usage_statistics",
+                        Context.MODE_PRIVATE)
+                .edit()
+                .putString(
+                        key,
+                        legacyDay.toString())
+                .commit();
+
+        UsageStatisticsStore store =
+                storeAt(
+                        "2026-10-05T12:00:00Z");
+
+        UsageStatisticsStore.Snapshot overall =
+                store.getSnapshot(
+                        UsageStatisticsStore.Period.ONE_MONTH);
+
+        assertEquals(
+                3,
+                overall.getAppCounts()
+                        .get("legacy.app")
+                        .intValue());
+
+        assertEquals(
+                2,
+                overall.getShortcutCounts()
+                        .get("legacy.shortcut")
+                        .intValue());
+
+        assertEquals(
+                4,
+                overall.getCategoryCounts()
+                        .get("legacy.category")
+                        .intValue());
+
+        assertTrue(
+                store.getSnapshot(
+                                UsageStatisticsStore.Period.ONE_MONTH,
+                                UsageStatisticsStore.TimeProfile.DAY,
+                                6,
+                                18)
+                        .getAppCounts()
+                        .isEmpty());
+
+        assertTrue(
+                store.getSnapshot(
+                                UsageStatisticsStore.Period.ONE_MONTH,
+                                UsageStatisticsStore.TimeProfile.EVENING,
+                                6,
+                                18)
+                        .getAppCounts()
+                        .isEmpty());
     }
 
     private UsageStatisticsStore storeAt(

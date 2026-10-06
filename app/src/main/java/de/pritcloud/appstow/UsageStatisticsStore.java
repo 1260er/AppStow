@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,9 @@ final class UsageStatisticsStore {
     private static final String KEY_CATEGORIES =
             "categories";
 
+    private static final String KEY_HOURS =
+            "hours";
+
     enum Period {
         ONE_MONTH(1),
         THREE_MONTHS(3),
@@ -40,6 +44,11 @@ final class UsageStatisticsStore {
         Period(int months) {
             this.months = months;
         }
+    }
+
+    enum TimeProfile {
+        DAY,
+        EVENING
     }
 
     static final class Snapshot {
@@ -134,7 +143,44 @@ final class UsageStatisticsStore {
                 categoryId);
     }
 
-    Snapshot getSnapshot(Period period) {
+    Snapshot getSnapshot(
+            Period period) {
+
+        return getSnapshotInternal(
+                period,
+                null,
+                0,
+                0);
+    }
+
+    Snapshot getSnapshot(
+            Period period,
+            TimeProfile profile,
+            int dayStartHour,
+            int eveningStartHour) {
+
+        if (profile == null) {
+            throw new IllegalArgumentException(
+                    "Time profile is required.");
+        }
+
+        validateProfileHours(
+                dayStartHour,
+                eveningStartHour);
+
+        return getSnapshotInternal(
+                period,
+                profile,
+                dayStartHour,
+                eveningStartHour);
+    }
+
+    private Snapshot getSnapshotInternal(
+            Period period,
+            TimeProfile profile,
+            int dayStartHour,
+            int eveningStartHour) {
+
         LocalDate today =
                 LocalDate.now(clock);
 
@@ -175,20 +221,70 @@ final class UsageStatisticsStore {
                     parseDay(
                             (String) entry.getValue());
 
-            mergeCounts(
-                    apps,
-                    day.optJSONObject(
-                            KEY_APPS));
+            if (profile == null) {
+                mergeCounts(
+                        apps,
+                        day.optJSONObject(
+                                KEY_APPS));
 
-            mergeCounts(
-                    shortcuts,
-                    day.optJSONObject(
-                            KEY_SHORTCUTS));
+                mergeCounts(
+                        shortcuts,
+                        day.optJSONObject(
+                                KEY_SHORTCUTS));
 
-            mergeCounts(
-                    categories,
+                mergeCounts(
+                        categories,
+                        day.optJSONObject(
+                                KEY_CATEGORIES));
+
+                continue;
+            }
+
+            JSONObject hours =
                     day.optJSONObject(
-                            KEY_CATEGORIES));
+                            KEY_HOURS);
+
+            if (hours == null) {
+                continue;
+            }
+
+            for (int hour = 0;
+                 hour < 24;
+                 hour++) {
+
+                if (resolveTimeProfile(
+                        hour,
+                        dayStartHour,
+                        eveningStartHour)
+                        != profile) {
+
+                    continue;
+                }
+
+                JSONObject hourly =
+                        hours.optJSONObject(
+                                Integer.toString(
+                                        hour));
+
+                if (hourly == null) {
+                    continue;
+                }
+
+                mergeCounts(
+                        apps,
+                        hourly.optJSONObject(
+                                KEY_APPS));
+
+                mergeCounts(
+                        shortcuts,
+                        hourly.optJSONObject(
+                                KEY_SHORTCUTS));
+
+                mergeCounts(
+                        categories,
+                        hourly.optJSONObject(
+                                KEY_CATEGORIES));
+            }
         }
 
         return new Snapshot(
@@ -214,13 +310,22 @@ final class UsageStatisticsStore {
             return;
         }
 
-        LocalDate today =
-                LocalDate.now(clock);
+        ZonedDateTime now =
+                ZonedDateTime.now(
+                        clock);
 
-        pruneOldDays(today);
+        LocalDate today =
+                now.toLocalDate();
+
+        int hour =
+                now.getHour();
+
+        pruneOldDays(
+                today);
 
         String key =
-                dayKey(today);
+                dayKey(
+                        today);
 
         JSONObject day =
                 parseDay(
@@ -242,6 +347,31 @@ final class UsageStatisticsStore {
                     categoryId);
         }
 
+        JSONObject hours =
+                getOrCreateObject(
+                        day,
+                        KEY_HOURS);
+
+        JSONObject hourly =
+                getOrCreateObject(
+                        hours,
+                        Integer.toString(
+                                hour));
+
+        increment(
+                hourly,
+                targetGroup,
+                targetId);
+
+        if (categoryId != null
+                && !categoryId.isBlank()) {
+
+            increment(
+                    hourly,
+                    KEY_CATEGORIES,
+                    categoryId);
+        }
+
         preferences.edit()
                 .putString(
                         key,
@@ -249,28 +379,94 @@ final class UsageStatisticsStore {
                 .apply();
     }
 
+    static TimeProfile resolveTimeProfile(
+            int hour,
+            int dayStartHour,
+            int eveningStartHour) {
+
+        if (!isValidHour(hour)) {
+            throw new IllegalArgumentException(
+                    "Invalid current hour.");
+        }
+
+        validateProfileHours(
+                dayStartHour,
+                eveningStartHour);
+
+        boolean day;
+
+        if (dayStartHour < eveningStartHour) {
+            day =
+                    hour >= dayStartHour
+                            && hour < eveningStartHour;
+        } else {
+            day =
+                    hour >= dayStartHour
+                            || hour < eveningStartHour;
+        }
+
+        return day
+                ? TimeProfile.DAY
+                : TimeProfile.EVENING;
+    }
+
+    private static void validateProfileHours(
+            int dayStartHour,
+            int eveningStartHour) {
+
+        if (!isValidHour(dayStartHour)
+                || !isValidHour(eveningStartHour)
+                || dayStartHour
+                == eveningStartHour) {
+
+            throw new IllegalArgumentException(
+                    "Invalid time profile hours.");
+        }
+    }
+
+    private static boolean isValidHour(
+            int hour) {
+
+        return hour >= 0
+                && hour <= 23;
+    }
+
+    private static JSONObject getOrCreateObject(
+            JSONObject parent,
+            String name) {
+
+        JSONObject object =
+                parent.optJSONObject(
+                        name);
+
+        if (object != null) {
+            return object;
+        }
+
+        object =
+                new JSONObject();
+
+        try {
+            parent.put(
+                    name,
+                    object);
+        } catch (JSONException exception) {
+            throw new IllegalStateException(
+                    exception);
+        }
+
+        return object;
+    }
+
     private static void increment(
-            JSONObject day,
+            JSONObject parent,
             String groupName,
             String id) {
 
         JSONObject group =
-                day.optJSONObject(
+                getOrCreateObject(
+                        parent,
                         groupName);
-
-        if (group == null) {
-            group =
-                    new JSONObject();
-
-            try {
-                day.put(
-                        groupName,
-                        group);
-            } catch (JSONException exception) {
-                throw new IllegalStateException(
-                        exception);
-            }
-        }
 
         int current =
                 group.optInt(
@@ -301,7 +497,8 @@ final class UsageStatisticsStore {
                         .keySet()) {
 
             LocalDate date =
-                    parseDateKey(key);
+                    parseDateKey(
+                            key);
 
             if (date == null
                     || !date.isBefore(
@@ -315,7 +512,8 @@ final class UsageStatisticsStore {
                         preferences.edit();
             }
 
-            editor.remove(key);
+            editor.remove(
+                    key);
         }
 
         if (editor != null) {
