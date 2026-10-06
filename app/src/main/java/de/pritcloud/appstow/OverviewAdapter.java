@@ -707,6 +707,13 @@ final class OverviewAdapter
                                 gridOpenSectionId)
                         && searchQuery.isEmpty();
 
+        holder.itemView.setMinimumHeight(
+                openGridHeader
+                        ? holder.itemView.getResources()
+                                .getDimensionPixelSize(
+                                        R.dimen.icon_button_size)
+                        : holder.defaultMinimumHeight);
+
         if (openGridHeader) {
 
             holder.itemView.setBackground(
@@ -1407,11 +1414,15 @@ final class OverviewAdapter
         final ImageButton backButton;
         final ImageView chevron;
         final ImageView dragHandle;
+        final int defaultMinimumHeight;
 
         SectionViewHolder(
                 @NonNull View itemView) {
 
             super(itemView);
+
+            defaultMinimumHeight =
+                    itemView.getMinimumHeight();
 
             title =
                     itemView.findViewById(
