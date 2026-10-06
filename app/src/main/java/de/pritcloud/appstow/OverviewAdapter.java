@@ -701,6 +701,49 @@ final class OverviewAdapter
                 section.id.equals(
                         itemSortSectionId);
 
+        boolean openGridHeader =
+                gridMode
+                        && section.id.equals(
+                                gridOpenSectionId)
+                        && searchQuery.isEmpty();
+
+        if (openGridHeader) {
+
+            holder.itemView.setBackground(
+                    null);
+
+            holder.itemView.setPaddingRelative(
+                    0,
+                    holder.itemView.getPaddingTop(),
+                    0,
+                    holder.itemView.getPaddingBottom());
+
+            holder.title.setTextAppearance(
+                    R.style.UiScreenTitle);
+
+        } else {
+
+            holder.itemView.setBackgroundResource(
+                    R.drawable.overview_section_background);
+
+            holder.itemView.setPaddingRelative(
+                    holder.itemView.getResources()
+                            .getDimensionPixelSize(
+                                    R.dimen.spacing_md),
+                    holder.itemView.getPaddingTop(),
+                    holder.itemView.getResources()
+                            .getDimensionPixelSize(
+                                    R.dimen.spacing_sm),
+                    holder.itemView.getPaddingBottom());
+
+            holder.title.setTextAppearance(
+                    R.style.UiBodyText);
+        }
+
+        holder.title.setTypeface(
+                holder.title.getTypeface(),
+                android.graphics.Typeface.BOLD);
+
         holder.layoutButton.setVisibility(
                 gridMode
                         && section.id.equals(
@@ -746,7 +789,10 @@ final class OverviewAdapter
                                 : R.string.action_sort_section_items));
 
         holder.chevron.setVisibility(
-                sortMode || itemSortMode || !searchQuery.isEmpty()
+                sortMode
+                        || itemSortMode
+                        || !searchQuery.isEmpty()
+                        || openGridHeader
                         ? View.GONE
                         : View.VISIBLE);
 
