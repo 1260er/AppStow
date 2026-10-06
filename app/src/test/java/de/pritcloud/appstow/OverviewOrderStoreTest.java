@@ -80,6 +80,25 @@ public class OverviewOrderStoreTest {
     }
 
     @Test
+    public void saveOrderIdsDropsInvalidDuplicates() {
+
+        store.saveOrderIds(
+                Arrays.asList(
+                        "favorites",
+                        "category:work",
+                        "category:work",
+                        "",
+                        "shortcuts"));
+
+        assertEquals(
+                Arrays.asList(
+                        "favorites",
+                        "category:work",
+                        "shortcuts"),
+                store.getOrder());
+    }
+
+    @Test
     public void malformedStoredOrderFallsBackToEmpty() {
         context.getSharedPreferences(
                         "overview_order",

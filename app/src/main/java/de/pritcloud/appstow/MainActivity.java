@@ -309,6 +309,9 @@ public class MainActivity extends Activity {
     private final List<OverviewSection> overviewSections =
             new ArrayList<>();
 
+    private final List<String> manualOverviewBaselineOrder =
+            new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -662,6 +665,8 @@ public class MainActivity extends Activity {
                         this::showOverview,
                         this::showSectionGridColumnsDialog);
 
+        applySemiAutomaticOverviewSorting();
+
         overviewAdapter.setGridMode(
                 overviewDisplayPreferences.getBoolean(
                         KEY_GRID_MODE,
@@ -763,8 +768,7 @@ public class MainActivity extends Activity {
                                         viewHolder);
 
                                 if (overviewAdapter.isSortMode()) {
-                                    overviewOrderStore.saveOrder(
-                                            overviewSections);
+                                    saveOverviewOrderPreservingAutomation();
                                 } else if (
                                         overviewAdapter.isItemSortMode()) {
 
@@ -1400,6 +1404,9 @@ public class MainActivity extends Activity {
         overviewSections.add(shortcuts);
 
         applySavedOverviewOrder();
+
+        captureManualOverviewBaseline();
+        applySemiAutomaticOverviewSorting();
     }
 
     private void applySavedOverviewOrder() {
@@ -1472,6 +1479,215 @@ public class MainActivity extends Activity {
         overviewSections.addAll(ordered);
     }
 
+    private void captureManualOverviewBaseline() {
+
+        manualOverviewBaselineOrder.clear();
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            manualOverviewBaselineOrder.add(
+                    section.id);
+        }
+    }
+
+    private void applySemiAutomaticOverviewSorting() {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        if (settings.mode
+                != SortingSettingsStore.Mode.SEMI_AUTOMATIC) {
+
+            if (overviewAdapter != null) {
+                overviewAdapter.setSemiAutomaticSorting(
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        new HashMap<>());
+            }
+
+            return;
+        }
+
+        /*
+         * Phase 4 verwendet bewusst nur den allgemeinen
+         * 7/30/90-Wert. Das Zeitprofil wird in Phase 5
+         * auf dieselbe Engine aufgeschaltet.
+         */
+        UsageStatisticsStore.SortingSnapshot sorting =
+                usageStatisticsStore.getSortingSnapshot(
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        settings.dayStartHour,
+                        settings.eveningStartHour);
+
+        UsageStatisticsStore.Snapshot overall =
+                sorting.getOverallWeighted();
+
+        if (settings.semiCategories) {
+            applySemiAutomaticCategoryOrder(
+                    overall.getCategoryCounts());
+        }
+
+        if (overviewAdapter != null) {
+
+            Map<String, Integer> itemScores =
+                    new HashMap<>();
+
+            for (Map.Entry<String, Integer> entry :
+                    overall.getAppCounts()
+                            .entrySet()) {
+
+                itemScores.put(
+                        SectionItemOrderStore.appItemId(
+                                entry.getKey()),
+                        entry.getValue());
+            }
+
+            for (Map.Entry<String, Integer> entry :
+                    overall.getShortcutCounts()
+                            .entrySet()) {
+
+                itemScores.put(
+                        SectionItemOrderStore.shortcutItemId(
+                                entry.getKey()),
+                        entry.getValue());
+            }
+
+            overviewAdapter.setSemiAutomaticSorting(
+                    true,
+                    settings.semiFavorites,
+                    settings.semiCategories,
+                    settings.semiApps,
+                    settings.semiShortcuts,
+                    itemScores);
+        }
+    }
+
+    private void applySemiAutomaticCategoryOrder(
+            Map<String, Integer> categoryCounts) {
+
+        Set<String> categorySectionIds =
+                new HashSet<>();
+
+        Map<String, Integer> sectionScores =
+                new HashMap<>();
+
+        Map<String, OverviewSection> sectionsById =
+                new HashMap<>();
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            sectionsById.put(
+                    section.id,
+                    section);
+
+            if (!section.id.startsWith(
+                    "category:")) {
+
+                continue;
+            }
+
+            categorySectionIds.add(
+                    section.id);
+
+            String categoryId =
+                    section.id.substring(
+                            "category:".length());
+
+            sectionScores.put(
+                    section.id,
+                    categoryCounts.getOrDefault(
+                            categoryId,
+                            0));
+        }
+
+        List<String> ranked =
+                AutomaticSortEngine.rankSelectedIds(
+                        manualOverviewBaselineOrder,
+                        categorySectionIds,
+                        sectionScores,
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        false);
+
+        List<OverviewSection> reordered =
+                new ArrayList<>();
+
+        for (String id : ranked) {
+            OverviewSection section =
+                    sectionsById.get(id);
+
+            if (section != null) {
+                reordered.add(
+                        section);
+            }
+        }
+
+        if (reordered.size()
+                == overviewSections.size()) {
+
+            overviewSections.clear();
+            overviewSections.addAll(
+                    reordered);
+        }
+    }
+
+    private void saveOverviewOrderPreservingAutomation() {
+
+        List<String> displayed =
+                new ArrayList<>();
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            displayed.add(
+                    section.id);
+        }
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        List<String> orderToSave =
+                displayed;
+
+        if (settings.mode
+                == SortingSettingsStore.Mode.SEMI_AUTOMATIC
+                && settings.semiCategories) {
+
+            Set<String> automaticCategories =
+                    new HashSet<>();
+
+            for (String id :
+                    displayed) {
+
+                if (id.startsWith(
+                        "category:")) {
+
+                    automaticCategories.add(
+                            id);
+                }
+            }
+
+            orderToSave =
+                    AutomaticSortEngine
+                            .preserveSelectedBaselineOrder(
+                                    displayed,
+                                    manualOverviewBaselineOrder,
+                                    automaticCategories);
+        }
+
+        overviewOrderStore.saveOrderIds(
+                orderToSave);
+
+        manualOverviewBaselineOrder.clear();
+        manualOverviewBaselineOrder.addAll(
+                orderToSave);
+    }
+
     private void startOverviewDrag(
             RecyclerView.ViewHolder holder) {
 
@@ -1490,8 +1706,7 @@ public class MainActivity extends Activity {
         if (!enabled
                 && overviewAdapter.isSortMode()) {
 
-            overviewOrderStore.saveOrder(
-                    overviewSections);
+            saveOverviewOrderPreservingAutomation();
         }
 
         overviewAdapter.setSortMode(enabled);

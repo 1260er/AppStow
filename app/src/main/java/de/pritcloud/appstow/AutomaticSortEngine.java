@@ -63,25 +63,9 @@ final class AutomaticSortEngine {
             Map<String, Integer> profileLaunches,
             boolean timeProfileEnabled) {
 
-        Set<String> unique =
-                new LinkedHashSet<>();
-
-        if (baselineOrder != null) {
-            for (String id :
-                    baselineOrder) {
-
-                if (id != null
-                        && !id.isBlank()) {
-
-                    unique.add(
-                            id);
-                }
-            }
-        }
-
         List<String> result =
-                new ArrayList<>(
-                        unique);
+                normalizeOrder(
+                        baselineOrder);
 
         Map<String, Integer> positions =
                 new HashMap<>();
@@ -129,6 +113,166 @@ final class AutomaticSortEngine {
                 });
 
         return result;
+    }
+
+    static List<String> rankSelectedIds(
+            List<String> baselineOrder,
+            Set<String> selectedIds,
+            Map<String, Integer> overallWeighted,
+            Map<String, Integer> profileWeighted,
+            Map<String, Integer> profileLaunches,
+            boolean timeProfileEnabled) {
+
+        List<String> result =
+                normalizeOrder(
+                        baselineOrder);
+
+        if (selectedIds == null
+                || selectedIds.isEmpty()) {
+
+            return result;
+        }
+
+        List<String> selected =
+                new ArrayList<>();
+
+        for (String id : result) {
+            if (selectedIds.contains(id)) {
+                selected.add(id);
+            }
+        }
+
+        if (selected.size() < 2) {
+            return result;
+        }
+
+        List<String> ranked =
+                rankIds(
+                        selected,
+                        overallWeighted,
+                        profileWeighted,
+                        profileLaunches,
+                        timeProfileEnabled);
+
+        int rankedIndex = 0;
+
+        for (int index = 0;
+             index < result.size();
+             index++) {
+
+            if (!selectedIds.contains(
+                    result.get(index))) {
+
+                continue;
+            }
+
+            result.set(
+                    index,
+                    ranked.get(
+                            rankedIndex));
+
+            rankedIndex++;
+        }
+
+        return result;
+    }
+
+    static List<String> preserveSelectedBaselineOrder(
+            List<String> displayedOrder,
+            List<String> baselineOrder,
+            Set<String> selectedIds) {
+
+        List<String> displayed =
+                normalizeOrder(
+                        displayedOrder);
+
+        if (selectedIds == null
+                || selectedIds.isEmpty()) {
+
+            return displayed;
+        }
+
+        Set<String> displayedSelected =
+                new LinkedHashSet<>();
+
+        for (String id : displayed) {
+            if (selectedIds.contains(id)) {
+                displayedSelected.add(id);
+            }
+        }
+
+        List<String> baselineSelected =
+                new ArrayList<>();
+
+        Set<String> added =
+                new LinkedHashSet<>();
+
+        for (String id :
+                normalizeOrder(
+                        baselineOrder)) {
+
+            if (displayedSelected.contains(id)
+                    && added.add(id)) {
+
+                baselineSelected.add(id);
+            }
+        }
+
+        for (String id : displayed) {
+            if (displayedSelected.contains(id)
+                    && added.add(id)) {
+
+                baselineSelected.add(id);
+            }
+        }
+
+        int selectedIndex = 0;
+
+        for (int index = 0;
+             index < displayed.size();
+             index++) {
+
+            if (!selectedIds.contains(
+                    displayed.get(index))) {
+
+                continue;
+            }
+
+            if (selectedIndex
+                    >= baselineSelected.size()) {
+
+                break;
+            }
+
+            displayed.set(
+                    index,
+                    baselineSelected.get(
+                            selectedIndex));
+
+            selectedIndex++;
+        }
+
+        return displayed;
+    }
+
+    private static List<String> normalizeOrder(
+            List<String> order) {
+
+        Set<String> unique =
+                new LinkedHashSet<>();
+
+        if (order != null) {
+            for (String id : order) {
+                if (id != null
+                        && !id.isBlank()) {
+
+                    unique.add(id);
+                }
+            }
+        }
+
+        return new ArrayList<>(
+                unique);
     }
 
     private static int positiveValue(

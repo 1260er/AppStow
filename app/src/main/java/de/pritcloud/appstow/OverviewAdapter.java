@@ -15,9 +15,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 final class OverviewAdapter
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -104,6 +106,20 @@ final class OverviewAdapter
     private boolean sortMode;
     private String itemSortSectionId;
 
+    private boolean semiAutomaticSorting;
+    private boolean automaticFavorites;
+    private boolean automaticCategories;
+    private boolean automaticApps;
+    private boolean automaticShortcuts;
+
+    private final Map<String, Integer>
+            automaticItemScores =
+            new HashMap<>();
+
+    private final Map<String, List<String>>
+            manualBaselineOrders =
+            new HashMap<>();
+
     OverviewAdapter(
             List<OverviewSection> sections,
             FavoritesStore favoritesStore,
@@ -137,6 +153,50 @@ final class OverviewAdapter
 
         refreshShortcutEntries();
         rebuildRows();
+    }
+
+    void setSemiAutomaticSorting(
+            boolean enabled,
+            boolean favorites,
+            boolean categories,
+            boolean apps,
+            boolean shortcuts,
+            Map<String, Integer> itemScores) {
+
+        semiAutomaticSorting =
+                enabled;
+
+        automaticFavorites =
+                enabled
+                        && favorites;
+
+        automaticCategories =
+                enabled
+                        && categories;
+
+        automaticApps =
+                enabled
+                        && apps;
+
+        automaticShortcuts =
+                enabled
+                        && shortcuts;
+
+        automaticItemScores.clear();
+
+        if (enabled
+                && itemScores != null) {
+
+            automaticItemScores.putAll(
+                    itemScores);
+        }
+
+        if (!enabled) {
+            manualBaselineOrders.clear();
+        }
+
+        rebuildRows();
+        notifyStructureChanged();
     }
 
     void setApps(List<AppEntry> apps) {
@@ -460,10 +520,32 @@ final class OverviewAdapter
                             shortcut));
         }
 
-        List<String> orderedIds =
+        List<String> baselineIds =
                 sectionItemOrderStore.getOrderedIds(
                         section.id,
                         currentIds);
+
+        if (searchQuery.isEmpty()) {
+            manualBaselineOrders.put(
+                    section.id,
+                    new ArrayList<>(
+                            baselineIds));
+        }
+
+        Set<String> automaticIds =
+                getAutomaticItemIds(
+                        section,
+                        baselineIds);
+
+        List<String> orderedIds =
+                AutomaticSortEngine
+                        .rankSelectedIds(
+                                baselineIds,
+                                automaticIds,
+                                automaticItemScores,
+                                Collections.emptyMap(),
+                                Collections.emptyMap(),
+                                false);
 
         for (String id : orderedIds) {
             Row row =
@@ -473,6 +555,146 @@ final class OverviewAdapter
                 rows.add(row);
             }
         }
+    }
+
+    private Set<String> getAutomaticItemIds(
+            OverviewSection section,
+            List<String> itemIds) {
+
+        Set<String> result =
+                new HashSet<>();
+
+        if (!semiAutomaticSorting
+                || section == null
+                || itemIds == null) {
+
+            return result;
+        }
+
+        if ("favorites".equals(
+                section.id)) {
+
+            if (automaticFavorites) {
+                result.addAll(
+                        itemIds);
+            }
+
+            return result;
+        }
+
+        if ("shortcuts".equals(
+                section.id)) {
+
+            if (automaticShortcuts) {
+                for (String id :
+                        itemIds) {
+
+                    if (id.startsWith(
+                            "shortcut:")) {
+
+                        result.add(id);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        if (!section.id.startsWith(
+                CATEGORY_PREFIX)) {
+
+            return result;
+        }
+
+        for (String id :
+                itemIds) {
+
+            if (automaticApps
+                    && id.startsWith(
+                    "app:")) {
+
+                result.add(id);
+
+            } else if (automaticShortcuts
+                    && id.startsWith(
+                    "shortcut:")) {
+
+                result.add(id);
+            }
+        }
+
+        return result;
+    }
+
+    private boolean isItemAutomatic(
+            OverviewSection section,
+            String itemId) {
+
+        if (itemId == null) {
+            return false;
+        }
+
+        List<String> ids =
+                Collections.singletonList(
+                        itemId);
+
+        return !getAutomaticItemIds(
+                section,
+                ids)
+                .isEmpty();
+    }
+
+    private boolean isSectionOrderAutomatic(
+            OverviewSection section) {
+
+        return semiAutomaticSorting
+                && automaticCategories
+                && section != null
+                && section.id.startsWith(
+                CATEGORY_PREFIX);
+    }
+
+    private boolean isSectionItemsFullyAutomatic(
+            OverviewSection section) {
+
+        if (!semiAutomaticSorting
+                || section == null) {
+
+            return false;
+        }
+
+        if ("favorites".equals(
+                section.id)) {
+
+            return automaticFavorites;
+        }
+
+        if ("shortcuts".equals(
+                section.id)) {
+
+            return automaticShortcuts;
+        }
+
+        return section.id.startsWith(
+                CATEGORY_PREFIX)
+                && automaticApps
+                && automaticShortcuts;
+    }
+
+    private OverviewSection findSection(
+            String sectionId) {
+
+        for (OverviewSection section :
+                sections) {
+
+            if (section.id.equals(
+                    sectionId)) {
+
+                return section;
+            }
+        }
+
+        return null;
     }
 
     private List<AppEntry> getCategoryApps(
@@ -656,27 +878,40 @@ final class OverviewAdapter
         holder.itemView.setContentDescription(
                 section.gridLabel);
 
+        boolean sectionDraggable =
+                sortMode
+                        && !isSectionOrderAutomatic(
+                        section);
+
         holder.dragHandle.setVisibility(
-                sortMode ? View.VISIBLE : View.GONE);
+                sectionDraggable
+                        ? View.VISIBLE
+                        : View.GONE);
 
         if (sortMode) {
             holder.itemView.setOnClickListener(null);
 
-            holder.itemView.setOnLongClickListener(v -> {
-                dragStartListener.onDragStart(holder);
-                return true;
-            });
+            if (sectionDraggable) {
+                holder.itemView.setOnLongClickListener(v -> {
+                    dragStartListener.onDragStart(holder);
+                    return true;
+                });
 
-            holder.dragHandle.setOnTouchListener(
-                    (view, event) -> {
-                        if (event.getActionMasked()
-                                == MotionEvent.ACTION_DOWN) {
-                            dragStartListener.onDragStart(
-                                    holder);
-                        }
+                holder.dragHandle.setOnTouchListener(
+                        (view, event) -> {
+                            if (event.getActionMasked()
+                                    == MotionEvent.ACTION_DOWN) {
+                                dragStartListener.onDragStart(
+                                        holder);
+                            }
 
-                        return false;
-                    });
+                            return false;
+                        });
+            } else {
+                holder.itemView.setOnLongClickListener(null);
+                holder.itemView.setLongClickable(false);
+                holder.dragHandle.setOnTouchListener(null);
+            }
 
         } else {
             holder.dragHandle.setOnTouchListener(null);
@@ -782,7 +1017,10 @@ final class OverviewAdapter
                         .onGridSectionClose());
 
         holder.sortButton.setVisibility(
-                sortMode || !searchQuery.isEmpty()
+                sortMode
+                        || !searchQuery.isEmpty()
+                        || isSectionItemsFullyAutomatic(
+                        section)
                         ? View.GONE
                         : View.VISIBLE);
 
@@ -807,6 +1045,8 @@ final class OverviewAdapter
 
         holder.dragHandle.setVisibility(
                 sortMode
+                        && !isSectionOrderAutomatic(
+                        section)
                         ? View.VISIBLE
                         : View.GONE);
 
@@ -837,19 +1077,29 @@ final class OverviewAdapter
                     .setOnClickListener(
                             null);
 
-            holder.dragHandle
-                    .setOnTouchListener(
-                            (view, event) -> {
-                                if (event.getActionMasked()
-                                        == MotionEvent.ACTION_DOWN) {
+            if (isSectionOrderAutomatic(
+                    section)) {
 
-                                    dragStartListener
-                                            .onDragStart(
-                                                    holder);
-                                }
+                holder.dragHandle
+                        .setOnTouchListener(
+                                null);
 
-                                return false;
-                            });
+            } else {
+
+                holder.dragHandle
+                        .setOnTouchListener(
+                                (view, event) -> {
+                                    if (event.getActionMasked()
+                                            == MotionEvent.ACTION_DOWN) {
+
+                                        dragStartListener
+                                                .onDragStart(
+                                                        holder);
+                                    }
+
+                                    return false;
+                                });
+            }
 
             return;
         }
@@ -896,6 +1146,16 @@ final class OverviewAdapter
                 section.id.equals(
                         itemSortSectionId);
 
+        String appItemId =
+                SectionItemOrderStore.appItemId(
+                        app.packageName);
+
+        boolean itemDraggable =
+                itemSortMode
+                        && !isItemAutomatic(
+                        section,
+                        appItemId);
+
         appIconLoader.bind(
                 holder.icon,
                 app);
@@ -932,7 +1192,7 @@ final class OverviewAdapter
                         : View.VISIBLE);
 
         holder.itemDragHandle.setVisibility(
-                itemSortMode
+                itemDraggable
                         ? View.VISIBLE
                         : View.GONE);
 
@@ -943,17 +1203,21 @@ final class OverviewAdapter
             holder.itemView.setOnLongClickListener(null);
             holder.itemView.setLongClickable(false);
 
-            holder.itemDragHandle.setOnTouchListener(
-                    (view, event) -> {
-                        if (event.getActionMasked()
-                                == MotionEvent.ACTION_DOWN) {
+            if (itemDraggable) {
+                holder.itemDragHandle.setOnTouchListener(
+                        (view, event) -> {
+                            if (event.getActionMasked()
+                                    == MotionEvent.ACTION_DOWN) {
 
-                            dragStartListener.onDragStart(
-                                    holder);
-                        }
+                                dragStartListener.onDragStart(
+                                        holder);
+                            }
 
-                        return false;
-                    });
+                            return false;
+                        });
+            } else {
+                holder.itemDragHandle.setOnTouchListener(null);
+            }
 
         } else {
             holder.itemDragHandle.setOnTouchListener(null);
@@ -1011,6 +1275,16 @@ final class OverviewAdapter
                 section.id.equals(
                         itemSortSectionId);
 
+        String shortcutItemId =
+                SectionItemOrderStore.shortcutItemId(
+                        shortcut.id);
+
+        boolean itemDraggable =
+                itemSortMode
+                        && !isItemAutomatic(
+                        section,
+                        shortcutItemId);
+
         if (ShortcutEntry.TYPE_WEBSITE.equals(
                 shortcut.type)) {
 
@@ -1056,7 +1330,7 @@ final class OverviewAdapter
                         : View.VISIBLE);
 
         holder.itemDragHandle.setVisibility(
-                itemSortMode
+                itemDraggable
                         ? View.VISIBLE
                         : View.GONE);
 
@@ -1064,17 +1338,21 @@ final class OverviewAdapter
             holder.favorite.setOnClickListener(null);
             holder.itemView.setOnClickListener(null);
 
-            holder.itemDragHandle.setOnTouchListener(
-                    (view, event) -> {
-                        if (event.getActionMasked()
-                                == MotionEvent.ACTION_DOWN) {
+            if (itemDraggable) {
+                holder.itemDragHandle.setOnTouchListener(
+                        (view, event) -> {
+                            if (event.getActionMasked()
+                                    == MotionEvent.ACTION_DOWN) {
 
-                            dragStartListener.onDragStart(
-                                    holder);
-                        }
+                                dragStartListener.onDragStart(
+                                        holder);
+                            }
 
-                        return false;
-                    });
+                            return false;
+                        });
+            } else {
+                holder.itemDragHandle.setOnTouchListener(null);
+            }
 
         } else {
             holder.itemDragHandle.setOnTouchListener(null);
@@ -1216,6 +1494,13 @@ final class OverviewAdapter
             return false;
         }
 
+        if (isItemAutomatic(
+                source.section,
+                source.itemId())) {
+
+            return false;
+        }
+
         Collections.swap(
                 rows,
                 fromPosition,
@@ -1246,9 +1531,42 @@ final class OverviewAdapter
             }
         }
 
+        OverviewSection section =
+                findSection(
+                        itemSortSectionId);
+
+        Set<String> automaticIds =
+                getAutomaticItemIds(
+                        section,
+                        itemIds);
+
+        List<String> orderToSave =
+                itemIds;
+
+        if (!automaticIds.isEmpty()) {
+
+            List<String> baseline =
+                    manualBaselineOrders.get(
+                            itemSortSectionId);
+
+            if (baseline != null) {
+                orderToSave =
+                        AutomaticSortEngine
+                                .preserveSelectedBaselineOrder(
+                                        itemIds,
+                                        baseline,
+                                        automaticIds);
+            }
+        }
+
         sectionItemOrderStore.saveOrder(
                 itemSortSectionId,
-                itemIds);
+                orderToSave);
+
+        manualBaselineOrders.put(
+                itemSortSectionId,
+                new ArrayList<>(
+                        orderToSave));
     }
 
     boolean moveSection(
@@ -1260,6 +1578,16 @@ final class OverviewAdapter
                 || toPosition < 0
                 || fromPosition >= sections.size()
                 || toPosition >= sections.size()) {
+
+            return false;
+        }
+
+        OverviewSection sourceSection =
+                sections.get(
+                        fromPosition);
+
+        if (isSectionOrderAutomatic(
+                sourceSection)) {
 
             return false;
         }

@@ -4,8 +4,10 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -178,6 +180,111 @@ public class AutomaticSortEngineTest {
                         "app.a",
                         "app.b",
                         "app.d"),
+                ranked);
+    }
+
+    @Test
+    public void selectedIdsAreRankedOnlyInsideTheirSlots() {
+
+        Map<String, Integer> scores =
+                counts(
+                        "app:a", 1,
+                        "app:b", 10);
+
+        Set<String> automatic =
+                new HashSet<>(
+                        Arrays.asList(
+                                "app:a",
+                                "app:b"));
+
+        List<String> ranked =
+                AutomaticSortEngine.rankSelectedIds(
+                        Arrays.asList(
+                                "app:a",
+                                "shortcut:x",
+                                "app:b",
+                                "shortcut:y"),
+                        automatic,
+                        scores,
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        false);
+
+        assertEquals(
+                Arrays.asList(
+                        "app:b",
+                        "shortcut:x",
+                        "app:a",
+                        "shortcut:y"),
+                ranked);
+    }
+
+    @Test
+    public void manualSaveRestoresAutomaticBaselineOrder() {
+
+        Set<String> automatic =
+                new HashSet<>(
+                        Arrays.asList(
+                                "app:a",
+                                "app:b"));
+
+        List<String> persisted =
+                AutomaticSortEngine
+                        .preserveSelectedBaselineOrder(
+                                Arrays.asList(
+                                        "shortcut:x",
+                                        "app:b",
+                                        "app:a",
+                                        "shortcut:y"),
+                                Arrays.asList(
+                                        "app:a",
+                                        "shortcut:x",
+                                        "app:b",
+                                        "shortcut:y"),
+                                automatic);
+
+        assertEquals(
+                Arrays.asList(
+                        "shortcut:x",
+                        "app:a",
+                        "app:b",
+                        "shortcut:y"),
+                persisted);
+    }
+
+    @Test
+    public void categorySlotsCanBeAutomaticWhileOtherSectionsStayPut() {
+
+        Map<String, Integer> scores =
+                counts(
+                        "category:a", 2,
+                        "category:b", 20);
+
+        Set<String> automatic =
+                new HashSet<>(
+                        Arrays.asList(
+                                "category:a",
+                                "category:b"));
+
+        List<String> ranked =
+                AutomaticSortEngine.rankSelectedIds(
+                        Arrays.asList(
+                                "favorites",
+                                "category:a",
+                                "category:b",
+                                "shortcuts"),
+                        automatic,
+                        scores,
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        false);
+
+        assertEquals(
+                Arrays.asList(
+                        "favorites",
+                        "category:b",
+                        "category:a",
+                        "shortcuts"),
                 ranked);
     }
 

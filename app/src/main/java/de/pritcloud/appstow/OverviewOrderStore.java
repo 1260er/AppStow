@@ -7,7 +7,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 final class OverviewOrderStore {
 
@@ -43,14 +45,48 @@ final class OverviewOrderStore {
     }
 
     void saveOrder(List<OverviewSection> sections) {
-        JSONArray array = new JSONArray();
+        List<String> ids =
+                new ArrayList<>();
 
-        for (OverviewSection section : sections) {
-            array.put(section.id);
+        for (OverviewSection section :
+                sections) {
+
+            ids.add(
+                    section.id);
+        }
+
+        saveOrderIds(
+                ids);
+    }
+
+    void saveOrderIds(
+            List<String> sectionIds) {
+
+        JSONArray array =
+                new JSONArray();
+
+        Set<String> seen =
+                new HashSet<>();
+
+        if (sectionIds != null) {
+            for (String id :
+                    sectionIds) {
+
+                if (id == null
+                        || id.isBlank()
+                        || !seen.add(id)) {
+
+                    continue;
+                }
+
+                array.put(id);
+            }
         }
 
         preferences.edit()
-                .putString(KEY_ORDER, array.toString())
+                .putString(
+                        KEY_ORDER,
+                        array.toString())
                 .apply();
     }
 }
