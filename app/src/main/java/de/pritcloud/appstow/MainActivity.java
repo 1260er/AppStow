@@ -14,8 +14,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.Settings;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -311,6 +313,23 @@ public class MainActivity extends Activity {
 
     private final List<String> manualOverviewBaselineOrder =
             new ArrayList<>();
+
+    private final Handler sortingProfileHandler =
+            new Handler(
+                    Looper.getMainLooper());
+
+    private final Runnable sortingProfileBoundaryRunnable =
+            () -> {
+
+                if (isFinishing()
+                        || isDestroyed()) {
+
+                    return;
+                }
+
+                refreshOverviewForSortingSettingsChange();
+                scheduleNextSortingProfileBoundary();
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1006,7 +1025,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+
         refreshAppsIfPackagesChanged();
+        refreshOverviewForActiveTimeProfile();
+        scheduleNextSortingProfileBoundary();
     }
 
     @Override
@@ -1282,6 +1304,10 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop() {
+
+        sortingProfileHandler.removeCallbacks(
+                sortingProfileBoundaryRunnable);
+
         if (restoreReceiverRegistered) {
             try {
                 unregisterReceiver(
@@ -1506,55 +1532,47 @@ public class MainActivity extends Activity {
                         false,
                         false,
                         false,
-                        new HashMap<>());
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        false);
             }
 
             return;
         }
 
-        /*
-         * Phase 4 verwendet bewusst nur den allgemeinen
-         * 7/30/90-Wert. Das Zeitprofil wird in Phase 5
-         * auf dieselbe Engine aufgeschaltet.
-         */
+        UsageStatisticsStore.TimeProfile activeProfile =
+                settings.timeProfileEnabled
+                        ? usageStatisticsStore
+                                .getCurrentTimeProfile(
+                                        settings.dayStartHour,
+                                        settings.eveningStartHour)
+                        : UsageStatisticsStore.TimeProfile.DAY;
+
         UsageStatisticsStore.SortingSnapshot sorting =
                 usageStatisticsStore.getSortingSnapshot(
-                        UsageStatisticsStore.TimeProfile.DAY,
+                        activeProfile,
                         settings.dayStartHour,
                         settings.eveningStartHour);
 
         UsageStatisticsStore.Snapshot overall =
                 sorting.getOverallWeighted();
 
+        UsageStatisticsStore.Snapshot profile =
+                sorting.getProfileWeighted();
+
+        UsageStatisticsStore.Snapshot profileLaunches =
+                sorting.getProfileLaunches();
+
         if (settings.semiCategories) {
             applySemiAutomaticCategoryOrder(
-                    overall.getCategoryCounts());
+                    overall.getCategoryCounts(),
+                    profile.getCategoryCounts(),
+                    profileLaunches.getCategoryCounts(),
+                    settings.timeProfileEnabled);
         }
 
         if (overviewAdapter != null) {
-
-            Map<String, Integer> itemScores =
-                    new HashMap<>();
-
-            for (Map.Entry<String, Integer> entry :
-                    overall.getAppCounts()
-                            .entrySet()) {
-
-                itemScores.put(
-                        SectionItemOrderStore.appItemId(
-                                entry.getKey()),
-                        entry.getValue());
-            }
-
-            for (Map.Entry<String, Integer> entry :
-                    overall.getShortcutCounts()
-                            .entrySet()) {
-
-                itemScores.put(
-                        SectionItemOrderStore.shortcutItemId(
-                                entry.getKey()),
-                        entry.getValue());
-            }
 
             overviewAdapter.setSemiAutomaticSorting(
                     true,
@@ -1562,17 +1580,61 @@ public class MainActivity extends Activity {
                     settings.semiCategories,
                     settings.semiApps,
                     settings.semiShortcuts,
-                    itemScores);
+                    createItemScoreMap(
+                            overall),
+                    createItemScoreMap(
+                            profile),
+                    createItemScoreMap(
+                            profileLaunches),
+                    settings.timeProfileEnabled);
         }
     }
 
+    private Map<String, Integer> createItemScoreMap(
+            UsageStatisticsStore.Snapshot snapshot) {
+
+        Map<String, Integer> result =
+                new HashMap<>();
+
+        for (Map.Entry<String, Integer> entry :
+                snapshot.getAppCounts()
+                        .entrySet()) {
+
+            result.put(
+                    SectionItemOrderStore.appItemId(
+                            entry.getKey()),
+                    entry.getValue());
+        }
+
+        for (Map.Entry<String, Integer> entry :
+                snapshot.getShortcutCounts()
+                        .entrySet()) {
+
+            result.put(
+                    SectionItemOrderStore.shortcutItemId(
+                            entry.getKey()),
+                    entry.getValue());
+        }
+
+        return result;
+    }
+
     private void applySemiAutomaticCategoryOrder(
-            Map<String, Integer> categoryCounts) {
+            Map<String, Integer> overallCategoryCounts,
+            Map<String, Integer> profileCategoryCounts,
+            Map<String, Integer> profileCategoryLaunches,
+            boolean timeProfileEnabled) {
 
         Set<String> categorySectionIds =
                 new HashSet<>();
 
-        Map<String, Integer> sectionScores =
+        Map<String, Integer> overallScores =
+                new HashMap<>();
+
+        Map<String, Integer> profileScores =
+                new HashMap<>();
+
+        Map<String, Integer> profileLaunchScores =
                 new HashMap<>();
 
         Map<String, OverviewSection> sectionsById =
@@ -1598,9 +1660,21 @@ public class MainActivity extends Activity {
                     section.id.substring(
                             "category:".length());
 
-            sectionScores.put(
+            overallScores.put(
                     section.id,
-                    categoryCounts.getOrDefault(
+                    overallCategoryCounts.getOrDefault(
+                            categoryId,
+                            0));
+
+            profileScores.put(
+                    section.id,
+                    profileCategoryCounts.getOrDefault(
+                            categoryId,
+                            0));
+
+            profileLaunchScores.put(
+                    section.id,
+                    profileCategoryLaunches.getOrDefault(
                             categoryId,
                             0));
         }
@@ -1609,15 +1683,17 @@ public class MainActivity extends Activity {
                 AutomaticSortEngine.rankSelectedIds(
                         manualOverviewBaselineOrder,
                         categorySectionIds,
-                        sectionScores,
-                        new HashMap<>(),
-                        new HashMap<>(),
-                        false);
+                        overallScores,
+                        profileScores,
+                        profileLaunchScores,
+                        timeProfileEnabled);
 
         List<OverviewSection> reordered =
                 new ArrayList<>();
 
-        for (String id : ranked) {
+        for (String id :
+                ranked) {
+
             OverviewSection section =
                     sectionsById.get(id);
 
@@ -1634,6 +1710,72 @@ public class MainActivity extends Activity {
             overviewSections.addAll(
                     reordered);
         }
+    }
+
+    private void refreshOverviewForSortingSettingsChange() {
+
+        if (overviewAdapter == null) {
+            return;
+        }
+
+        rebuildOverviewSections();
+
+        overviewAdapter.setApps(
+                apps);
+    }
+
+    private void refreshOverviewForActiveTimeProfile() {
+
+        if (sortingSettingsStore == null
+                || usageStatisticsStore == null
+                || overviewAdapter == null) {
+
+            return;
+        }
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        if (settings.mode
+                == SortingSettingsStore.Mode.SEMI_AUTOMATIC
+                && settings.timeProfileEnabled) {
+
+            refreshOverviewForSortingSettingsChange();
+        }
+    }
+
+    private void scheduleNextSortingProfileBoundary() {
+
+        sortingProfileHandler.removeCallbacks(
+                sortingProfileBoundaryRunnable);
+
+        if (sortingSettingsStore == null
+                || usageStatisticsStore == null
+                || isFinishing()
+                || isDestroyed()) {
+
+            return;
+        }
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        if (settings.mode
+                != SortingSettingsStore.Mode.SEMI_AUTOMATIC
+                || !settings.timeProfileEnabled) {
+
+            return;
+        }
+
+        long delay =
+                usageStatisticsStore
+                        .millisUntilNextTimeProfileBoundary(
+                                settings.dayStartHour,
+                                settings.eveningStartHour);
+
+        sortingProfileHandler.postDelayed(
+                sortingProfileBoundaryRunnable,
+                delay + 1000L);
     }
 
     private void saveOverviewOrderPreservingAutomation() {
@@ -5303,6 +5445,9 @@ public class MainActivity extends Activity {
 
         updateSortingModeVisibility(
                 updated);
+
+        refreshOverviewForSortingSettingsChange();
+        scheduleNextSortingProfileBoundary();
     }
 
     private void updateSortingModeVisibility(
@@ -5425,6 +5570,10 @@ public class MainActivity extends Activity {
                                     updated);
 
                             refreshSortingSettingsUi();
+
+                            refreshOverviewForSortingSettingsChange();
+                            scheduleNextSortingProfileBoundary();
+
                             dialog.dismiss();
                         })
                 .setNegativeButton(

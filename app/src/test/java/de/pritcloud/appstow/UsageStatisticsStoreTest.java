@@ -556,6 +556,57 @@ public class UsageStatisticsStoreTest {
     }
 
     @Test
+    public void currentTimeProfileUsesConfiguredBoundaries() {
+
+        UsageStatisticsStore beforeBoundary =
+                storeAt(
+                        "2026-10-05T17:59:00Z");
+
+        assertEquals(
+                UsageStatisticsStore.TimeProfile.DAY,
+                beforeBoundary.getCurrentTimeProfile(
+                        6,
+                        18));
+
+        UsageStatisticsStore atBoundary =
+                storeAt(
+                        "2026-10-05T18:00:00Z");
+
+        assertEquals(
+                UsageStatisticsStore.TimeProfile.EVENING,
+                atBoundary.getCurrentTimeProfile(
+                        6,
+                        18));
+    }
+
+    @Test
+    public void nextProfileBoundaryUsesConfiguredTimes() {
+
+        UsageStatisticsStore beforeEvening =
+                storeAt(
+                        "2026-10-05T17:30:00Z");
+
+        assertEquals(
+                30L * 60L * 1000L,
+                beforeEvening
+                        .millisUntilNextTimeProfileBoundary(
+                                6,
+                                18));
+
+        UsageStatisticsStore afterEvening =
+                storeAt(
+                        "2026-10-05T18:30:00Z");
+
+        assertEquals(
+                11L * 60L * 60L * 1000L
+                        + 30L * 60L * 1000L,
+                afterEvening
+                        .millisUntilNextTimeProfileBoundary(
+                                6,
+                                18));
+    }
+
+    @Test
     public void sortingSnapshotUsesFourTwoOneRecencyWeights() {
 
         storeAt(

@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -176,6 +177,74 @@ final class UsageStatisticsStore {
                 KEY_SHORTCUTS,
                 shortcutId,
                 categoryId);
+    }
+
+    TimeProfile getCurrentTimeProfile(
+            int dayStartHour,
+            int eveningStartHour) {
+
+        validateProfileHours(
+                dayStartHour,
+                eveningStartHour);
+
+        return resolveTimeProfile(
+                ZonedDateTime.now(clock)
+                        .getHour(),
+                dayStartHour,
+                eveningStartHour);
+    }
+
+    long millisUntilNextTimeProfileBoundary(
+            int dayStartHour,
+            int eveningStartHour) {
+
+        validateProfileHours(
+                dayStartHour,
+                eveningStartHour);
+
+        ZonedDateTime now =
+                ZonedDateTime.now(clock);
+
+        ZonedDateTime nextDay =
+                nextBoundary(
+                        now,
+                        dayStartHour);
+
+        ZonedDateTime nextEvening =
+                nextBoundary(
+                        now,
+                        eveningStartHour);
+
+        ZonedDateTime next =
+                nextDay.isBefore(
+                        nextEvening)
+                        ? nextDay
+                        : nextEvening;
+
+        return Math.max(
+                1L,
+                Duration.between(
+                                now,
+                                next)
+                        .toMillis());
+    }
+
+    private static ZonedDateTime nextBoundary(
+            ZonedDateTime now,
+            int hour) {
+
+        ZonedDateTime candidate =
+                now.withHour(hour)
+                        .withMinute(0)
+                        .withSecond(0)
+                        .withNano(0);
+
+        if (!candidate.isAfter(now)) {
+            candidate =
+                    candidate.plusDays(1);
+        }
+
+        return candidate;
     }
 
     Snapshot getSnapshot(

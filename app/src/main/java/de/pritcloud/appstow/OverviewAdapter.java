@@ -113,8 +113,18 @@ final class OverviewAdapter
     private boolean automaticShortcuts;
 
     private final Map<String, Integer>
-            automaticItemScores =
+            automaticOverallScores =
             new HashMap<>();
+
+    private final Map<String, Integer>
+            automaticProfileScores =
+            new HashMap<>();
+
+    private final Map<String, Integer>
+            automaticProfileLaunches =
+            new HashMap<>();
+
+    private boolean automaticTimeProfileEnabled;
 
     private final Map<String, List<String>>
             manualBaselineOrders =
@@ -161,7 +171,10 @@ final class OverviewAdapter
             boolean categories,
             boolean apps,
             boolean shortcuts,
-            Map<String, Integer> itemScores) {
+            Map<String, Integer> overallScores,
+            Map<String, Integer> profileScores,
+            Map<String, Integer> profileLaunches,
+            boolean timeProfileEnabled) {
 
         semiAutomaticSorting =
                 enabled;
@@ -182,13 +195,30 @@ final class OverviewAdapter
                 enabled
                         && shortcuts;
 
-        automaticItemScores.clear();
+        automaticTimeProfileEnabled =
+                enabled
+                        && timeProfileEnabled;
 
-        if (enabled
-                && itemScores != null) {
+        automaticOverallScores.clear();
+        automaticProfileScores.clear();
+        automaticProfileLaunches.clear();
 
-            automaticItemScores.putAll(
-                    itemScores);
+        if (enabled) {
+
+            if (overallScores != null) {
+                automaticOverallScores.putAll(
+                        overallScores);
+            }
+
+            if (profileScores != null) {
+                automaticProfileScores.putAll(
+                        profileScores);
+            }
+
+            if (profileLaunches != null) {
+                automaticProfileLaunches.putAll(
+                        profileLaunches);
+            }
         }
 
         if (!enabled) {
@@ -542,10 +572,10 @@ final class OverviewAdapter
                         .rankSelectedIds(
                                 baselineIds,
                                 automaticIds,
-                                automaticItemScores,
-                                Collections.emptyMap(),
-                                Collections.emptyMap(),
-                                false);
+                                automaticOverallScores,
+                                automaticProfileScores,
+                                automaticProfileLaunches,
+                                automaticTimeProfileEnabled);
 
         for (String id : orderedIds) {
             Row row =
@@ -574,9 +604,25 @@ final class OverviewAdapter
         if ("favorites".equals(
                 section.id)) {
 
-            if (automaticFavorites) {
-                result.addAll(
-                        itemIds);
+            if (!automaticFavorites) {
+                return result;
+            }
+
+            for (String id :
+                    itemIds) {
+
+                if (automaticApps
+                        && id.startsWith(
+                        "app:")) {
+
+                    result.add(id);
+
+                } else if (automaticShortcuts
+                        && id.startsWith(
+                        "shortcut:")) {
+
+                    result.add(id);
+                }
             }
 
             return result;
