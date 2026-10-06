@@ -317,7 +317,7 @@ public class MainActivity extends Activity {
             new ArrayList<>();
 
     private final Set<String>
-            currentAutomaticFavoritePackages =
+            currentAutomaticFavoriteItemIds =
             new HashSet<>();
 
     private UsageStatisticsStore.TimeProfile
@@ -1550,7 +1550,7 @@ public class MainActivity extends Activity {
         if (settings.mode
                 == SortingSettingsStore.Mode.MANUAL) {
 
-            currentAutomaticFavoritePackages.clear();
+            currentAutomaticFavoriteItemIds.clear();
             lastAppliedSortingProfile = null;
 
             if (overviewAdapter != null) {
@@ -1601,10 +1601,10 @@ public class MainActivity extends Activity {
         if (settings.mode
                 == SortingSettingsStore.Mode.AUTOMATIC) {
 
-            currentAutomaticFavoritePackages.clear();
+            currentAutomaticFavoriteItemIds.clear();
 
-            currentAutomaticFavoritePackages.addAll(
-                    buildAutomaticFavoritePackages(
+            currentAutomaticFavoriteItemIds.addAll(
+                    buildAutomaticFavoriteItemIds(
                             settings,
                             sorting));
 
@@ -1617,7 +1617,7 @@ public class MainActivity extends Activity {
             if (overviewAdapter != null) {
 
                 overviewAdapter.setFullAutomaticSorting(
-                        currentAutomaticFavoritePackages,
+                        currentAutomaticFavoriteItemIds,
                         createItemScoreMap(
                                 overall),
                         createItemScoreMap(
@@ -1630,7 +1630,7 @@ public class MainActivity extends Activity {
             return;
         }
 
-        currentAutomaticFavoritePackages.clear();
+        currentAutomaticFavoriteItemIds.clear();
 
         if (settings.semiCategories) {
 
@@ -1688,53 +1688,53 @@ public class MainActivity extends Activity {
         return result;
     }
 
-    private Set<String> buildAutomaticFavoritePackages(
+    private Set<String> buildAutomaticFavoriteItemIds(
             SortingSettingsStore.Settings settings,
             UsageStatisticsStore.SortingSnapshot sorting) {
 
-        List<String> allAppItemIds =
+        List<String> allItemIds =
                 new ArrayList<>();
 
         for (AppEntry app :
                 apps) {
 
-            allAppItemIds.add(
-                    SectionItemOrderStore.appItemId(
-                            app.packageName));
+            allItemIds.add(
+                    SectionItemOrderStore
+                            .appItemId(
+                                    app.packageName));
         }
 
-        List<String> orderedAppItemIds =
+        for (ShortcutEntry shortcut :
+                shortcutStore.getShortcuts()) {
+
+            allItemIds.add(
+                    SectionItemOrderStore
+                            .shortcutItemId(
+                                    shortcut.id));
+        }
+
+        /*
+         * Die bestehende Favoritenreihenfolge dient
+         * weiterhin als stabile Basis für Gleichstände.
+         * Neue Kandidaten werden anschließend angefügt.
+         */
+        List<String> baselineIds =
                 sectionItemOrderStore
                         .getOrderedIds(
                                 "favorites",
-                                allAppItemIds);
-
-        List<String> baselinePackages =
-                new ArrayList<>();
-
-        for (String id :
-                orderedAppItemIds) {
-
-            if (id.startsWith(
-                    "app:")) {
-
-                baselinePackages.add(
-                        id.substring(
-                                "app:".length()));
-            }
-        }
+                                allItemIds);
 
         List<String> ranked =
                 AutomaticSortingPlanner
                         .selectTopUsedIds(
-                                baselinePackages,
+                                baselineIds,
                                 settings.automaticFavoriteCount,
-                                sorting.getOverallWeighted()
-                                        .getAppCounts(),
-                                sorting.getProfileWeighted()
-                                        .getAppCounts(),
-                                sorting.getProfileLaunches()
-                                        .getAppCounts(),
+                                createItemScoreMap(
+                                        sorting.getOverallWeighted()),
+                                createItemScoreMap(
+                                        sorting.getProfileWeighted()),
+                                createItemScoreMap(
+                                        sorting.getProfileLaunches()),
                                 settings.timeProfileEnabled);
 
         return new HashSet<>(
@@ -1874,14 +1874,41 @@ public class MainActivity extends Activity {
         overviewOrderStore.saveOrder(
                 overviewSections);
 
-        favoritesStore.replaceAll(
-                currentAutomaticFavoritePackages);
+        Set<String> favoritePackages =
+                new HashSet<>();
+
+        Set<String> favoriteShortcutIds =
+                new HashSet<>();
+
+        for (String itemId :
+                currentAutomaticFavoriteItemIds) {
+
+            if (itemId.startsWith(
+                    "app:")) {
+
+                favoritePackages.add(
+                        itemId.substring(
+                                "app:".length()));
+
+            } else if (itemId.startsWith(
+                    "shortcut:")) {
+
+                favoriteShortcutIds.add(
+                        itemId.substring(
+                                "shortcut:".length()));
+            }
+        }
 
         /*
-         * Vollautomatische Favoriten bestehen
-         * ausschließlich aus Apps.
+         * Beim Verlassen der Vollautomatik wird die
+         * sichtbare gemischte Favoritenbelegung exakt
+         * als normaler manueller Zustand gespeichert.
          */
-        shortcutStore.clearFavorites();
+        favoritesStore.replaceAll(
+                favoritePackages);
+
+        shortcutStore.replaceFavorites(
+                favoriteShortcutIds);
 
         captureManualOverviewBaseline();
     }
@@ -1920,13 +1947,44 @@ public class MainActivity extends Activity {
         if (settings.mode
                 == SortingSettingsStore.Mode.AUTOMATIC) {
 
-            return currentAutomaticFavoritePackages
+            return currentAutomaticFavoriteItemIds
                     .contains(
-                            packageName);
+                            SectionItemOrderStore
+                                    .appItemId(
+                                            packageName));
         }
 
         return favoritesStore.isFavorite(
                 packageName);
+    }
+
+    private boolean isCurrentFavoriteShortcut(
+            String shortcutId) {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        if (settings.mode
+                == SortingSettingsStore.Mode.AUTOMATIC) {
+
+            return currentAutomaticFavoriteItemIds
+                    .contains(
+                            SectionItemOrderStore
+                                    .shortcutItemId(
+                                            shortcutId));
+        }
+
+        for (ShortcutEntry shortcut :
+                shortcutStore.getShortcuts()) {
+
+            if (shortcut.id.equals(
+                    shortcutId)) {
+
+                return shortcut.favorite;
+            }
+        }
+
+        return false;
     }
 
     private void refreshOverviewForSortingSettingsChange() {
@@ -3100,6 +3158,13 @@ public class MainActivity extends Activity {
                 combinedShortcutLabels.put(
                         key,
                         label);
+            }
+
+            if (isCurrentFavoriteShortcut(
+                    entry.getKey())) {
+
+                combinedFavoriteEntries.add(
+                        key);
             }
         }
 

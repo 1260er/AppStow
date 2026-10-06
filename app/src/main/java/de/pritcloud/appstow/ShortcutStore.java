@@ -97,7 +97,14 @@ final class ShortcutStore {
         }
     }
 
-    void clearFavorites() {
+    void replaceFavorites(
+            Set<String> favoriteIds) {
+
+        Set<String> desired =
+                favoriteIds == null
+                        ? Set.of()
+                        : new HashSet<>(
+                                favoriteIds);
 
         boolean changed =
                 false;
@@ -109,7 +116,13 @@ final class ShortcutStore {
             ShortcutEntry shortcut =
                     shortcuts.get(i);
 
-            if (!shortcut.favorite) {
+            boolean favorite =
+                    desired.contains(
+                            shortcut.id);
+
+            if (shortcut.favorite
+                    == favorite) {
+
                 continue;
             }
 
@@ -121,14 +134,21 @@ final class ShortcutStore {
                             shortcut.type,
                             shortcut.target,
                             shortcut.categoryIds,
-                            false));
+                            favorite));
 
-            changed = true;
+            changed =
+                    true;
         }
 
         if (changed) {
             save();
         }
+    }
+
+    void clearFavorites() {
+
+        replaceFavorites(
+                Set.of());
     }
 
     void removeCategory(String categoryId) {

@@ -131,6 +131,62 @@ public class ShortcutStoreTest {
     }
 
     @Test
+    public void replaceFavoritesMaterializesExactShortcutSet() {
+
+        store.add(
+                "Old",
+                ShortcutEntry.TYPE_WEBSITE,
+                "https://old.example",
+                Set.of(),
+                true);
+
+        store.add(
+                "Selected",
+                ShortcutEntry.TYPE_WEBSITE,
+                "https://selected.example",
+                Set.of(),
+                false);
+
+        List<ShortcutEntry> before =
+                store.getShortcuts();
+
+        String oldId =
+                before.get(0)
+                        .id;
+
+        String selectedId =
+                before.get(1)
+                        .id;
+
+        store.replaceFavorites(
+                Set.of(
+                        selectedId));
+
+        List<ShortcutEntry> shortcuts =
+                new ShortcutStore(
+                        context)
+                        .getShortcuts();
+
+        assertEquals(
+                oldId,
+                shortcuts.get(0)
+                        .id);
+
+        assertFalse(
+                shortcuts.get(0)
+                        .favorite);
+
+        assertEquals(
+                selectedId,
+                shortcuts.get(1)
+                        .id);
+
+        assertTrue(
+                shortcuts.get(1)
+                        .favorite);
+    }
+
+    @Test
     public void clearFavoritesMaterializesAutomaticState() {
 
         store.add(

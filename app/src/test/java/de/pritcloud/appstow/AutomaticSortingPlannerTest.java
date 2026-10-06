@@ -12,20 +12,22 @@ import static org.junit.Assert.assertEquals;
 public class AutomaticSortingPlannerTest {
 
     @Test
-    public void automaticFavoritesUseOnlyStartedApps() {
+    public void automaticFavoritesRankAppsAndShortcutsTogether() {
 
         Map<String, Integer> scores =
                 counts(
-                        "app.a", 4,
-                        "app.b", 12);
+                        "app:app.a", 4,
+                        "shortcut:shortcut.a", 16,
+                        "app:app.b", 12);
 
         List<String> favorites =
                 AutomaticSortingPlanner
                         .selectTopUsedIds(
                                 Arrays.asList(
-                                        "app.a",
-                                        "app.b",
-                                        "app.c"),
+                                        "app:app.a",
+                                        "shortcut:shortcut.a",
+                                        "app:app.b",
+                                        "shortcut:unused"),
                                 10,
                                 scores,
                                 new HashMap<>(),
@@ -34,8 +36,9 @@ public class AutomaticSortingPlannerTest {
 
         assertEquals(
                 Arrays.asList(
-                        "app.b",
-                        "app.a"),
+                        "shortcut:shortcut.a",
+                        "app:app.b",
+                        "app:app.a"),
                 favorites);
     }
 

@@ -110,7 +110,7 @@ final class OverviewAdapter
     private boolean fullAutomaticSorting;
 
     private final Set<String>
-            automaticFavoritePackages =
+            automaticFavoriteItemIds =
             new HashSet<>();
 
     private boolean automaticFavorites;
@@ -181,7 +181,7 @@ final class OverviewAdapter
         fullAutomaticSorting =
                 false;
 
-        automaticFavoritePackages.clear();
+        automaticFavoriteItemIds.clear();
 
         semiAutomaticSorting =
                 enabled;
@@ -236,7 +236,7 @@ final class OverviewAdapter
     }
 
     void setFullAutomaticSorting(
-            Set<String> favoritePackages,
+            Set<String> favoriteItemIds,
             Map<String, Integer> overallScores,
             Map<String, Integer> profileScores,
             Map<String, Integer> profileLaunches,
@@ -269,12 +269,12 @@ final class OverviewAdapter
         automaticTimeProfileEnabled =
                 timeProfileEnabled;
 
-        automaticFavoritePackages.clear();
+        automaticFavoriteItemIds.clear();
 
-        if (favoritePackages != null) {
+        if (favoriteItemIds != null) {
 
-            automaticFavoritePackages.addAll(
-                    favoritePackages);
+            automaticFavoriteItemIds.addAll(
+                    favoriteItemIds);
         }
 
         automaticOverallScores.clear();
@@ -400,9 +400,11 @@ final class OverviewAdapter
 
             boolean favorite =
                     fullAutomaticSorting
-                            ? automaticFavoritePackages
+                            ? automaticFavoriteItemIds
                                     .contains(
-                                            app.packageName)
+                                            SectionItemOrderStore
+                                                    .appItemId(
+                                                            app.packageName))
                             : favoritesStore.isFavorite(
                                     app.packageName);
 
@@ -426,6 +428,21 @@ final class OverviewAdapter
                 new ArrayList<>();
 
         if (fullAutomaticSorting) {
+
+            for (ShortcutEntry shortcut :
+                    allShortcuts) {
+
+                if (automaticFavoriteItemIds
+                        .contains(
+                                SectionItemOrderStore
+                                        .shortcutItemId(
+                                                shortcut.id))) {
+
+                    result.add(
+                            shortcut);
+                }
+            }
+
             return result;
         }
 
@@ -1479,7 +1496,7 @@ final class OverviewAdapter
 
         boolean favorite =
                 fullAutomaticSorting
-                        ? automaticFavoritePackages
+                        ? automaticFavoriteItemIds
                                 .contains(
                                         app.packageName)
                         : favoritesStore.isFavorite(
