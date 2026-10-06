@@ -506,7 +506,7 @@ public class MainActivityRecreationTest {
                         categoryDelete.getLayoutParams();
 
         assertEquals(
-                Gravity.BOTTOM | Gravity.END,
+                Gravity.TOP | Gravity.END,
                 categoryDeleteParams.gravity);
 
         View shortcutGrid =
@@ -533,11 +533,11 @@ public class MainActivityRecreationTest {
                         shortcutDelete.getLayoutParams();
 
         assertEquals(
-                Gravity.TOP | Gravity.END,
+                Gravity.TOP | Gravity.START,
                 favoriteParams.gravity);
 
         assertEquals(
-                Gravity.BOTTOM | Gravity.END,
+                Gravity.TOP | Gravity.END,
                 deleteParams.gravity);
     }
 
