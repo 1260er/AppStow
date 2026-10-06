@@ -6163,7 +6163,7 @@ public class MainActivity extends Activity {
                 sortingSettingsStore.load();
 
         CharSequence[] choices =
-                new CharSequence[50];
+                new CharSequence[28];
 
         for (int index = 0;
              index < choices.length;
@@ -6171,13 +6171,13 @@ public class MainActivity extends Activity {
 
             choices[index] =
                     Integer.toString(
-                            index + 1);
+                            index + 3);
         }
 
         int selected =
-                current.automaticFavoriteCount >= 1
-                        && current.automaticFavoriteCount <= choices.length
-                        ? current.automaticFavoriteCount - 1
+                current.automaticFavoriteCount >= 3
+                        && current.automaticFavoriteCount <= 30
+                        ? current.automaticFavoriteCount - 3
                         : -1;
 
         new AlertDialog.Builder(this)
@@ -6189,7 +6189,7 @@ public class MainActivity extends Activity {
                         (dialog, which) -> {
 
                             int count =
-                                    which + 1;
+                                    which + 3;
 
                             SortingSettingsStore.Settings updated =
                                     new SortingSettingsStore.Settings(

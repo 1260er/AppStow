@@ -216,9 +216,9 @@ public class SortingPageTest {
 
                         assertTrue(
                                 parent.indexOfChild(
-                                        timeSettings)
+                                        automatic)
                                         < parent.indexOfChild(
-                                        automatic));
+                                        timeSettings));
                     });
         }
     }

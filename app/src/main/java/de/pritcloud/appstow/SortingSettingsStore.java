@@ -189,7 +189,8 @@ final class SortingSettingsStore {
                         KEY_AUTOMATIC_FAVORITE_COUNT,
                         defaults.automaticFavoriteCount);
 
-        if (favoriteCount < 1) {
+        if (favoriteCount < 3
+                || favoriteCount > 30) {
 
             favoriteCount =
                     defaults.automaticFavoriteCount;
@@ -384,11 +385,11 @@ final class SortingSettingsStore {
                     "Day and evening start must be distinct valid hours.");
         }
 
-        if (settings.automaticFavoriteCount
-                < 1) {
+        if (settings.automaticFavoriteCount < 3
+                || settings.automaticFavoriteCount > 30) {
 
             throw new IllegalArgumentException(
-                    "Automatic favorite count must be positive.");
+                    "Automatic favorite count must be between 3 and 30.");
         }
 
         if (!isValidSuggestionInterval(

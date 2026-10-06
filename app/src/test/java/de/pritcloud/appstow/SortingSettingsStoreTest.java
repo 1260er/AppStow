@@ -315,27 +315,40 @@ public class SortingSettingsStoreTest {
     }
 
     @Test
-    public void saveRejectsInvalidFavoriteCount() {
+    public void saveRejectsFavoriteCountOutsideThreeToThirty() {
 
-        try {
-            store.save(
-                    new SortingSettingsStore.Settings(
-                            SortingSettingsStore.Mode.AUTOMATIC,
-                            true,
-                            true,
-                            true,
-                            true,
-                            false,
-                            8,
-                            21,
-                            0,
-                            false));
+        int[] invalidCounts = {
+                0,
+                1,
+                2,
+                31,
+                50
+        };
 
-            fail(
-                    "Invalid favorite count was accepted.");
+        for (int count :
+                invalidCounts) {
 
-        } catch (IllegalArgumentException expected) {
-            // Expected.
+            try {
+                store.save(
+                        new SortingSettingsStore.Settings(
+                                SortingSettingsStore.Mode.AUTOMATIC,
+                                true,
+                                true,
+                                true,
+                                true,
+                                false,
+                                8,
+                                21,
+                                count,
+                                false));
+
+                fail(
+                        "Invalid favorite count was accepted: "
+                                + count);
+
+            } catch (IllegalArgumentException expected) {
+                // Expected.
+            }
         }
     }
 }
