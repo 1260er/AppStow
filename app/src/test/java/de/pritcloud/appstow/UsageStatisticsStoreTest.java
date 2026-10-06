@@ -555,6 +555,154 @@ public class UsageStatisticsStoreTest {
                         .isEmpty());
     }
 
+    @Test
+    public void sortingSnapshotUsesFourTwoOneRecencyWeights() {
+
+        storeAt(
+                "2026-10-04T12:00:00Z")
+                .recordAppLaunch(
+                        "app.weighted",
+                        null);
+
+        storeAt(
+                "2026-09-20T12:00:00Z")
+                .recordAppLaunch(
+                        "app.weighted",
+                        null);
+
+        storeAt(
+                "2026-08-20T12:00:00Z")
+                .recordAppLaunch(
+                        "app.weighted",
+                        null);
+
+        storeAt(
+                "2026-06-01T12:00:00Z")
+                .recordAppLaunch(
+                        "app.weighted",
+                        null);
+
+        UsageStatisticsStore.SortingSnapshot sorting =
+                storeAt(
+                        "2026-10-05T12:00:00Z")
+                        .getSortingSnapshot(
+                                UsageStatisticsStore.TimeProfile.DAY,
+                                8,
+                                21);
+
+        assertEquals(
+                7,
+                sorting.getOverallWeighted()
+                        .getAppCounts()
+                        .get("app.weighted")
+                        .intValue());
+    }
+
+    @Test
+    public void sortingSnapshotKeepsProfileWeightAndRawEvidenceSeparate() {
+
+        for (int i = 0;
+             i < 5;
+             i++) {
+
+            storeAt(
+                    "2026-10-05T09:00:00Z")
+                    .recordAppLaunch(
+                            "app.day",
+                            "work");
+        }
+
+        storeAt(
+                "2026-10-05T22:00:00Z")
+                .recordAppLaunch(
+                        "app.day",
+                        "work");
+
+        UsageStatisticsStore.SortingSnapshot sorting =
+                storeAt(
+                        "2026-10-05T22:30:00Z")
+                        .getSortingSnapshot(
+                                UsageStatisticsStore.TimeProfile.DAY,
+                                8,
+                                21);
+
+        assertEquals(
+                24,
+                sorting.getOverallWeighted()
+                        .getAppCounts()
+                        .get("app.day")
+                        .intValue());
+
+        assertEquals(
+                20,
+                sorting.getProfileWeighted()
+                        .getAppCounts()
+                        .get("app.day")
+                        .intValue());
+
+        assertEquals(
+                5,
+                sorting.getProfileLaunches()
+                        .getAppCounts()
+                        .get("app.day")
+                        .intValue());
+
+        assertEquals(
+                5,
+                sorting.getProfileLaunches()
+                        .getCategoryCounts()
+                        .get("work")
+                        .intValue());
+    }
+
+    @Test
+    public void sortingSnapshotReevaluatesStoredHoursForNewBoundaries() {
+
+        storeAt(
+                "2026-10-05T07:00:00Z")
+                .recordAppLaunch(
+                        "app.boundary",
+                        null);
+
+        storeAt(
+                "2026-10-05T19:00:00Z")
+                .recordAppLaunch(
+                        "app.boundary",
+                        null);
+
+        UsageStatisticsStore current =
+                storeAt(
+                        "2026-10-05T22:00:00Z");
+
+        UsageStatisticsStore.SortingSnapshot sixToEighteen =
+                current.getSortingSnapshot(
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        6,
+                        18);
+
+        UsageStatisticsStore.SortingSnapshot eightToTwenty =
+                current.getSortingSnapshot(
+                        UsageStatisticsStore.TimeProfile.DAY,
+                        8,
+                        20);
+
+        assertEquals(
+                4,
+                sixToEighteen
+                        .getProfileWeighted()
+                        .getAppCounts()
+                        .get("app.boundary")
+                        .intValue());
+
+        assertEquals(
+                4,
+                eightToTwenty
+                        .getProfileWeighted()
+                        .getAppCounts()
+                        .get("app.boundary")
+                        .intValue());
+    }
+
     private UsageStatisticsStore storeAt(
             String instant) {
 

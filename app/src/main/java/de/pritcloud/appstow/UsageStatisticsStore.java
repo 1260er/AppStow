@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,6 +100,40 @@ final class UsageStatisticsStore {
             }
 
             return total;
+        }
+    }
+
+    static final class SortingSnapshot {
+
+        private final Snapshot overallWeighted;
+        private final Snapshot profileWeighted;
+        private final Snapshot profileLaunches;
+
+        SortingSnapshot(
+                Snapshot overallWeighted,
+                Snapshot profileWeighted,
+                Snapshot profileLaunches) {
+
+            this.overallWeighted =
+                    overallWeighted;
+
+            this.profileWeighted =
+                    profileWeighted;
+
+            this.profileLaunches =
+                    profileLaunches;
+        }
+
+        Snapshot getOverallWeighted() {
+            return overallWeighted;
+        }
+
+        Snapshot getProfileWeighted() {
+            return profileWeighted;
+        }
+
+        Snapshot getProfileLaunches() {
+            return profileLaunches;
         }
     }
 
@@ -291,6 +326,246 @@ final class UsageStatisticsStore {
                 apps,
                 shortcuts,
                 categories);
+    }
+
+    SortingSnapshot getSortingSnapshot(
+            TimeProfile profile,
+            int dayStartHour,
+            int eveningStartHour) {
+
+        if (profile == null) {
+            throw new IllegalArgumentException(
+                    "Time profile is required.");
+        }
+
+        validateProfileHours(
+                dayStartHour,
+                eveningStartHour);
+
+        LocalDate today =
+                LocalDate.now(
+                        clock);
+
+        pruneOldDays(
+                today);
+
+        Map<String, Integer> overallApps =
+                new HashMap<>();
+
+        Map<String, Integer> overallShortcuts =
+                new HashMap<>();
+
+        Map<String, Integer> overallCategories =
+                new HashMap<>();
+
+        Map<String, Integer> profileApps =
+                new HashMap<>();
+
+        Map<String, Integer> profileShortcuts =
+                new HashMap<>();
+
+        Map<String, Integer> profileCategories =
+                new HashMap<>();
+
+        Map<String, Integer> profileAppLaunches =
+                new HashMap<>();
+
+        Map<String, Integer> profileShortcutLaunches =
+                new HashMap<>();
+
+        Map<String, Integer> profileCategoryLaunches =
+                new HashMap<>();
+
+        for (Map.Entry<String, ?>
+                entry :
+                preferences.getAll()
+                        .entrySet()) {
+
+            LocalDate date =
+                    parseDateKey(
+                            entry.getKey());
+
+            if (date == null
+                    || date.isAfter(today)
+                    || !(entry.getValue()
+                    instanceof String)) {
+
+                continue;
+            }
+
+            long ageDays =
+                    ChronoUnit.DAYS.between(
+                            date,
+                            today);
+
+            int weight =
+                    getSortingWeight(
+                            ageDays);
+
+            if (weight == 0) {
+                continue;
+            }
+
+            JSONObject day =
+                    parseDay(
+                            (String) entry.getValue());
+
+            mergeCountsWeighted(
+                    overallApps,
+                    day.optJSONObject(
+                            KEY_APPS),
+                    weight);
+
+            mergeCountsWeighted(
+                    overallShortcuts,
+                    day.optJSONObject(
+                            KEY_SHORTCUTS),
+                    weight);
+
+            mergeCountsWeighted(
+                    overallCategories,
+                    day.optJSONObject(
+                            KEY_CATEGORIES),
+                    weight);
+
+            JSONObject hours =
+                    day.optJSONObject(
+                            KEY_HOURS);
+
+            if (hours == null) {
+                continue;
+            }
+
+            for (int hour = 0;
+                 hour < 24;
+                 hour++) {
+
+                if (resolveTimeProfile(
+                        hour,
+                        dayStartHour,
+                        eveningStartHour)
+                        != profile) {
+
+                    continue;
+                }
+
+                JSONObject hourly =
+                        hours.optJSONObject(
+                                Integer.toString(
+                                        hour));
+
+                if (hourly == null) {
+                    continue;
+                }
+
+                JSONObject apps =
+                        hourly.optJSONObject(
+                                KEY_APPS);
+
+                JSONObject shortcuts =
+                        hourly.optJSONObject(
+                                KEY_SHORTCUTS);
+
+                JSONObject categories =
+                        hourly.optJSONObject(
+                                KEY_CATEGORIES);
+
+                mergeCountsWeighted(
+                        profileApps,
+                        apps,
+                        weight);
+
+                mergeCountsWeighted(
+                        profileShortcuts,
+                        shortcuts,
+                        weight);
+
+                mergeCountsWeighted(
+                        profileCategories,
+                        categories,
+                        weight);
+
+                mergeCounts(
+                        profileAppLaunches,
+                        apps);
+
+                mergeCounts(
+                        profileShortcutLaunches,
+                        shortcuts);
+
+                mergeCounts(
+                        profileCategoryLaunches,
+                        categories);
+            }
+        }
+
+        return new SortingSnapshot(
+                new Snapshot(
+                        overallApps,
+                        overallShortcuts,
+                        overallCategories),
+                new Snapshot(
+                        profileApps,
+                        profileShortcuts,
+                        profileCategories),
+                new Snapshot(
+                        profileAppLaunches,
+                        profileShortcutLaunches,
+                        profileCategoryLaunches));
+    }
+
+    private static int getSortingWeight(
+            long ageDays) {
+
+        if (ageDays < 0
+                || ageDays >= 90) {
+
+            return 0;
+        }
+
+        if (ageDays < 7) {
+            return 4;
+        }
+
+        if (ageDays < 30) {
+            return 2;
+        }
+
+        return 1;
+    }
+
+    private static void mergeCountsWeighted(
+            Map<String, Integer> target,
+            JSONObject source,
+            int weight) {
+
+        if (source == null
+                || weight <= 0) {
+
+            return;
+        }
+
+        java.util.Iterator<String> keys =
+                source.keys();
+
+        while (keys.hasNext()) {
+            String key =
+                    keys.next();
+
+            int count =
+                    source.optInt(
+                            key,
+                            0);
+
+            if (count <= 0) {
+                continue;
+            }
+
+            target.merge(
+                    key,
+                    count * weight,
+                    Integer::sum);
+        }
     }
 
     void clear() {
