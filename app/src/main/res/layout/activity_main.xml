@@ -273,6 +273,13 @@
 
             </LinearLayout>
 
+            <ViewStub
+                android:id="@+id/sortingStub"
+                android:layout="@layout/view_sorting"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/backupManagement"
                 android:layout_width="match_parent"

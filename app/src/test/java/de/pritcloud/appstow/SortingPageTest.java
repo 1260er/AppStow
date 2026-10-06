@@ -1,0 +1,229 @@
+package de.pritcloud.appstow;
+
+import android.content.Context;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+
+import androidx.test.core.app.ActivityScenario;
+import androidx.test.core.app.ApplicationProvider;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = 35)
+public class SortingPageTest {
+
+    @Before
+    public void clearSortingSettings() {
+
+        Context context =
+                ApplicationProvider
+                        .getApplicationContext();
+
+        context.deleteSharedPreferences(
+                "sorting_settings");
+    }
+
+    @Test
+    public void pageStartsInManualMode() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navSorting)
+                                .performClick();
+
+                        TextView title =
+                                activity.findViewById(
+                                        R.id.pageTitle);
+
+                        assertEquals(
+                                activity.getString(
+                                        R.string.nav_sorting),
+                                title.getText()
+                                        .toString());
+
+                        RadioGroup modes =
+                                activity.findViewById(
+                                        R.id.sortingModeGroup);
+
+                        assertEquals(
+                                R.id.sortingModeManual,
+                                modes.getCheckedRadioButtonId());
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingManualSettings)
+                                        .getVisibility());
+
+                        assertEquals(
+                                View.GONE,
+                                activity.findViewById(
+                                                R.id.sortingSemiSettings)
+                                        .getVisibility());
+
+                        assertEquals(
+                                View.GONE,
+                                activity.findViewById(
+                                                R.id.sortingAutomaticSettings)
+                                        .getVisibility());
+
+                        assertEquals(
+                                View.GONE,
+                                activity.findViewById(
+                                                R.id.sortingTimeSettings)
+                                        .getVisibility());
+                    });
+        }
+    }
+
+    @Test
+    public void semiAutomaticControlsPersistAcrossRecreation() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navSorting)
+                                .performClick();
+
+                        activity.findViewById(
+                                        R.id.sortingModeSemi)
+                                .performClick();
+
+                        CheckBox categories =
+                                activity.findViewById(
+                                        R.id.sortingSemiCategories);
+
+                        CheckBox timeProfile =
+                                activity.findViewById(
+                                        R.id.sortingTimeProfileEnabled);
+
+                        categories.performClick();
+                        timeProfile.performClick();
+
+                        SortingSettingsStore.Settings settings =
+                                new SortingSettingsStore(
+                                        activity)
+                                        .load();
+
+                        assertEquals(
+                                SortingSettingsStore.Mode.SEMI_AUTOMATIC,
+                                settings.mode);
+
+                        assertFalse(
+                                settings.semiCategories);
+
+                        assertTrue(
+                                settings.timeProfileEnabled);
+                    });
+
+            scenario.recreate();
+
+            scenario.onActivity(
+                    activity -> {
+
+                        RadioGroup modes =
+                                activity.findViewById(
+                                        R.id.sortingModeGroup);
+
+                        assertEquals(
+                                R.id.sortingModeSemi,
+                                modes.getCheckedRadioButtonId());
+
+                        assertFalse(
+                                ((CheckBox) activity.findViewById(
+                                                R.id.sortingSemiCategories))
+                                        .isChecked());
+
+                        assertTrue(
+                                ((CheckBox) activity.findViewById(
+                                                R.id.sortingTimeProfileEnabled))
+                                        .isChecked());
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingSemiSettings)
+                                        .getVisibility());
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingTimeDetails)
+                                        .getVisibility());
+                    });
+        }
+    }
+
+    @Test
+    public void automaticModePersistsAutomaticOptions() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navSorting)
+                                .performClick();
+
+                        activity.findViewById(
+                                        R.id.sortingModeAutomatic)
+                                .performClick();
+
+                        CheckBox alwaysStart =
+                                activity.findViewById(
+                                        R.id.sortingAlwaysStartFavorites);
+
+                        alwaysStart.performClick();
+
+                        SortingSettingsStore.Settings settings =
+                                new SortingSettingsStore(
+                                        activity)
+                                        .load();
+
+                        assertEquals(
+                                SortingSettingsStore.Mode.AUTOMATIC,
+                                settings.mode);
+
+                        assertTrue(
+                                settings.alwaysStartFavorites);
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingAutomaticSettings)
+                                        .getVisibility());
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingTimeSettings)
+                                        .getVisibility());
+                    });
+        }
+    }
+}

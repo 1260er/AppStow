@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -16,16 +17,19 @@ import android.os.Build;
 import android.provider.Settings;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -131,6 +135,7 @@ public class MainActivity extends Activity {
     private static final String PAGE_CATEGORIES = "categories";
     private static final String PAGE_SHORTCUTS = "shortcuts";
     private static final String PAGE_STATISTICS = "statistics";
+    private static final String PAGE_SORTING = "sorting";
     private static final String PAGE_BACKUP = "backup";
     private static final String PAGE_HELP = "help";
     private static final String PAGE_ABOUT = "about";
@@ -163,6 +168,26 @@ public class MainActivity extends Activity {
             DEFAULT_STATISTICS_TOP_LIMIT;
     private UsageStatisticsStore.Period statisticsPeriod =
             UsageStatisticsStore.Period.ONE_MONTH;
+
+    private ViewStub sortingStub;
+    private ScrollView sortingManagement;
+    private RadioGroup sortingModeGroup;
+    private View sortingManualSettings;
+    private View sortingSemiSettings;
+    private View sortingAutomaticSettings;
+    private View sortingTimeSettings;
+    private View sortingTimeDetails;
+    private CheckBox sortingSemiFavorites;
+    private CheckBox sortingSemiCategories;
+    private CheckBox sortingSemiApps;
+    private CheckBox sortingSemiShortcuts;
+    private CheckBox sortingTimeProfileEnabled;
+    private CheckBox sortingAlwaysStartFavorites;
+    private TextView sortingDayStart;
+    private TextView sortingEveningStart;
+    private TextView sortingFavoriteCount;
+    private SortingSettingsStore sortingSettingsStore;
+    private boolean updatingSortingUi;
 
     private View backupManagement;
 
@@ -338,6 +363,9 @@ public class MainActivity extends Activity {
         statisticsList =
                 findViewById(R.id.statisticsList);
 
+        sortingStub =
+                findViewById(R.id.sortingStub);
+
         backupManagement =
                 findViewById(R.id.backupManagement);
 
@@ -382,6 +410,9 @@ public class MainActivity extends Activity {
         shortcutStore = new ShortcutStore(this);
         usageStatisticsStore =
                 new UsageStatisticsStore(this);
+
+        sortingSettingsStore =
+                new SortingSettingsStore(this);
 
         overviewOrderStore =
                 new OverviewOrderStore(this);
@@ -797,6 +828,10 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         showStatisticsManagement());
 
+        findViewById(R.id.navSorting)
+                .setOnClickListener(v ->
+                        showSortingManagement());
+
         findViewById(R.id.navBackup)
                 .setOnClickListener(v ->
                         showBackupManagement());
@@ -1186,6 +1221,8 @@ public class MainActivity extends Activity {
             showShortcutManagement();
         } else if (PAGE_STATISTICS.equals(page)) {
             showStatisticsManagement();
+        } else if (PAGE_SORTING.equals(page)) {
+            showSortingManagement();
         } else if (PAGE_BACKUP.equals(page)) {
             showBackupManagement();
         } else if (PAGE_HELP.equals(page)) {
@@ -4689,6 +4726,11 @@ public class MainActivity extends Activity {
         statisticsManagement.setVisibility(
                 View.GONE);
 
+        if (sortingManagement != null) {
+            sortingManagement.setVisibility(
+                    View.GONE);
+        }
+
         if (!PAGE_STATISTICS.equals(
                 currentPage)) {
 
@@ -4782,6 +4824,563 @@ public class MainActivity extends Activity {
         } catch (PackageManager.NameNotFoundException exception) {
             return "–";
         }
+    }
+
+
+    private void ensureSortingInflated() {
+
+        if (sortingManagement != null) {
+            return;
+        }
+
+        sortingManagement =
+                (ScrollView) sortingStub.inflate();
+
+        sortingModeGroup =
+                sortingManagement.findViewById(
+                        R.id.sortingModeGroup);
+
+        sortingManualSettings =
+                sortingManagement.findViewById(
+                        R.id.sortingManualSettings);
+
+        sortingSemiSettings =
+                sortingManagement.findViewById(
+                        R.id.sortingSemiSettings);
+
+        sortingAutomaticSettings =
+                sortingManagement.findViewById(
+                        R.id.sortingAutomaticSettings);
+
+        sortingTimeSettings =
+                sortingManagement.findViewById(
+                        R.id.sortingTimeSettings);
+
+        sortingTimeDetails =
+                sortingManagement.findViewById(
+                        R.id.sortingTimeDetails);
+
+        sortingSemiFavorites =
+                sortingManagement.findViewById(
+                        R.id.sortingSemiFavorites);
+
+        sortingSemiCategories =
+                sortingManagement.findViewById(
+                        R.id.sortingSemiCategories);
+
+        sortingSemiApps =
+                sortingManagement.findViewById(
+                        R.id.sortingSemiApps);
+
+        sortingSemiShortcuts =
+                sortingManagement.findViewById(
+                        R.id.sortingSemiShortcuts);
+
+        sortingTimeProfileEnabled =
+                sortingManagement.findViewById(
+                        R.id.sortingTimeProfileEnabled);
+
+        sortingAlwaysStartFavorites =
+                sortingManagement.findViewById(
+                        R.id.sortingAlwaysStartFavorites);
+
+        sortingDayStart =
+                sortingManagement.findViewById(
+                        R.id.sortingDayStart);
+
+        sortingEveningStart =
+                sortingManagement.findViewById(
+                        R.id.sortingEveningStart);
+
+        sortingFavoriteCount =
+                sortingManagement.findViewById(
+                        R.id.sortingFavoriteCount);
+
+        sortingModeGroup.setOnCheckedChangeListener(
+                (group, checkedId) -> {
+
+                    if (!updatingSortingUi) {
+                        saveSortingSettingsFromControls();
+                    }
+                });
+
+        sortingSemiFavorites.setOnCheckedChangeListener(
+                (button, checked) -> {
+
+                    if (!updatingSortingUi) {
+                        saveSortingSettingsFromControls();
+                    }
+                });
+
+        sortingSemiCategories.setOnCheckedChangeListener(
+                (button, checked) -> {
+
+                    if (!updatingSortingUi) {
+                        saveSortingSettingsFromControls();
+                    }
+                });
+
+        sortingSemiApps.setOnCheckedChangeListener(
+                (button, checked) -> {
+
+                    if (!updatingSortingUi) {
+                        saveSortingSettingsFromControls();
+                    }
+                });
+
+        sortingSemiShortcuts.setOnCheckedChangeListener(
+                (button, checked) -> {
+
+                    if (!updatingSortingUi) {
+                        saveSortingSettingsFromControls();
+                    }
+                });
+
+        sortingTimeProfileEnabled.setOnCheckedChangeListener(
+                (button, checked) -> {
+
+                    if (!updatingSortingUi) {
+                        saveSortingSettingsFromControls();
+                    }
+                });
+
+        sortingAlwaysStartFavorites.setOnCheckedChangeListener(
+                (button, checked) -> {
+
+                    if (!updatingSortingUi) {
+                        saveSortingSettingsFromControls();
+                    }
+                });
+
+        sortingDayStart.setOnClickListener(
+                view ->
+                        showSortingHourDialog(
+                                true));
+
+        sortingEveningStart.setOnClickListener(
+                view ->
+                        showSortingHourDialog(
+                                false));
+
+        sortingFavoriteCount.setOnClickListener(
+                view ->
+                        showAutomaticFavoriteCountDialog());
+
+        sortingStub = null;
+    }
+
+    private void refreshSortingSettingsUi() {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        updatingSortingUi = true;
+
+        if (settings.mode
+                == SortingSettingsStore.Mode.SEMI_AUTOMATIC) {
+
+            sortingModeGroup.check(
+                    R.id.sortingModeSemi);
+
+        } else if (settings.mode
+                == SortingSettingsStore.Mode.AUTOMATIC) {
+
+            sortingModeGroup.check(
+                    R.id.sortingModeAutomatic);
+
+        } else {
+            sortingModeGroup.check(
+                    R.id.sortingModeManual);
+        }
+
+        sortingSemiFavorites.setChecked(
+                settings.semiFavorites);
+
+        sortingSemiCategories.setChecked(
+                settings.semiCategories);
+
+        sortingSemiApps.setChecked(
+                settings.semiApps);
+
+        sortingSemiShortcuts.setChecked(
+                settings.semiShortcuts);
+
+        sortingTimeProfileEnabled.setChecked(
+                settings.timeProfileEnabled);
+
+        sortingAlwaysStartFavorites.setChecked(
+                settings.alwaysStartFavorites);
+
+        sortingDayStart.setText(
+                getString(
+                        R.string.sorting_day_start_value,
+                        formatSortingHour(
+                                settings.dayStartHour)));
+
+        sortingEveningStart.setText(
+                getString(
+                        R.string.sorting_evening_start_value,
+                        formatSortingHour(
+                                settings.eveningStartHour)));
+
+        sortingFavoriteCount.setText(
+                getString(
+                        R.string.sorting_favorite_count_value,
+                        settings.automaticFavoriteCount));
+
+        updatingSortingUi = false;
+
+        updateSortingModeVisibility(
+                settings);
+    }
+
+    private void saveSortingSettingsFromControls() {
+
+        if (sortingManagement == null
+                || updatingSortingUi) {
+
+            return;
+        }
+
+        SortingSettingsStore.Settings current =
+                sortingSettingsStore.load();
+
+        int selectedMode =
+                sortingModeGroup
+                        .getCheckedRadioButtonId();
+
+        SortingSettingsStore.Mode mode;
+
+        if (selectedMode
+                == R.id.sortingModeSemi) {
+
+            mode =
+                    SortingSettingsStore.Mode
+                            .SEMI_AUTOMATIC;
+
+        } else if (selectedMode
+                == R.id.sortingModeAutomatic) {
+
+            mode =
+                    SortingSettingsStore.Mode
+                            .AUTOMATIC;
+
+        } else {
+            mode =
+                    SortingSettingsStore.Mode.MANUAL;
+        }
+
+        SortingSettingsStore.Settings updated =
+                new SortingSettingsStore.Settings(
+                        mode,
+                        sortingSemiFavorites.isChecked(),
+                        sortingSemiCategories.isChecked(),
+                        sortingSemiApps.isChecked(),
+                        sortingSemiShortcuts.isChecked(),
+                        sortingTimeProfileEnabled.isChecked(),
+                        current.dayStartHour,
+                        current.eveningStartHour,
+                        current.automaticFavoriteCount,
+                        sortingAlwaysStartFavorites.isChecked());
+
+        sortingSettingsStore.save(
+                updated);
+
+        updateSortingModeVisibility(
+                updated);
+    }
+
+    private void updateSortingModeVisibility(
+            SortingSettingsStore.Settings settings) {
+
+        boolean manual =
+                settings.mode
+                        == SortingSettingsStore.Mode.MANUAL;
+
+        boolean semiAutomatic =
+                settings.mode
+                        == SortingSettingsStore.Mode.SEMI_AUTOMATIC;
+
+        boolean automatic =
+                settings.mode
+                        == SortingSettingsStore.Mode.AUTOMATIC;
+
+        sortingManualSettings.setVisibility(
+                manual
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        sortingSemiSettings.setVisibility(
+                semiAutomatic
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        sortingAutomaticSettings.setVisibility(
+                automatic
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        sortingTimeSettings.setVisibility(
+                manual
+                        ? View.GONE
+                        : View.VISIBLE);
+
+        sortingTimeDetails.setVisibility(
+                !manual
+                        && settings.timeProfileEnabled
+                        ? View.VISIBLE
+                        : View.GONE);
+    }
+
+    private String formatSortingHour(
+            int hour) {
+
+        return String.format(
+                Locale.ROOT,
+                "%02d:00",
+                hour);
+    }
+
+    private void showSortingHourDialog(
+            boolean dayStart) {
+
+        SortingSettingsStore.Settings current =
+                sortingSettingsStore.load();
+
+        CharSequence[] choices =
+                new CharSequence[24];
+
+        for (int hour = 0;
+             hour < choices.length;
+             hour++) {
+
+            choices[hour] =
+                    formatSortingHour(
+                            hour);
+        }
+
+        int selected =
+                dayStart
+                        ? current.dayStartHour
+                        : current.eveningStartHour;
+
+        new AlertDialog.Builder(this)
+                .setTitle(
+                        dayStart
+                                ? R.string.sorting_day_start_title
+                                : R.string.sorting_evening_start_title)
+                .setSingleChoiceItems(
+                        choices,
+                        selected,
+                        (dialog, which) -> {
+
+                            int other =
+                                    dayStart
+                                            ? current.eveningStartHour
+                                            : current.dayStartHour;
+
+                            if (which == other) {
+                                Toast.makeText(
+                                                this,
+                                                R.string.sorting_time_same_error,
+                                                Toast.LENGTH_SHORT)
+                                        .show();
+
+                                return;
+                            }
+
+                            SortingSettingsStore.Settings updated =
+                                    new SortingSettingsStore.Settings(
+                                            current.mode,
+                                            current.semiFavorites,
+                                            current.semiCategories,
+                                            current.semiApps,
+                                            current.semiShortcuts,
+                                            current.timeProfileEnabled,
+                                            dayStart
+                                                    ? which
+                                                    : current.dayStartHour,
+                                            dayStart
+                                                    ? current.eveningStartHour
+                                                    : which,
+                                            current.automaticFavoriteCount,
+                                            current.alwaysStartFavorites);
+
+                            sortingSettingsStore.save(
+                                    updated);
+
+                            refreshSortingSettingsUi();
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
+    private void showAutomaticFavoriteCountDialog() {
+
+        SortingSettingsStore.Settings current =
+                sortingSettingsStore.load();
+
+        EditText input =
+                new EditText(this);
+
+        input.setInputType(
+                InputType.TYPE_CLASS_NUMBER);
+
+        input.setSingleLine(
+                true);
+
+        input.setText(
+                Integer.toString(
+                        current.automaticFavoriteCount));
+
+        input.setSelectAllOnFocus(
+                true);
+
+        int padding =
+                getResources()
+                        .getDimensionPixelSize(
+                                R.dimen.spacing_md);
+
+        FrameLayout container =
+                new FrameLayout(this);
+
+        container.setPadding(
+                padding,
+                0,
+                padding,
+                0);
+
+        container.addView(
+                input,
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.sorting_favorite_count_title)
+                        .setView(
+                                container)
+                        .setPositiveButton(
+                                R.string.action_save,
+                                null)
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .create();
+
+        dialog.setOnShowListener(
+                ignored ->
+                        dialog.getButton(
+                                        DialogInterface.BUTTON_POSITIVE)
+                                .setOnClickListener(
+                                        view -> {
+
+                                            int count;
+
+                                            try {
+                                                count =
+                                                        Integer.parseInt(
+                                                                input.getText()
+                                                                        .toString()
+                                                                        .trim());
+
+                                            } catch (NumberFormatException exception) {
+                                                count = 0;
+                                            }
+
+                                            if (count < 1) {
+                                                Toast.makeText(
+                                                                this,
+                                                                R.string.sorting_favorite_count_invalid,
+                                                                Toast.LENGTH_SHORT)
+                                                        .show();
+
+                                                return;
+                                            }
+
+                                            SortingSettingsStore.Settings updated =
+                                                    new SortingSettingsStore.Settings(
+                                                            current.mode,
+                                                            current.semiFavorites,
+                                                            current.semiCategories,
+                                                            current.semiApps,
+                                                            current.semiShortcuts,
+                                                            current.timeProfileEnabled,
+                                                            current.dayStartHour,
+                                                            current.eveningStartHour,
+                                                            count,
+                                                            current.alwaysStartFavorites);
+
+                                            sortingSettingsStore.save(
+                                                    updated);
+
+                                            refreshSortingSettingsUi();
+                                            dialog.dismiss();
+                                        }));
+
+        dialog.show();
+    }
+
+    private void showSortingManagement() {
+
+        currentPage = PAGE_SORTING;
+        setTopNavigation(false);
+
+        ensureSortingInflated();
+
+        shortcutHelpButton.setVisibility(
+                View.GONE);
+
+        hideOverviewSortMode();
+
+        categoryManagement.setVisibility(
+                View.GONE);
+
+        shortcutManagement.setVisibility(
+                View.GONE);
+
+        backupManagement.setVisibility(
+                View.GONE);
+
+        hideHelpPage();
+        hideAboutPage();
+
+        overviewList.setVisibility(
+                View.GONE);
+
+        appList.setVisibility(
+                View.GONE);
+
+        pageMessage.setVisibility(
+                View.GONE);
+
+        appSearchContainer.setVisibility(
+                View.GONE);
+
+        appSearchClear.setVisibility(
+                View.GONE);
+
+        appSearch.clearFocus();
+
+        pageTitle.setText(
+                R.string.nav_sorting);
+
+        refreshSortingSettingsUi();
+
+        sortingManagement.setVisibility(
+                View.VISIBLE);
+
+        sortingManagement.scrollTo(
+                0,
+                0);
+
+        drawerLayout.closeDrawer(
+                GravityCompat.END);
     }
 
     private void ensureHelpInflated() {
