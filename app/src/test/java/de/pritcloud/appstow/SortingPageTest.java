@@ -94,6 +94,82 @@ public class SortingPageTest {
     }
 
     @Test
+    public void manualSuggestionControlsAreAvailableAndPersist() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navSorting)
+                                .performClick();
+
+                        CheckBox suggestions =
+                                activity.findViewById(
+                                        R.id.sortingSuggestionsEnabled);
+
+                        assertEquals(
+                                View.VISIBLE,
+                                suggestions.getVisibility());
+
+                        suggestions.performClick();
+
+                        SortingSettingsStore.Settings settings =
+                                new SortingSettingsStore(
+                                        activity)
+                                        .load();
+
+                        assertTrue(
+                                settings.suggestionsEnabled);
+
+                        assertEquals(
+                                30,
+                                settings.suggestionIntervalDays);
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingSuggestionInterval)
+                                        .getVisibility());
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingSuggestionFavoriteCount)
+                                        .getVisibility());
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingSuggestionCheckNow)
+                                        .getVisibility());
+
+                        assertEquals(
+                                View.VISIBLE,
+                                activity.findViewById(
+                                                R.id.sortingAlwaysStartFavorites)
+                                        .getVisibility());
+                    });
+
+            scenario.recreate();
+
+            scenario.onActivity(
+                    activity -> {
+
+                        CheckBox suggestions =
+                                activity.findViewById(
+                                        R.id.sortingSuggestionsEnabled);
+
+                        assertTrue(
+                                suggestions.isChecked());
+                    });
+        }
+    }
+
+    @Test
     public void semiAutomaticControlsPersistAcrossRecreation() {
 
         try (ActivityScenario<MainActivity> scenario =

@@ -28,10 +28,17 @@ final class SortingSettingsStore {
             "automatic_favorite_count";
     private static final String KEY_ALWAYS_START_FAVORITES =
             "always_start_favorites";
+    private static final String KEY_SUGGESTIONS_ENABLED =
+            "suggestions_enabled";
+    private static final String KEY_SUGGESTION_INTERVAL_DAYS =
+            "suggestion_interval_days";
+    private static final String KEY_LAST_SUGGESTION_HANDLED_AT =
+            "last_suggestion_handled_at";
 
     static final int DEFAULT_DAY_START_HOUR = 8;
     static final int DEFAULT_EVENING_START_HOUR = 21;
     static final int DEFAULT_AUTOMATIC_FAVORITE_COUNT = 10;
+    static final int DEFAULT_SUGGESTION_INTERVAL_DAYS = 30;
 
     enum Mode {
         MANUAL,
@@ -51,6 +58,8 @@ final class SortingSettingsStore {
         final int eveningStartHour;
         final int automaticFavoriteCount;
         final boolean alwaysStartFavorites;
+        final boolean suggestionsEnabled;
+        final int suggestionIntervalDays;
 
         Settings(
                 Mode mode,
@@ -64,6 +73,35 @@ final class SortingSettingsStore {
                 int automaticFavoriteCount,
                 boolean alwaysStartFavorites) {
 
+            this(
+                    mode,
+                    semiFavorites,
+                    semiCategories,
+                    semiApps,
+                    semiShortcuts,
+                    timeProfileEnabled,
+                    dayStartHour,
+                    eveningStartHour,
+                    automaticFavoriteCount,
+                    alwaysStartFavorites,
+                    false,
+                    DEFAULT_SUGGESTION_INTERVAL_DAYS);
+        }
+
+        Settings(
+                Mode mode,
+                boolean semiFavorites,
+                boolean semiCategories,
+                boolean semiApps,
+                boolean semiShortcuts,
+                boolean timeProfileEnabled,
+                int dayStartHour,
+                int eveningStartHour,
+                int automaticFavoriteCount,
+                boolean alwaysStartFavorites,
+                boolean suggestionsEnabled,
+                int suggestionIntervalDays) {
+
             this.mode = mode;
             this.semiFavorites = semiFavorites;
             this.semiCategories = semiCategories;
@@ -76,9 +114,14 @@ final class SortingSettingsStore {
                     automaticFavoriteCount;
             this.alwaysStartFavorites =
                     alwaysStartFavorites;
+            this.suggestionsEnabled =
+                    suggestionsEnabled;
+            this.suggestionIntervalDays =
+                    suggestionIntervalDays;
         }
 
         static Settings defaults() {
+
             return new Settings(
                     Mode.MANUAL,
                     true,
@@ -89,13 +132,17 @@ final class SortingSettingsStore {
                     DEFAULT_DAY_START_HOUR,
                     DEFAULT_EVENING_START_HOUR,
                     DEFAULT_AUTOMATIC_FAVORITE_COUNT,
-                    false);
+                    false,
+                    false,
+                    DEFAULT_SUGGESTION_INTERVAL_DAYS);
         }
     }
 
     private final SharedPreferences preferences;
 
-    SortingSettingsStore(Context context) {
+    SortingSettingsStore(
+            Context context) {
+
         preferences =
                 context.getSharedPreferences(
                         PREFS_NAME,
@@ -103,6 +150,7 @@ final class SortingSettingsStore {
     }
 
     Settings load() {
+
         Settings defaults =
                 Settings.defaults();
 
@@ -126,9 +174,12 @@ final class SortingSettingsStore {
                                 defaults.eveningStartHour),
                         defaults.eveningStartHour);
 
-        if (dayStartHour == eveningStartHour) {
+        if (dayStartHour
+                == eveningStartHour) {
+
             dayStartHour =
                     defaults.dayStartHour;
+
             eveningStartHour =
                     defaults.eveningStartHour;
         }
@@ -139,8 +190,21 @@ final class SortingSettingsStore {
                         defaults.automaticFavoriteCount);
 
         if (favoriteCount < 1) {
+
             favoriteCount =
                     defaults.automaticFavoriteCount;
+        }
+
+        int suggestionInterval =
+                preferences.getInt(
+                        KEY_SUGGESTION_INTERVAL_DAYS,
+                        defaults.suggestionIntervalDays);
+
+        if (!isValidSuggestionInterval(
+                suggestionInterval)) {
+
+            suggestionInterval =
+                    defaults.suggestionIntervalDays;
         }
 
         return new Settings(
@@ -165,18 +229,35 @@ final class SortingSettingsStore {
                 favoriteCount,
                 preferences.getBoolean(
                         KEY_ALWAYS_START_FAVORITES,
-                        defaults.alwaysStartFavorites));
+                        defaults.alwaysStartFavorites),
+                preferences.getBoolean(
+                        KEY_SUGGESTIONS_ENABLED,
+                        defaults.suggestionsEnabled),
+                suggestionInterval);
     }
 
-    void save(Settings settings) {
-        validate(settings);
+    void save(
+            Settings settings) {
+
+        validate(
+                settings);
 
         preferences.edit()
-                .putString(KEY_MODE, settings.mode.name())
-                .putBoolean(KEY_SEMI_FAVORITES, settings.semiFavorites)
-                .putBoolean(KEY_SEMI_CATEGORIES, settings.semiCategories)
-                .putBoolean(KEY_SEMI_APPS, settings.semiApps)
-                .putBoolean(KEY_SEMI_SHORTCUTS, settings.semiShortcuts)
+                .putString(
+                        KEY_MODE,
+                        settings.mode.name())
+                .putBoolean(
+                        KEY_SEMI_FAVORITES,
+                        settings.semiFavorites)
+                .putBoolean(
+                        KEY_SEMI_CATEGORIES,
+                        settings.semiCategories)
+                .putBoolean(
+                        KEY_SEMI_APPS,
+                        settings.semiApps)
+                .putBoolean(
+                        KEY_SEMI_SHORTCUTS,
+                        settings.semiShortcuts)
                 .putBoolean(
                         KEY_TIME_PROFILE_ENABLED,
                         settings.timeProfileEnabled)
@@ -192,17 +273,82 @@ final class SortingSettingsStore {
                 .putBoolean(
                         KEY_ALWAYS_START_FAVORITES,
                         settings.alwaysStartFavorites)
+                .putBoolean(
+                        KEY_SUGGESTIONS_ENABLED,
+                        settings.suggestionsEnabled)
+                .putInt(
+                        KEY_SUGGESTION_INTERVAL_DAYS,
+                        settings.suggestionIntervalDays)
                 .apply();
     }
 
-    private static Mode parseMode(String value) {
+    long getLastSuggestionHandledAt() {
+
+        return preferences.getLong(
+                KEY_LAST_SUGGESTION_HANDLED_AT,
+                0L);
+    }
+
+    void markSuggestionHandledNow() {
+
+        setLastSuggestionHandledAt(
+                System.currentTimeMillis());
+    }
+
+    void setLastSuggestionHandledAt(
+            long timestamp) {
+
+        preferences.edit()
+                .putLong(
+                        KEY_LAST_SUGGESTION_HANDLED_AT,
+                        Math.max(
+                                0L,
+                                timestamp))
+                .apply();
+    }
+
+    boolean isSuggestionDue(
+            long nowMillis,
+            Settings settings) {
+
+        if (settings == null
+                || !settings.suggestionsEnabled) {
+
+            return false;
+        }
+
+        long lastHandled =
+                getLastSuggestionHandledAt();
+
+        if (lastHandled <= 0L) {
+            return true;
+        }
+
+        long intervalMillis =
+                settings.suggestionIntervalDays
+                        * 24L
+                        * 60L
+                        * 60L
+                        * 1000L;
+
+        return nowMillis >= lastHandled
+                && nowMillis - lastHandled
+                >= intervalMillis;
+    }
+
+    private static Mode parseMode(
+            String value) {
+
         if (value == null) {
             return Mode.MANUAL;
         }
 
         try {
-            return Mode.valueOf(value);
+            return Mode.valueOf(
+                    value);
+
         } catch (IllegalArgumentException exception) {
+
             return Mode.MANUAL;
         }
     }
@@ -211,12 +357,15 @@ final class SortingSettingsStore {
             int value,
             int fallback) {
 
-        return isValidHour(value)
+        return isValidHour(
+                value)
                 ? value
                 : fallback;
     }
 
-    private static void validate(Settings settings) {
+    private static void validate(
+            Settings settings) {
+
         if (settings == null
                 || settings.mode == null) {
 
@@ -224,8 +373,10 @@ final class SortingSettingsStore {
                     "Sorting settings are incomplete.");
         }
 
-        if (!isValidHour(settings.dayStartHour)
-                || !isValidHour(settings.eveningStartHour)
+        if (!isValidHour(
+                settings.dayStartHour)
+                || !isValidHour(
+                settings.eveningStartHour)
                 || settings.dayStartHour
                 == settings.eveningStartHour) {
 
@@ -233,14 +384,35 @@ final class SortingSettingsStore {
                     "Day and evening start must be distinct valid hours.");
         }
 
-        if (settings.automaticFavoriteCount < 1) {
+        if (settings.automaticFavoriteCount
+                < 1) {
+
             throw new IllegalArgumentException(
                     "Automatic favorite count must be positive.");
         }
+
+        if (!isValidSuggestionInterval(
+                settings.suggestionIntervalDays)) {
+
+            throw new IllegalArgumentException(
+                    "Suggestion interval is invalid.");
+        }
     }
 
-    private static boolean isValidHour(int value) {
+    private static boolean isValidHour(
+            int value) {
+
         return value >= 0
                 && value <= 23;
+    }
+
+    private static boolean isValidSuggestionInterval(
+            int value) {
+
+        return value == 7
+                || value == 14
+                || value == 30
+                || value == 60
+                || value == 90;
     }
 }

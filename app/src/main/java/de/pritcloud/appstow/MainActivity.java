@@ -185,11 +185,17 @@ public class MainActivity extends Activity {
     private CheckBox sortingSemiShortcuts;
     private CheckBox sortingTimeProfileEnabled;
     private CheckBox sortingAlwaysStartFavorites;
+    private CheckBox sortingSuggestionsEnabled;
+    private TextView sortingSuggestionInterval;
+    private TextView sortingSuggestionFavoriteCount;
+    private TextView sortingSuggestionCheckNow;
     private TextView sortingDayStart;
     private TextView sortingEveningStart;
     private TextView sortingFavoriteCount;
     private SortingSettingsStore sortingSettingsStore;
     private boolean updatingSortingUi;
+    private boolean sortingSuggestionAutomaticCheckPending;
+    private boolean sortingSuggestionManualCheckPending;
 
     private View backupManagement;
 
@@ -955,8 +961,12 @@ public class MainActivity extends Activity {
         registerPackageChangeReceiver();
 
         if (savedInstanceState == null) {
+            sortingSuggestionAutomaticCheckPending =
+                    true;
+
             showOverview();
-            applyAutomaticStartupFavorites();
+            applyStartupFavorites();
+
         } else {
             showOnlyUnassignedApps =
                     savedInstanceState.getBoolean(
@@ -2315,14 +2325,12 @@ public class MainActivity extends Activity {
         appFilterButton.setVisibility(View.GONE);
     }
 
-    private void applyAutomaticStartupFavorites() {
+    private void applyStartupFavorites() {
 
         SortingSettingsStore.Settings settings =
                 sortingSettingsStore.load();
 
-        if (settings.mode
-                != SortingSettingsStore.Mode.AUTOMATIC
-                || !settings.alwaysStartFavorites) {
+        if (!settings.alwaysStartFavorites) {
 
             return;
         }
@@ -4815,8 +4823,13 @@ public class MainActivity extends Activity {
                 }
 
                 if (reloadAgain) {
+
                     appsLoaded = false;
                     loadAppsAsync();
+
+                } else if (success) {
+
+                    runPendingSortingSuggestionChecks();
                 }
             });
         });
@@ -5730,6 +5743,22 @@ public class MainActivity extends Activity {
                 sortingManagement.findViewById(
                         R.id.sortingAlwaysStartFavorites);
 
+        sortingSuggestionsEnabled =
+                sortingManagement.findViewById(
+                        R.id.sortingSuggestionsEnabled);
+
+        sortingSuggestionInterval =
+                sortingManagement.findViewById(
+                        R.id.sortingSuggestionInterval);
+
+        sortingSuggestionFavoriteCount =
+                sortingManagement.findViewById(
+                        R.id.sortingSuggestionFavoriteCount);
+
+        sortingSuggestionCheckNow =
+                sortingManagement.findViewById(
+                        R.id.sortingSuggestionCheckNow);
+
         sortingDayStart =
                 sortingManagement.findViewById(
                         R.id.sortingDayStart);
@@ -5798,6 +5827,14 @@ public class MainActivity extends Activity {
                     }
                 });
 
+        sortingSuggestionsEnabled.setOnCheckedChangeListener(
+                (button, checked) -> {
+
+                    if (!updatingSortingUi) {
+                        saveSortingSettingsFromControls();
+                    }
+                });
+
         sortingDayStart.setOnClickListener(
                 view ->
                         showSortingHourDialog(
@@ -5811,6 +5848,18 @@ public class MainActivity extends Activity {
         sortingFavoriteCount.setOnClickListener(
                 view ->
                         showAutomaticFavoriteCountDialog());
+
+        sortingSuggestionFavoriteCount.setOnClickListener(
+                view ->
+                        showAutomaticFavoriteCountDialog());
+
+        sortingSuggestionInterval.setOnClickListener(
+                view ->
+                        showSortingSuggestionIntervalDialog());
+
+        sortingSuggestionCheckNow.setOnClickListener(
+                view ->
+                        requestSortingSuggestionCheckNow());
 
         sortingStub = null;
     }
@@ -5856,6 +5905,19 @@ public class MainActivity extends Activity {
 
         sortingAlwaysStartFavorites.setChecked(
                 settings.alwaysStartFavorites);
+
+        sortingSuggestionsEnabled.setChecked(
+                settings.suggestionsEnabled);
+
+        sortingSuggestionInterval.setText(
+                getString(
+                        R.string.sorting_suggestion_interval_value,
+                        settings.suggestionIntervalDays));
+
+        sortingSuggestionFavoriteCount.setText(
+                getString(
+                        R.string.sorting_suggestion_favorite_count_value,
+                        settings.automaticFavoriteCount));
 
         sortingDayStart.setText(
                 getString(
@@ -5927,7 +5989,13 @@ public class MainActivity extends Activity {
                         current.dayStartHour,
                         current.eveningStartHour,
                         current.automaticFavoriteCount,
-                        sortingAlwaysStartFavorites.isChecked());
+                        sortingAlwaysStartFavorites.isChecked(),
+                        sortingSuggestionsEnabled.isChecked(),
+                        current.suggestionIntervalDays);
+
+        boolean suggestionsJustEnabled =
+                !current.suggestionsEnabled
+                        && updated.suggestionsEnabled;
 
         if (current.mode
                 == SortingSettingsStore.Mode.AUTOMATIC
@@ -5939,6 +6007,12 @@ public class MainActivity extends Activity {
 
         sortingSettingsStore.save(
                 updated);
+
+        if (suggestionsJustEnabled) {
+
+            sortingSettingsStore
+                    .markSuggestionHandledNow();
+        }
 
         updateFavoriteEditingState();
 
@@ -6063,7 +6137,9 @@ public class MainActivity extends Activity {
                                                     ? current.eveningStartHour
                                                     : which,
                                             current.automaticFavoriteCount,
-                                            current.alwaysStartFavorites);
+                                            current.alwaysStartFavorites,
+                                            current.suggestionsEnabled,
+                                            current.suggestionIntervalDays);
 
                             sortingSettingsStore.save(
                                     updated);
@@ -6177,7 +6253,9 @@ public class MainActivity extends Activity {
                                                             current.dayStartHour,
                                                             current.eveningStartHour,
                                                             count,
-                                                            current.alwaysStartFavorites);
+                                                            current.alwaysStartFavorites,
+                                                            current.suggestionsEnabled,
+                                                            current.suggestionIntervalDays);
 
                                             sortingSettingsStore.save(
                                                     updated);
@@ -6191,6 +6269,1006 @@ public class MainActivity extends Activity {
                                         }));
 
         dialog.show();
+    }
+
+    private void showSortingSuggestionIntervalDialog() {
+
+        SortingSettingsStore.Settings current =
+                sortingSettingsStore.load();
+
+        int[] values = {
+                7,
+                14,
+                30,
+                60,
+                90
+        };
+
+        CharSequence[] choices = {
+                getString(
+                        R.string.sorting_suggestion_interval_7),
+                getString(
+                        R.string.sorting_suggestion_interval_14),
+                getString(
+                        R.string.sorting_suggestion_interval_30),
+                getString(
+                        R.string.sorting_suggestion_interval_60),
+                getString(
+                        R.string.sorting_suggestion_interval_90)
+        };
+
+        int selected =
+                2;
+
+        for (int i = 0;
+             i < values.length;
+             i++) {
+
+            if (values[i]
+                    == current.suggestionIntervalDays) {
+
+                selected =
+                        i;
+
+                break;
+            }
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(
+                        R.string.sorting_suggestion_interval_title)
+                .setSingleChoiceItems(
+                        choices,
+                        selected,
+                        (dialog, which) -> {
+
+                            SortingSettingsStore.Settings updated =
+                                    new SortingSettingsStore.Settings(
+                                            current.mode,
+                                            current.semiFavorites,
+                                            current.semiCategories,
+                                            current.semiApps,
+                                            current.semiShortcuts,
+                                            current.timeProfileEnabled,
+                                            current.dayStartHour,
+                                            current.eveningStartHour,
+                                            current.automaticFavoriteCount,
+                                            current.alwaysStartFavorites,
+                                            current.suggestionsEnabled,
+                                            values[which]);
+
+                            sortingSettingsStore.save(
+                                    updated);
+
+                            sortingSettingsStore
+                                    .markSuggestionHandledNow();
+
+                            refreshSortingSettingsUi();
+
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(
+                        R.string.action_cancel,
+                        null)
+                .show();
+    }
+
+    private void requestSortingSuggestionCheckNow() {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        if (settings.mode
+                != SortingSettingsStore.Mode.MANUAL) {
+
+            return;
+        }
+
+        if (!appsLoaded) {
+
+            sortingSuggestionManualCheckPending =
+                    true;
+
+            loadAppsAsync();
+
+            Toast.makeText(
+                            this,
+                            R.string.sorting_suggestion_loading,
+                            Toast.LENGTH_SHORT)
+                    .show();
+
+            return;
+        }
+
+        performSortingSuggestionCheck(
+                true);
+    }
+
+    private void runPendingSortingSuggestionChecks() {
+
+        if (!appsLoaded) {
+            return;
+        }
+
+        if (sortingSuggestionManualCheckPending) {
+
+            sortingSuggestionManualCheckPending =
+                    false;
+
+            sortingSuggestionAutomaticCheckPending =
+                    false;
+
+            performSortingSuggestionCheck(
+                    true);
+
+            return;
+        }
+
+        if (sortingSuggestionAutomaticCheckPending) {
+
+            sortingSuggestionAutomaticCheckPending =
+                    false;
+
+            performSortingSuggestionCheck(
+                    false);
+        }
+    }
+
+    private void performSortingSuggestionCheck(
+            boolean explicitCheck) {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        if (settings.mode
+                != SortingSettingsStore.Mode.MANUAL) {
+
+            return;
+        }
+
+        if (!explicitCheck
+                && (!settings.suggestionsEnabled
+                || !sortingSettingsStore
+                        .isSuggestionDue(
+                                System.currentTimeMillis(),
+                                settings))) {
+
+            return;
+        }
+
+        SortingSuggestionEngine.Plan plan =
+                buildSortingSuggestionPlan();
+
+        sortingSettingsStore
+                .markSuggestionHandledNow();
+
+        if (!plan.hasAnyChange()) {
+
+            if (explicitCheck) {
+
+                new AlertDialog.Builder(this)
+                        .setMessage(
+                                R.string.sorting_suggestion_up_to_date)
+                        .setPositiveButton(
+                                android.R.string.ok,
+                                null)
+                        .show();
+            }
+
+            return;
+        }
+
+        if (explicitCheck) {
+
+            showSortingSuggestionPreview(
+                    plan);
+
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(
+                        R.string.sorting_suggestion_available_title)
+                .setMessage(
+                        R.string.sorting_suggestion_available_message)
+                .setPositiveButton(
+                        R.string.sorting_suggestion_show,
+                        (dialog, which) ->
+                                showSortingSuggestionPreview(
+                                        plan))
+                .setNeutralButton(
+                        R.string.sorting_suggestion_skip,
+                        null)
+                .setNegativeButton(
+                        R.string.sorting_suggestion_disable,
+                        (dialog, which) ->
+                                disableSortingSuggestions())
+                .show();
+    }
+
+    private void disableSortingSuggestions() {
+
+        SortingSettingsStore.Settings current =
+                sortingSettingsStore.load();
+
+        SortingSettingsStore.Settings updated =
+                new SortingSettingsStore.Settings(
+                        current.mode,
+                        current.semiFavorites,
+                        current.semiCategories,
+                        current.semiApps,
+                        current.semiShortcuts,
+                        current.timeProfileEnabled,
+                        current.dayStartHour,
+                        current.eveningStartHour,
+                        current.automaticFavoriteCount,
+                        current.alwaysStartFavorites,
+                        false,
+                        current.suggestionIntervalDays);
+
+        sortingSettingsStore.save(
+                updated);
+
+        sortingSettingsStore
+                .markSuggestionHandledNow();
+
+        if (sortingManagement != null) {
+
+            refreshSortingSettingsUi();
+        }
+    }
+
+    private SortingSuggestionEngine.Plan
+            buildSortingSuggestionPlan() {
+
+        SortingSettingsStore.Settings settings =
+                sortingSettingsStore.load();
+
+        UsageStatisticsStore.SortingSnapshot sorting =
+                usageStatisticsStore
+                        .getSortingSnapshot(
+                                UsageStatisticsStore.TimeProfile.DAY,
+                                settings.dayStartHour,
+                                settings.eveningStartHour);
+
+        Map<String, Integer> itemScores =
+                createItemScoreMap(
+                        sorting.getOverallWeighted());
+
+        List<String> sectionOrder =
+                new ArrayList<>();
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            sectionOrder.add(
+                    section.id);
+        }
+
+        Set<String> currentFavoriteIds =
+                new HashSet<>();
+
+        List<String> currentFavoriteItems =
+                new ArrayList<>();
+
+        for (AppEntry app :
+                apps) {
+
+            if (!favoritesStore.isFavorite(
+                    app.packageName)) {
+
+                continue;
+            }
+
+            String id =
+                    SectionItemOrderStore
+                            .appItemId(
+                                    app.packageName);
+
+            currentFavoriteIds.add(
+                    id);
+
+            currentFavoriteItems.add(
+                    id);
+        }
+
+        List<ShortcutEntry> shortcuts =
+                shortcutStore.getShortcuts();
+
+        for (ShortcutEntry shortcut :
+                shortcuts) {
+
+            if (!shortcut.favorite) {
+                continue;
+            }
+
+            String id =
+                    SectionItemOrderStore
+                            .shortcutItemId(
+                                    shortcut.id);
+
+            currentFavoriteIds.add(
+                    id);
+
+            currentFavoriteItems.add(
+                    id);
+        }
+
+        Map<String, List<String>> sectionItems =
+                new HashMap<>();
+
+        sectionItems.put(
+                "favorites",
+                sectionItemOrderStore
+                        .getOrderedIds(
+                                "favorites",
+                                currentFavoriteItems));
+
+        for (CategoryEntry category :
+                categoryStore.getCategories()) {
+
+            String sectionId =
+                    "category:"
+                            + category.id;
+
+            List<String> ids =
+                    new ArrayList<>();
+
+            for (AppEntry app :
+                    apps) {
+
+                if (categoryStore
+                        .isAssignedToCategory(
+                                app.packageName,
+                                category.id)) {
+
+                    ids.add(
+                            SectionItemOrderStore
+                                    .appItemId(
+                                            app.packageName));
+                }
+            }
+
+            for (ShortcutEntry shortcut :
+                    shortcuts) {
+
+                if (shortcut.categoryIds
+                        .contains(
+                                category.id)) {
+
+                    ids.add(
+                            SectionItemOrderStore
+                                    .shortcutItemId(
+                                            shortcut.id));
+                }
+            }
+
+            sectionItems.put(
+                    sectionId,
+                    sectionItemOrderStore
+                            .getOrderedIds(
+                                    sectionId,
+                                    ids));
+        }
+
+        List<String> shortcutSectionItems =
+                new ArrayList<>();
+
+        for (ShortcutEntry shortcut :
+                shortcuts) {
+
+            shortcutSectionItems.add(
+                    SectionItemOrderStore
+                            .shortcutItemId(
+                                    shortcut.id));
+        }
+
+        sectionItems.put(
+                "shortcuts",
+                sectionItemOrderStore
+                        .getOrderedIds(
+                                "shortcuts",
+                                shortcutSectionItems));
+
+        List<String> allFavoriteCandidates =
+                new ArrayList<>();
+
+        for (AppEntry app :
+                apps) {
+
+            allFavoriteCandidates.add(
+                    SectionItemOrderStore
+                            .appItemId(
+                                    app.packageName));
+        }
+
+        for (ShortcutEntry shortcut :
+                shortcuts) {
+
+            allFavoriteCandidates.add(
+                    SectionItemOrderStore
+                            .shortcutItemId(
+                                    shortcut.id));
+        }
+
+        List<String> favoriteCandidateBaseline =
+                sectionItemOrderStore
+                        .getOrderedIds(
+                                "favorites",
+                                allFavoriteCandidates);
+
+        return SortingSuggestionEngine.build(
+                sectionOrder,
+                sectionItems,
+                currentFavoriteIds,
+                favoriteCandidateBaseline,
+                settings.automaticFavoriteCount,
+                itemScores,
+                sorting.getOverallSectionCounts());
+    }
+
+    private void showSortingSuggestionPreview(
+            SortingSuggestionEngine.Plan plan) {
+
+        View content =
+                getLayoutInflater()
+                        .inflate(
+                                R.layout.dialog_sorting_suggestions,
+                                null,
+                                false);
+
+        CheckBox favoriteOrder =
+                content.findViewById(
+                        R.id.suggestionApplyFavoriteOrder);
+
+        TextView favoriteOrderPreview =
+                content.findViewById(
+                        R.id.suggestionFavoriteOrderPreview);
+
+        CheckBox favoriteAssignment =
+                content.findViewById(
+                        R.id.suggestionApplyFavoriteAssignment);
+
+        TextView favoriteAssignmentPreview =
+                content.findViewById(
+                        R.id.suggestionFavoriteAssignmentPreview);
+
+        CheckBox categories =
+                content.findViewById(
+                        R.id.suggestionApplyCategories);
+
+        TextView categoriesPreview =
+                content.findViewById(
+                        R.id.suggestionCategoriesPreview);
+
+        CheckBox appsBox =
+                content.findViewById(
+                        R.id.suggestionApplyApps);
+
+        TextView appsPreview =
+                content.findViewById(
+                        R.id.suggestionAppsPreview);
+
+        CheckBox shortcutsBox =
+                content.findViewById(
+                        R.id.suggestionApplyShortcuts);
+
+        TextView shortcutsPreview =
+                content.findViewById(
+                        R.id.suggestionShortcutsPreview);
+
+        configureSortingSuggestionBlock(
+                favoriteOrder,
+                favoriteOrderPreview,
+                plan.favoriteOrderChanged(),
+                formatSortingSuggestionItemOrder(
+                        plan.suggestedFavoriteOrder));
+
+        configureSortingSuggestionBlock(
+                favoriteAssignment,
+                favoriteAssignmentPreview,
+                plan.favoriteAssignmentChanged(),
+                formatSortingSuggestionFavoriteAssignment(
+                        plan));
+
+        configureSortingSuggestionBlock(
+                categories,
+                categoriesPreview,
+                plan.categoryOrderChanged(),
+                formatSortingSuggestionSectionOrder(
+                        plan.suggestedSectionOrder));
+
+        configureSortingSuggestionBlock(
+                appsBox,
+                appsPreview,
+                plan.appOrderChanged(),
+                formatSortingSuggestionChangedOrders(
+                        plan,
+                        plan.suggestedAppOrders));
+
+        configureSortingSuggestionBlock(
+                shortcutsBox,
+                shortcutsPreview,
+                plan.shortcutOrderChanged(),
+                formatSortingSuggestionChangedOrders(
+                        plan,
+                        plan.suggestedShortcutOrders));
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.sorting_suggestion_preview_title)
+                        .setView(
+                                content)
+                        .setPositiveButton(
+                                R.string.sorting_suggestion_apply,
+                                null)
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .create();
+
+        dialog.setOnShowListener(
+                ignored ->
+                        dialog.getButton(
+                                        DialogInterface.BUTTON_POSITIVE)
+                                .setOnClickListener(
+                                        view -> {
+
+                                            boolean useFavoriteOrder =
+                                                    plan.favoriteOrderChanged()
+                                                            && favoriteOrder.isChecked();
+
+                                            boolean useFavoriteAssignment =
+                                                    plan.favoriteAssignmentChanged()
+                                                            && favoriteAssignment.isChecked();
+
+                                            boolean useCategories =
+                                                    plan.categoryOrderChanged()
+                                                            && categories.isChecked();
+
+                                            boolean useApps =
+                                                    plan.appOrderChanged()
+                                                            && appsBox.isChecked();
+
+                                            boolean useShortcuts =
+                                                    plan.shortcutOrderChanged()
+                                                            && shortcutsBox.isChecked();
+
+                                            if (!useFavoriteOrder
+                                                    && !useFavoriteAssignment
+                                                    && !useCategories
+                                                    && !useApps
+                                                    && !useShortcuts) {
+
+                                                Toast.makeText(
+                                                                this,
+                                                                R.string.sorting_suggestion_none_selected,
+                                                                Toast.LENGTH_SHORT)
+                                                        .show();
+
+                                                return;
+                                            }
+
+                                            applySortingSuggestionPlan(
+                                                    plan,
+                                                    useFavoriteOrder,
+                                                    useFavoriteAssignment,
+                                                    useCategories,
+                                                    useApps,
+                                                    useShortcuts);
+
+                                            dialog.dismiss();
+                                        }));
+
+        dialog.show();
+    }
+
+    private void configureSortingSuggestionBlock(
+            CheckBox checkBox,
+            TextView preview,
+            boolean visible,
+            String text) {
+
+        checkBox.setVisibility(
+                visible
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        preview.setVisibility(
+                visible
+                        ? View.VISIBLE
+                        : View.GONE);
+
+        checkBox.setChecked(
+                visible);
+
+        preview.setText(
+                text);
+    }
+
+    private String formatSortingSuggestionItemOrder(
+            List<String> itemIds) {
+
+        StringBuilder result =
+                new StringBuilder();
+
+        int position =
+                1;
+
+        for (String itemId :
+                itemIds) {
+
+            if (result.length() > 0) {
+                result.append(
+                        "\n");
+            }
+
+            result.append(
+                    position)
+                    .append(
+                            ". ")
+                    .append(
+                            getSortingSuggestionItemLabel(
+                                    itemId));
+
+            position++;
+        }
+
+        return result.toString();
+    }
+
+    private String formatSortingSuggestionSectionOrder(
+            List<String> sectionIds) {
+
+        StringBuilder result =
+                new StringBuilder();
+
+        int position =
+                1;
+
+        for (String sectionId :
+                sectionIds) {
+
+            if (result.length() > 0) {
+                result.append(
+                        "\n");
+            }
+
+            result.append(
+                    position)
+                    .append(
+                            ". ")
+                    .append(
+                            getSortingSuggestionSectionLabel(
+                                    sectionId));
+
+            position++;
+        }
+
+        return result.toString();
+    }
+
+    private String formatSortingSuggestionFavoriteAssignment(
+            SortingSuggestionEngine.Plan plan) {
+
+        StringBuilder result =
+                new StringBuilder();
+
+        for (String id :
+                plan.suggestedAssignedFavoriteOrder) {
+
+            if (plan.currentFavoriteIds
+                    .contains(
+                            id)) {
+
+                continue;
+            }
+
+            if (result.length() > 0) {
+                result.append(
+                        "\n");
+            }
+
+            result.append(
+                    "+ ")
+                    .append(
+                            getSortingSuggestionItemLabel(
+                                    id));
+        }
+
+        for (String id :
+                plan.currentFavoriteOrder) {
+
+            if (plan.suggestedFavoriteIds
+                    .contains(
+                            id)) {
+
+                continue;
+            }
+
+            if (result.length() > 0) {
+                result.append(
+                        "\n");
+            }
+
+            result.append(
+                    "− ")
+                    .append(
+                            getSortingSuggestionItemLabel(
+                                    id));
+        }
+
+        return result.toString();
+    }
+
+    private String formatSortingSuggestionChangedOrders(
+            SortingSuggestionEngine.Plan plan,
+            Map<String, List<String>> suggestedOrders) {
+
+        StringBuilder result =
+                new StringBuilder();
+
+        for (String sectionId :
+                plan.currentSectionOrder) {
+
+            if ("favorites".equals(
+                    sectionId)) {
+
+                continue;
+            }
+
+            List<String> current =
+                    plan.currentSectionItemOrders
+                            .get(
+                                    sectionId);
+
+            List<String> suggested =
+                    suggestedOrders.get(
+                            sectionId);
+
+            if (current == null
+                    || suggested == null
+                    || current.equals(
+                            suggested)) {
+
+                continue;
+            }
+
+            if (result.length() > 0) {
+
+                result.append(
+                        "\n\n");
+            }
+
+            result.append(
+                    getSortingSuggestionSectionLabel(
+                            sectionId))
+                    .append(
+                            ":\n")
+                    .append(
+                            formatSortingSuggestionItemOrder(
+                                    suggested));
+        }
+
+        return result.toString();
+    }
+
+    private String getSortingSuggestionItemLabel(
+            String itemId) {
+
+        if (itemId.startsWith(
+                "app:")) {
+
+            String packageName =
+                    itemId.substring(
+                            "app:".length());
+
+            for (AppEntry app :
+                    apps) {
+
+                if (app.packageName.equals(
+                        packageName)) {
+
+                    return app.label;
+                }
+            }
+
+            return packageName;
+        }
+
+        if (itemId.startsWith(
+                "shortcut:")) {
+
+            String shortcutId =
+                    itemId.substring(
+                            "shortcut:".length());
+
+            for (ShortcutEntry shortcut :
+                    shortcutStore.getShortcuts()) {
+
+                if (shortcut.id.equals(
+                        shortcutId)) {
+
+                    return shortcut.name;
+                }
+            }
+
+            return shortcutId;
+        }
+
+        return itemId;
+    }
+
+    private String getSortingSuggestionSectionLabel(
+            String sectionId) {
+
+        for (OverviewSection section :
+                overviewSections) {
+
+            if (section.id.equals(
+                    sectionId)) {
+
+                return section.gridLabel;
+            }
+        }
+
+        return sectionId;
+    }
+
+    private void applySortingSuggestionPlan(
+            SortingSuggestionEngine.Plan plan,
+            boolean applyFavoriteOrder,
+            boolean applyFavoriteAssignment,
+            boolean applyCategories,
+            boolean applyApps,
+            boolean applyShortcuts) {
+
+        if (applyFavoriteAssignment) {
+
+            Set<String> favoritePackages =
+                    new HashSet<>();
+
+            Set<String> favoriteShortcutIds =
+                    new HashSet<>();
+
+            for (String itemId :
+                    plan.suggestedFavoriteIds) {
+
+                if (itemId.startsWith(
+                        "app:")) {
+
+                    favoritePackages.add(
+                            itemId.substring(
+                                    "app:".length()));
+
+                } else if (itemId.startsWith(
+                        "shortcut:")) {
+
+                    favoriteShortcutIds.add(
+                            itemId.substring(
+                                    "shortcut:".length()));
+                }
+            }
+
+            favoritesStore.replaceAll(
+                    favoritePackages);
+
+            shortcutStore.replaceFavorites(
+                    favoriteShortcutIds);
+
+            List<String> favoriteOrder =
+                    new ArrayList<>();
+
+            if (applyFavoriteOrder) {
+
+                favoriteOrder.addAll(
+                        plan.suggestedAssignedFavoriteOrder);
+
+            } else {
+
+                Set<String> added =
+                        new HashSet<>();
+
+                for (String itemId :
+                        plan.currentFavoriteOrder) {
+
+                    if (plan.suggestedFavoriteIds
+                            .contains(
+                                    itemId)
+                            && added.add(
+                                    itemId)) {
+
+                        favoriteOrder.add(
+                                itemId);
+                    }
+                }
+
+                for (String itemId :
+                        plan.suggestedAssignedFavoriteOrder) {
+
+                    if (added.add(
+                            itemId)) {
+
+                        favoriteOrder.add(
+                                itemId);
+                    }
+                }
+            }
+
+            sectionItemOrderStore.saveOrder(
+                    "favorites",
+                    favoriteOrder);
+
+        } else if (applyFavoriteOrder) {
+
+            sectionItemOrderStore.saveOrder(
+                    "favorites",
+                    plan.suggestedFavoriteOrder);
+        }
+
+        if (applyCategories) {
+
+            overviewOrderStore.saveOrderIds(
+                    plan.suggestedSectionOrder);
+        }
+
+        if (applyApps
+                || applyShortcuts) {
+
+            for (String sectionId :
+                    plan.currentSectionOrder) {
+
+                if ("favorites".equals(
+                        sectionId)) {
+
+                    continue;
+                }
+
+                List<String> order;
+
+                if (applyApps
+                        && applyShortcuts) {
+
+                    order =
+                            plan.suggestedAllItemOrders
+                                    .get(
+                                            sectionId);
+
+                } else if (applyApps) {
+
+                    order =
+                            plan.suggestedAppOrders
+                                    .get(
+                                            sectionId);
+
+                } else {
+
+                    order =
+                            plan.suggestedShortcutOrders
+                                    .get(
+                                            sectionId);
+                }
+
+                if (order != null) {
+
+                    sectionItemOrderStore.saveOrder(
+                            sectionId,
+                            order);
+                }
+            }
+        }
+
+        sortingSettingsStore
+                .markSuggestionHandledNow();
+
+        refreshOverviewForSortingSettingsChange();
+
+        Toast.makeText(
+                        this,
+                        R.string.sorting_suggestion_applied,
+                        Toast.LENGTH_SHORT)
+                .show();
     }
 
     private void showSortingManagement() {

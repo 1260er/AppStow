@@ -249,7 +249,7 @@ public class MainActivityRecreationTest {
     }
 
     @Test
-    public void automaticStartupFavoritesCountOnceAcrossRecreation() {
+    public void startupFavoritesCountOnceAcrossRecreationInManualMode() {
 
         Context context =
                 ApplicationProvider
@@ -259,7 +259,7 @@ public class MainActivityRecreationTest {
                 context)
                 .save(
                         new SortingSettingsStore.Settings(
-                                SortingSettingsStore.Mode.AUTOMATIC,
+                                SortingSettingsStore.Mode.MANUAL,
                                 true,
                                 true,
                                 true,
