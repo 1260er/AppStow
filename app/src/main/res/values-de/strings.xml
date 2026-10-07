@@ -54,7 +54,7 @@
     <string name="sorting_suggestion_favorites_order">Favoriten sortieren</string>
     <string name="sorting_suggestion_favorites_assignment">Favoriten neu zuordnen</string>
     <string name="sorting_suggestion_categories_order">Kategorien sortieren</string>
-    <string name="sorting_suggestion_apps_order">Apps sortieren</string>
+    <string name="sorting_suggestion_apps_order">Apps in Kategorien sortieren</string>
     <string name="sorting_suggestion_shortcuts_order">Eigene Shortcuts sortieren</string>
     <string name="sorting_suggestion_apply">Übernehmen</string>
     <string name="sorting_suggestion_none_selected">Wähle mindestens einen Vorschlag aus.</string>

@@ -37,6 +37,21 @@ public class SortingSuggestionComparisonTest {
     }
 
     @Test
+    public void identicalCurrentAndTargetStayNeutral() {
+
+        assertArrayEquals(
+                new boolean[] {
+                        false,
+                        false,
+                        false
+                },
+                SortingSuggestionComparison
+                        .changedTargetLines(
+                                "1. A\n2. B\n3. C",
+                                "1. A\n2. B\n3. C"));
+    }
+
+    @Test
     public void emptyTargetMarkerStaysNeutral() {
 
         assertArrayEquals(

@@ -54,7 +54,7 @@
     <string name="sorting_suggestion_favorites_order">Sort favorites</string>
     <string name="sorting_suggestion_favorites_assignment">Reassign favorites</string>
     <string name="sorting_suggestion_categories_order">Sort categories</string>
-    <string name="sorting_suggestion_apps_order">Sort apps</string>
+    <string name="sorting_suggestion_apps_order">Sort apps in categories</string>
     <string name="sorting_suggestion_shortcuts_order">Sort custom shortcuts</string>
     <string name="sorting_suggestion_apply">Apply</string>
     <string name="sorting_suggestion_none_selected">Select at least one suggestion.</string>

@@ -98,9 +98,9 @@ public class SortingSuggestionEngineTest {
 
         assertEquals(
                 Arrays.asList(
-                        "shortcut:y",
-                        "app:b",
                         "shortcut:x",
+                        "app:b",
+                        "shortcut:y",
                         "app:a"),
                 plan.suggestedAppOrders
                         .get(
@@ -109,11 +109,14 @@ public class SortingSuggestionEngineTest {
         assertEquals(
                 Arrays.asList(
                         "shortcut:x",
-                        "app:a",
-                        "shortcut:y",
-                        "app:b"),
+                        "shortcut:y"),
                 plan.suggestedShortcutOrders
                         .get(
+                                "shortcuts"));
+
+        assertTrue(
+                !plan.suggestedShortcutOrders
+                        .containsKey(
                                 "category:office"));
 
         assertEquals(
@@ -193,11 +196,16 @@ public class SortingSuggestionEngineTest {
         assertEquals(
                 Arrays.asList(
                         "app:kitchenowl",
-                        "shortcut:booking",
+                        "shortcut:kleinanzeigen",
                         "shortcut:amazon",
-                        "shortcut:kleinanzeigen"),
+                        "shortcut:booking"),
                 plan.suggestedAppOrders
                         .get(
+                                "category:shopping"));
+
+        assertTrue(
+                !plan.suggestedShortcutOrders
+                        .containsKey(
                                 "category:shopping"));
     }
 

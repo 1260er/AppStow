@@ -6756,28 +6756,49 @@ public class MainActivity extends Activity {
                 content.findViewById(
                         R.id.suggestionShortcutsPreview);
 
-        configureSortingSuggestionBlock(
-                favoriteOrder,
-                favoriteOrderComparison,
-                favoriteOrderCurrent,
-                favoriteOrderPreview,
-                plan.favoriteOrderChanged(),
-                formatSortingSuggestionItemOrder(
-                        plan.currentFavoriteOrder),
-                formatSortingSuggestionItemOrder(
-                        plan.favoriteOrderPreview(
-                                favoriteAssignment.isChecked())));
+        String favoriteAssignmentCurrentText =
+                formatSortingSuggestionFavoriteRemovals(
+                        plan);
 
-        favoriteAssignment.setOnCheckedChangeListener(
-                (buttonView, isChecked) ->
-                        setSortingSuggestionComparisonTexts(
-                                favoriteOrderCurrent,
-                                favoriteOrderPreview,
-                                formatSortingSuggestionItemOrder(
-                                        plan.currentFavoriteOrder),
-                                formatSortingSuggestionItemOrder(
-                                        plan.favoriteOrderPreview(
-                                                isChecked))));
+        String favoriteAssignmentSuggestedText =
+                formatSortingSuggestionFavoriteAdditions(
+                        plan);
+
+        String favoriteOrderCurrentText =
+                formatSortingSuggestionItemOrder(
+                        plan.currentFavoriteOrder);
+
+        String categoriesCurrentText =
+                formatSortingSuggestionSectionOrder(
+                        plan.currentSectionOrder);
+
+        String categoriesSuggestedText =
+                formatSortingSuggestionSectionOrder(
+                        plan.suggestedSectionOrder);
+
+        String appsCurrentText =
+                formatSortingSuggestionChangedOrders(
+                        plan,
+                        plan.suggestedAppOrders,
+                        true);
+
+        String appsSuggestedText =
+                formatSortingSuggestionChangedOrders(
+                        plan,
+                        plan.suggestedAppOrders,
+                        false);
+
+        String shortcutsCurrentText =
+                formatSortingSuggestionChangedOrders(
+                        plan,
+                        plan.suggestedShortcutOrders,
+                        true);
+
+        String shortcutsSuggestedText =
+                formatSortingSuggestionChangedOrders(
+                        plan,
+                        plan.suggestedShortcutOrders,
+                        false);
 
         configureSortingSuggestionBlock(
                 favoriteAssignment,
@@ -6785,10 +6806,19 @@ public class MainActivity extends Activity {
                 favoriteAssignmentCurrent,
                 favoriteAssignmentPreview,
                 plan.favoriteAssignmentChanged(),
-                formatSortingSuggestionFavoriteRemovals(
-                        plan),
-                formatSortingSuggestionFavoriteAdditions(
-                        plan));
+                favoriteAssignmentCurrentText,
+                favoriteAssignmentSuggestedText);
+
+        configureSortingSuggestionBlock(
+                favoriteOrder,
+                favoriteOrderComparison,
+                favoriteOrderCurrent,
+                favoriteOrderPreview,
+                plan.favoriteOrderChanged(),
+                favoriteOrderCurrentText,
+                formatSortingSuggestionItemOrder(
+                        plan.favoriteOrderPreview(
+                                favoriteAssignment.isChecked())));
 
         configureSortingSuggestionBlock(
                 categories,
@@ -6796,10 +6826,8 @@ public class MainActivity extends Activity {
                 categoriesCurrent,
                 categoriesPreview,
                 plan.categoryOrderChanged(),
-                formatSortingSuggestionSectionOrder(
-                        plan.currentSectionOrder),
-                formatSortingSuggestionSectionOrder(
-                        plan.suggestedSectionOrder));
+                categoriesCurrentText,
+                categoriesSuggestedText);
 
         configureSortingSuggestionBlock(
                 appsBox,
@@ -6807,14 +6835,8 @@ public class MainActivity extends Activity {
                 appsCurrent,
                 appsPreview,
                 plan.appOrderChanged(),
-                formatSortingSuggestionChangedOrders(
-                        plan,
-                        plan.suggestedAppOrders,
-                        true),
-                formatSortingSuggestionChangedOrders(
-                        plan,
-                        plan.suggestedAppOrders,
-                        false));
+                appsCurrentText,
+                appsSuggestedText);
 
         configureSortingSuggestionBlock(
                 shortcutsBox,
@@ -6822,14 +6844,77 @@ public class MainActivity extends Activity {
                 shortcutsCurrent,
                 shortcutsPreview,
                 plan.shortcutOrderChanged(),
-                formatSortingSuggestionChangedOrders(
-                        plan,
-                        plan.suggestedShortcutOrders,
-                        true),
-                formatSortingSuggestionChangedOrders(
-                        plan,
-                        plan.suggestedShortcutOrders,
-                        false));
+                shortcutsCurrentText,
+                shortcutsSuggestedText);
+
+        favoriteAssignment.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> {
+
+                    setSortingSuggestionComparisonTexts(
+                            favoriteAssignmentCurrent,
+                            favoriteAssignmentPreview,
+                            favoriteAssignmentCurrentText,
+                            isChecked
+                                    ? favoriteAssignmentSuggestedText
+                                    : favoriteAssignmentCurrentText);
+
+                    String favoriteOrderTarget =
+                            favoriteOrder.isChecked()
+                                    ? formatSortingSuggestionItemOrder(
+                                            plan.favoriteOrderPreview(
+                                                    isChecked))
+                                    : favoriteOrderCurrentText;
+
+                    setSortingSuggestionComparisonTexts(
+                            favoriteOrderCurrent,
+                            favoriteOrderPreview,
+                            favoriteOrderCurrentText,
+                            favoriteOrderTarget);
+                });
+
+        favoriteOrder.setOnCheckedChangeListener(
+                (buttonView, isChecked) ->
+                        setSortingSuggestionComparisonTexts(
+                                favoriteOrderCurrent,
+                                favoriteOrderPreview,
+                                favoriteOrderCurrentText,
+                                isChecked
+                                        ? formatSortingSuggestionItemOrder(
+                                                plan.favoriteOrderPreview(
+                                                        favoriteAssignment
+                                                                .isChecked()))
+                                        : favoriteOrderCurrentText));
+
+        categories.setOnCheckedChangeListener(
+                (buttonView, isChecked) ->
+                        setSortingSuggestionComparisonTexts(
+                                categoriesCurrent,
+                                categoriesPreview,
+                                categoriesCurrentText,
+                                isChecked
+                                        ? categoriesSuggestedText
+                                        : categoriesCurrentText));
+
+        appsBox.setOnCheckedChangeListener(
+                (buttonView, isChecked) ->
+                        setSortingSuggestionComparisonTexts(
+                                appsCurrent,
+                                appsPreview,
+                                appsCurrentText,
+                                isChecked
+                                        ? appsSuggestedText
+                                        : appsCurrentText));
+
+        shortcutsBox.setOnCheckedChangeListener(
+                (buttonView, isChecked) ->
+                        setSortingSuggestionComparisonTexts(
+                                shortcutsCurrent,
+                                shortcutsPreview,
+                                shortcutsCurrentText,
+                                isChecked
+                                        ? shortcutsSuggestedText
+                                        : shortcutsCurrentText));
+
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)

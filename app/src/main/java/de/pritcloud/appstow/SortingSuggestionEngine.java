@@ -2,7 +2,6 @@ package de.pritcloud.appstow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -244,59 +243,35 @@ final class SortingSuggestionEngine {
                 continue;
             }
 
-            Set<String> appIds =
-                    new HashSet<>();
-
-            Set<String> shortcutIds =
-                    new HashSet<>();
-
-            for (String id : current) {
-
-                if (id.startsWith(
-                        "app:")) {
-
-                    appIds.add(
-                            id);
-
-                } else if (id.startsWith(
-                        "shortcut:")) {
-
-                    shortcutIds.add(
-                            id);
-                }
-            }
-
-            appOrders.put(
-                    sectionId,
-                    AutomaticSortEngine
-                            .rankSelectedIdsAcrossPeers(
-                                    current,
-                                    appIds,
-                                    itemScores,
-                                    new HashMap<>(),
-                                    new HashMap<>(),
-                                    false));
-
-            shortcutOrders.put(
-                    sectionId,
-                    AutomaticSortEngine
-                            .rankSelectedIdsAcrossPeers(
-                                    current,
-                                    shortcutIds,
-                                    itemScores,
-                                    new HashMap<>(),
-                                    new HashMap<>(),
-                                    false));
-
-            allOrders.put(
-                    sectionId,
+            List<String> rankedAll =
                     AutomaticSortEngine
                             .rankIds(
                                     current,
                                     itemScores,
                                     new HashMap<>(),
                                     new HashMap<>(),
-                                    false));
+                                    false);
+
+            allOrders.put(
+                    sectionId,
+                    rankedAll);
+
+            if (sectionId.startsWith(
+                    "category:")) {
+
+                appOrders.put(
+                        sectionId,
+                        new ArrayList<>(
+                                rankedAll));
+
+            } else if ("shortcuts".equals(
+                    sectionId)) {
+
+                shortcutOrders.put(
+                        sectionId,
+                        new ArrayList<>(
+                                rankedAll));
+            }
         }
 
         return new Plan(
