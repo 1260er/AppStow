@@ -340,4 +340,12 @@ Keines gefunden</string>
     <string name="favorite_remove_message">„%1$s“ aus den Favoriten entfernen?</string>
     <string name="favorite_remove_confirm">Entfernen</string>
 
+    <string name="nav_ui_settings">Darstellung &amp; Bedienung</string>
+    <string name="ui_settings_description">Passe Darstellung und Bedienverhalten von AppStow an.</string>
+    <string name="ui_start_behavior_title">Favoriten automatisch öffnen</string>
+    <string name="ui_start_behavior_description">Lege fest, wann AppStow automatisch die Favoriten öffnet.</string>
+    <string name="ui_start_never">Nie</string>
+    <string name="ui_start_once">Nur beim Start</string>
+    <string name="ui_start_always">Bei jedem Wechsel in den Vordergrund</string>
+
 </resources>

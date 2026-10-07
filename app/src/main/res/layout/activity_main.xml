@@ -280,6 +280,13 @@
                 android:layout_height="match_parent"
                 android:visibility="gone" />
 
+            <ViewStub
+                android:id="@+id/uiSettingsStub"
+                android:layout="@layout/view_ui_settings"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/backupManagement"
                 android:layout_width="match_parent"

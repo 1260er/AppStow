@@ -141,6 +141,7 @@ public class MainActivity extends Activity {
     private static final String PAGE_SHORTCUTS = "shortcuts";
     private static final String PAGE_STATISTICS = "statistics";
     private static final String PAGE_SORTING = "sorting";
+    private static final String PAGE_UI_SETTINGS = "ui_settings";
     private static final String PAGE_BACKUP = "backup";
     private static final String PAGE_HELP = "help";
     private static final String PAGE_ABOUT = "about";
@@ -187,7 +188,6 @@ public class MainActivity extends Activity {
     private CheckBox sortingSemiApps;
     private CheckBox sortingSemiShortcuts;
     private CheckBox sortingTimeProfileEnabled;
-    private CheckBox sortingAlwaysStartFavorites;
     private CheckBox sortingSuggestionsEnabled;
     private TextView sortingSuggestionInterval;
     private TextView sortingSuggestionFavoriteCount;
@@ -199,6 +199,13 @@ public class MainActivity extends Activity {
     private boolean updatingSortingUi;
     private boolean sortingSuggestionAutomaticCheckPending;
     private boolean sortingSuggestionManualCheckPending;
+
+    private ViewStub uiSettingsStub;
+    private ScrollView uiSettingsManagement;
+    private RadioGroup uiStartBehaviorGroup;
+    private UiSettingsStore uiSettingsStore;
+    private boolean updatingUiSettingsUi;
+    private boolean stoppedForBackground;
 
     private View backupManagement;
 
@@ -406,6 +413,9 @@ public class MainActivity extends Activity {
         sortingStub =
                 findViewById(R.id.sortingStub);
 
+        uiSettingsStub =
+                findViewById(R.id.uiSettingsStub);
+
         backupManagement =
                 findViewById(R.id.backupManagement);
 
@@ -453,6 +463,9 @@ public class MainActivity extends Activity {
 
         sortingSettingsStore =
                 new SortingSettingsStore(this);
+
+        uiSettingsStore =
+                new UiSettingsStore(this);
 
         overviewOrderStore =
                 new OverviewOrderStore(this);
@@ -885,6 +898,10 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         showSortingManagement());
 
+        findViewById(R.id.navUiSettings)
+                .setOnClickListener(v ->
+                        showUiSettingsManagement());
+
         findViewById(R.id.navBackup)
                 .setOnClickListener(v ->
                         showBackupManagement());
@@ -1285,6 +1302,8 @@ public class MainActivity extends Activity {
             showStatisticsManagement();
         } else if (PAGE_SORTING.equals(page)) {
             showSortingManagement();
+        } else if (PAGE_UI_SETTINGS.equals(page)) {
+            showUiSettingsManagement();
         } else if (PAGE_BACKUP.equals(page)) {
             showBackupManagement();
         } else if (PAGE_HELP.equals(page)) {
@@ -1316,6 +1335,12 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
 
+        boolean returningFromBackground =
+                stoppedForBackground;
+
+        stoppedForBackground =
+                false;
+
         IntentFilter filter =
                 new IntentFilter(
                         ACTION_RESTORE_FINISHED);
@@ -1336,10 +1361,17 @@ public class MainActivity extends Activity {
         restoreReceiverRegistered = true;
 
         handlePendingRestoreResult();
+
+        if (returningFromBackground) {
+            applyForegroundFavoritesIfConfigured();
+        }
     }
 
     @Override
     protected void onStop() {
+
+        stoppedForBackground =
+                !isChangingConfigurations();
 
         sortingProfileHandler.removeCallbacks(
                 sortingProfileBoundaryRunnable);
@@ -2330,10 +2362,31 @@ public class MainActivity extends Activity {
 
     private void applyStartupFavorites() {
 
-        SortingSettingsStore.Settings settings =
-                sortingSettingsStore.load();
+        applyConfiguredFavorites(
+                false);
+    }
 
-        if (!settings.alwaysStartFavorites) {
+    private void applyForegroundFavoritesIfConfigured() {
+
+        applyConfiguredFavorites(
+                true);
+    }
+
+    private void applyConfiguredFavorites(
+            boolean returningFromBackground) {
+
+        UiSettingsStore.Settings settings =
+                uiSettingsStore.load();
+
+        if (settings.startBehavior
+                == UiSettingsStore.StartBehavior.NEVER) {
+
+            return;
+        }
+
+        if (returningFromBackground
+                && settings.startBehavior
+                != UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND) {
 
             return;
         }
@@ -5588,6 +5641,11 @@ public class MainActivity extends Activity {
         statisticsManagement.setVisibility(
                 View.GONE);
 
+        if (uiSettingsManagement != null) {
+            uiSettingsManagement.setVisibility(
+                    View.GONE);
+        }
+
         if (sortingManagement != null) {
             sortingManagement.setVisibility(
                     View.GONE);
@@ -5689,6 +5747,156 @@ public class MainActivity extends Activity {
     }
 
 
+    private void ensureUiSettingsInflated() {
+
+        if (uiSettingsManagement != null) {
+            return;
+        }
+
+        uiSettingsManagement =
+                (ScrollView) uiSettingsStub.inflate();
+
+        uiStartBehaviorGroup =
+                uiSettingsManagement.findViewById(
+                        R.id.uiStartBehaviorGroup);
+
+        uiStartBehaviorGroup.setOnCheckedChangeListener(
+                (group, checkedId) -> {
+
+                    if (!updatingUiSettingsUi) {
+                        saveUiSettingsFromControls();
+                    }
+                });
+
+        uiSettingsStub = null;
+    }
+
+    private void refreshUiSettingsUi() {
+
+        UiSettingsStore.Settings settings =
+                uiSettingsStore.load();
+
+        updatingUiSettingsUi =
+                true;
+
+        if (settings.startBehavior
+                == UiSettingsStore.StartBehavior.START_ONLY) {
+
+            uiStartBehaviorGroup.check(
+                    R.id.uiStartOnce);
+
+        } else if (settings.startBehavior
+                == UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND) {
+
+            uiStartBehaviorGroup.check(
+                    R.id.uiStartAlways);
+
+        } else {
+
+            uiStartBehaviorGroup.check(
+                    R.id.uiStartNever);
+        }
+
+        updatingUiSettingsUi =
+                false;
+    }
+
+    private void saveUiSettingsFromControls() {
+
+        if (uiSettingsManagement == null
+                || updatingUiSettingsUi) {
+
+            return;
+        }
+
+        int checkedId =
+                uiStartBehaviorGroup
+                        .getCheckedRadioButtonId();
+
+        UiSettingsStore.StartBehavior startBehavior;
+
+        if (checkedId == R.id.uiStartOnce) {
+
+            startBehavior =
+                    UiSettingsStore.StartBehavior.START_ONLY;
+
+        } else if (checkedId == R.id.uiStartAlways) {
+
+            startBehavior =
+                    UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND;
+
+        } else {
+
+            startBehavior =
+                    UiSettingsStore.StartBehavior.NEVER;
+        }
+
+        uiSettingsStore.save(
+                new UiSettingsStore.Settings(
+                        startBehavior));
+    }
+
+    private void showUiSettingsManagement() {
+
+        currentPage =
+                PAGE_UI_SETTINGS;
+
+        setTopNavigation(
+                false);
+
+        ensureUiSettingsInflated();
+
+        shortcutHelpButton.setVisibility(
+                View.GONE);
+
+        hideOverviewSortMode();
+
+        categoryManagement.setVisibility(
+                View.GONE);
+
+        shortcutManagement.setVisibility(
+                View.GONE);
+
+        backupManagement.setVisibility(
+                View.GONE);
+
+        hideHelpPage();
+        hideAboutPage();
+
+        overviewList.setVisibility(
+                View.GONE);
+
+        appList.setVisibility(
+                View.GONE);
+
+        pageMessage.setVisibility(
+                View.GONE);
+
+        appSearchContainer.setVisibility(
+                View.GONE);
+
+        appSearchClear.setVisibility(
+                View.GONE);
+
+        appSearch.clearFocus();
+
+        pageTitle.setText(
+                R.string.nav_ui_settings);
+
+        refreshUiSettingsUi();
+
+        uiSettingsManagement.setVisibility(
+                View.VISIBLE);
+
+        uiSettingsManagement.scrollTo(
+                0,
+                0);
+
+        drawerLayout.closeDrawer(
+                GravityCompat.END);
+    }
+
+
     private void ensureSortingInflated() {
 
         if (sortingManagement != null) {
@@ -5741,10 +5949,6 @@ public class MainActivity extends Activity {
         sortingTimeProfileEnabled =
                 sortingManagement.findViewById(
                         R.id.sortingTimeProfileEnabled);
-
-        sortingAlwaysStartFavorites =
-                sortingManagement.findViewById(
-                        R.id.sortingAlwaysStartFavorites);
 
         sortingSuggestionsEnabled =
                 sortingManagement.findViewById(
@@ -5815,14 +6019,6 @@ public class MainActivity extends Activity {
                 });
 
         sortingTimeProfileEnabled.setOnCheckedChangeListener(
-                (button, checked) -> {
-
-                    if (!updatingSortingUi) {
-                        saveSortingSettingsFromControls();
-                    }
-                });
-
-        sortingAlwaysStartFavorites.setOnCheckedChangeListener(
                 (button, checked) -> {
 
                     if (!updatingSortingUi) {
@@ -5905,9 +6101,6 @@ public class MainActivity extends Activity {
 
         sortingTimeProfileEnabled.setChecked(
                 settings.timeProfileEnabled);
-
-        sortingAlwaysStartFavorites.setChecked(
-                settings.alwaysStartFavorites);
 
         sortingSuggestionsEnabled.setChecked(
                 settings.suggestionsEnabled);
@@ -5992,7 +6185,7 @@ public class MainActivity extends Activity {
                         current.dayStartHour,
                         current.eveningStartHour,
                         current.automaticFavoriteCount,
-                        sortingAlwaysStartFavorites.isChecked(),
+                        current.alwaysStartFavorites,
                         sortingSuggestionsEnabled.isChecked(),
                         current.suggestionIntervalDays);
 

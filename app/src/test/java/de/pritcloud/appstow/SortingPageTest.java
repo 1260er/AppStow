@@ -148,11 +148,6 @@ public class SortingPageTest {
                                                 R.id.sortingSuggestionCheckNow)
                                         .getVisibility());
 
-                        assertEquals(
-                                View.VISIBLE,
-                                activity.findViewById(
-                                                R.id.sortingAlwaysStartFavorites)
-                                        .getVisibility());
                     });
 
             scenario.recreate();
@@ -368,7 +363,7 @@ public class SortingPageTest {
     }
 
     @Test
-    public void automaticModePersistsAutomaticOptions() {
+    public void automaticModePersistsSortingOptions() {
 
         try (ActivityScenario<MainActivity> scenario =
                      ActivityScenario.launch(
@@ -385,12 +380,6 @@ public class SortingPageTest {
                                         R.id.sortingModeAutomatic)
                                 .performClick();
 
-                        CheckBox alwaysStart =
-                                activity.findViewById(
-                                        R.id.sortingAlwaysStartFavorites);
-
-                        alwaysStart.performClick();
-
                         SortingSettingsStore.Settings settings =
                                 new SortingSettingsStore(
                                         activity)
@@ -399,9 +388,6 @@ public class SortingPageTest {
                         assertEquals(
                                 SortingSettingsStore.Mode.AUTOMATIC,
                                 settings.mode);
-
-                        assertTrue(
-                                settings.alwaysStartFavorites);
 
                         assertEquals(
                                 View.VISIBLE,

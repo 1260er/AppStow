@@ -17,20 +17,11 @@
             android:text="@string/sorting_description"
             android:textColor="@color/ui_text_secondary" />
 
-        <CheckBox
-            android:id="@+id/sortingAlwaysStartFavorites"
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_lg"
-            android:minHeight="48dp"
-            android:text="@string/sorting_always_start_favorites" />
-
         <RadioGroup
             android:id="@+id/sortingModeGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm">
+            android:layout_marginTop="@dimen/spacing_lg">
 
             <RadioButton
                 android:id="@+id/sortingModeManual"
