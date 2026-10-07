@@ -1,63 +1,51 @@
 # AppStow – Projektstatus
 
-Stand: 4. Oktober 2026
+Stand: 7. Oktober 2026
 
-## Freigegebener Release-Kandidat 2.0.1
+## Aktuelle Entwicklung – AppStow 3.0
 
-- Entwicklungsbranch: dev/fdroid-preparation.
-- Release-Code: Version 2.0.1, Versionscode 11.
-- Englische Standardsprache und deutsche Übersetzung geprüft.
-- Android-App-Sprachauswahl auf dem Gerät getestet.
-- Lizenz und zweisprachige F-Droid-Metadaten vorbereitet.
-- Je sechs deutsche und englische Screenshots vorhanden.
-- App-Symbol und versionsgenaue Release-Hinweise vorhanden.
-- Lokaler Reproduzierbarkeitstest erfolgreich.
-- Unit-Tests, Android Lint und APK-Builds erfolgreich.
-- Signaturzertifikat des bisherigen stabilen Releases geprüft.
-- Veröffentlichung auf GitHub freigegeben.
-- Unabhängige F-Droid-Buildprüfung steht noch aus.
+- Entwicklungsbranch: `dev/automatic-sorting`.
+- Der stabile Release `v2.0.1` bleibt unverändert.
+- Statistik, automatische Sortierung sowie Darstellung & Bedienung sind umgesetzt.
+- Phase 8 – Backup v3 ist abgeschlossen.
+- Nächster Entwicklungsschritt ist Phase 9 – Hardening.
+
+## Phase 8 – Backup v3
+
+- Neues verschlüsseltes Sicherungsformat v3.
+- Gesichert werden Kategorien, Zuweisungen, Favoriten, eigene Shortcuts und manuelle Reihenfolgen.
+- Listen-/Kachelansicht, Spaltenzahlen und weitere Anzeigeeinstellungen werden gesichert.
+- Sortiermodus, Halbautomatik-Einstellungen, Vorschläge, Favoritenzahl und optionales Zeitprofil werden gesichert.
+- Bedienseite, Favoriten-Startverhalten, Design und AppStow-Sprache werden gesichert.
+- Statistik-Anzeigeeinstellungen werden gesichert; die Nutzungsstatistiken selbst werden nicht gesichert.
+- Eine erfolgreiche Wiederherstellung setzt die Nutzungsstatistiken vollständig zurück.
+- Nicht mehr installierte Apps werden aus Favoriten, Kategoriezuweisungen und App-Reihenfolgen entfernt.
+- Kategorien und eigene Shortcuts bleiben erhalten.
+- Web-App-Anmeldungen und Cookies sind nicht Bestandteil der Sicherung.
+- Die Wiederherstellung wird validiert und bei einem Fehler auf den vorherigen Zustand zurückgerollt.
+- Cloud-/DocumentsProvider werden beim Lesen mit begrenzten Wiederholungen behandelt.
+- Die Backup-Prüfung verwendet maximal 1 Sekunde zusätzliche Retry-Wartezeit.
+- Die Wiederherstellung verwendet maximal 5 Sekunden zusätzliche Retry-Wartezeit.
+- Das Sicherungsformat von AppStow 3.0 ist absichtlich nicht mit AppStow 2.x kompatibel.
+- Der Kompatibilitätshinweis steht auf GitHub; in der App selbst wird kein 2.x-Hinweis angezeigt.
 
 ## Stabiler Release
 
-- Version: 2.0.0
-- Tag: v2.0.0
-- Release-Commit: 079b951
-- Hauptbranch: main
-- Signierte, R8-optimierte APK veröffentlicht.
-- SHA-256-Prüfsumme erfolgreich verifiziert.
-- APK-Signatur erfolgreich geprüft.
-- Signaturzertifikat mit Version 0.1.3 identisch.
-- Paketname und Versionsnummer geprüft.
-- Versionscode gegenüber 0.1.3 erhöht.
-
-## Abgeschlossene Entwicklung
-
-- Globale Listen- und Kachelansicht.
-- Globale Spaltenzahl mit 3, 4 oder 5 Spalten.
-- Individuelle Spaltenzahl für geöffnete Bereiche.
-- Apps zuweisen übernimmt die globale Ansicht.
-- Kategoriezuweisung durch kurzes Antippen.
-- Favoritenstern mit kompakter 32-dp-Tippfläche.
-- Verschiebegriff ersetzt beim Sortieren den Stern
-  an derselben Position.
-- Anzeigeeinstellungen im Backup berücksichtigt.
-- Hilfe auf Deutsch und Englisch überarbeitet.
-- App-Informationen und Ko-fi-Link ergänzt.
+- Version: 2.0.1.
+- Versionscode: 11.
+- Tag: `v2.0.1`.
+- Release-Commit: `56c9ffa489980506ce9266d3bdfea702bc75f2a7`.
+- Der stabile Tag und der stabile Release werden durch die 3.0-Entwicklung nicht verändert.
+- Deutsche und englische F-Droid-Metadaten sind vorhanden.
 
 ## Qualitätssicherung
 
-- Debug- und Release-Unit-Tests erfolgreich.
-- Android Lint für Debug und Release erfolgreich.
-- Lokale Debug- und Release-Builds erfolgreich.
-- Signierte Dev-Version auf dem Gerät getestet.
-- Listen- und Kachelansichten freigegeben.
-- Darstellung mit 3 und 5 Spalten geprüft.
-- Favoritenstern und Verschiebegriff getestet.
-- Stabiler Release-Workflow erfolgreich.
-- Stabile APK und SHA-256-Datei geprüft.
-- Update von der stabilen Version 0.1.3
-  auf die stabile Version 2.0.0 auf dem Gerät
-  erfolgreich durchgeführt.
+- Backup-v3-Verschlüsselung und -Validierung sind durch Unit-Tests abgedeckt.
+- Backup-Zustand, Restore-Filter und Backup-Zusammenfassung sind durch Regressionstests abgedeckt.
+- Unit-Tests, Android Lint und Debug-Build werden vor jedem Dev-Release ausgeführt.
+- Backup und Wiederherstellung wurden auf einem physischen Gerät geprüft.
+- Beim Speichern über Androids Storage Access Framework kann das Cache-Verhalten eines Cloud-Providers nicht von AppStow gesteuert werden.
+- AppStow bestätigt Cloud-Sicherungen deshalb nur innerhalb eines kurzen Prüfzeitraums und behandelt die Wiederherstellung separat mit längerer Lesewiederholung.
 
 ## Bekannter offener Prüfpunkt
 
@@ -70,14 +58,6 @@ Die Anmeldung mit 2FA funktioniert.
 Andere Herstellergeräte und WebView-Versionen
 wurden nicht vollständig getestet.
 
-## Abschluss
+## Nächster Schritt
 
-- Dev-Releases dev-138 bis dev-149 entfernt.
-- Alle zugehörigen Dev-Tags entfernt.
-- Entwicklungsbranch dev/ui-search-grid
-  lokal und auf GitHub entfernt.
-- Alle fünf stabilen Releases erhalten.
-- main enthält die vollständige Release-Dokumentation.
-- Release-Tag v2.0.0 bleibt unverändert
-  auf Commit 079b951.
-- AppStow 2.0.0 erfolgreich abgeschlossen.
+Phase 9 – Hardening: abschließende Robustheits-, Sicherheits- und Regressionstests für AppStow 3.0.

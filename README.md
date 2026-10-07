@@ -16,7 +16,7 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 - Assign categories by tapping an app
 - Reorder overview sections and their contents
 - Replace favorite stars with drag handles while sorting
-- Backup and restore the AppStow configuration
+- Create encrypted backups and restore the AppStow configuration
 - German and English interface
 - Light and dark system themes
 - Android themed / monochrome launcher icon support
@@ -29,14 +29,14 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 
 ## Installation
 
-The current stable release is **AppStow 2.0.0**.
+The current stable release is **AppStow 2.0.1**.
 
 https://github.com/1260er/AppStow/releases/latest
 
 Release files:
 
-- `AppStow-2.0.0.apk`
-- `AppStow-2.0.0.apk.sha256`
+- `AppStow-2.0.1.apk`
+- `AppStow-2.0.1.apk.sha256`
 
 Obtainium repository:
 
@@ -94,12 +94,23 @@ may therefore be rejected.
 
 ## Backup and restore
 
-Backups include categories, symbols, assignments, favorites,
-shortcuts, section and item order, and display settings.
-Display settings include the global view, global column count,
-and individual column counts for opened sections.
+AppStow 3.0 uses encrypted backup format v3. Backups include:
 
-Web-app sessions, cookies, Android permissions, and other application data are not included.
+- categories, symbols, assignments, and favorites
+- custom shortcuts
+- manual section and item orders
+- list/grid and column settings
+- sorting settings, suggestions, and the optional time profile
+- appearance and control settings, including the AppStow language
+- statistics display settings
+
+Usage statistics themselves, web-app sessions, and cookies are not included.
+
+A successful restore resets usage statistics. References to apps that are no longer installed are removed from favorites, category assignments, and app orders. Categories and custom shortcuts remain.
+
+> **Important note about AppStow 3.0:** Version 3.0 fundamentally revises AppStow's backup format. Backups created with AppStow 2.x cannot be restored in AppStow 3.0. Likewise, backups created with AppStow 3.0 are not compatible with older AppStow versions.
+>
+> **Wichtiger Hinweis zu AppStow 3.0:** Mit Version 3.0 wird das Sicherungsformat von AppStow grundlegend überarbeitet. Sicherungen aus AppStow 2.x können in AppStow 3.0 nicht wiederhergestellt werden. Ebenso sind mit AppStow 3.0 erstellte Sicherungen nicht mit älteren AppStow-Versionen kompatibel.
 
 ## Privacy
 

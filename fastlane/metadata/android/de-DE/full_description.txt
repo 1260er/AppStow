@@ -14,7 +14,7 @@ Funktionen:
 • Zwischen Listen- und Kachelansicht wechseln
 • Kachelansichten mit 3, 4 oder 5 Spalten konfigurieren
 • Bereiche und Einträge manuell sortieren
-• Konfiguration sichern und wiederherstellen
+• Konfiguration verschlüsselt sichern und wiederherstellen
 • Deutsche und englische Benutzeroberfläche
 • Helles und dunkles Systemdesign
 

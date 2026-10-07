@@ -303,11 +303,11 @@ Keines gefunden</string>
     <string name="help_backup_title">Backup &amp; Wiederherstellen</string>
 
     <string name="help_backup_create_title">Backup erstellen</string>
-    <string name="help_backup_create_text">Unter Backup &amp; Wiederherstellen sicherst du deine Konfiguration als JSON-Datei. Sie enthält Kategorien, Zuweisungen, Favoriten, eigene Shortcuts, Sortierreihenfolgen und Anzeigeeinstellungen einschließlich der globalen und individuellen Spaltenzahlen.</string>
+    <string name="help_backup_create_text">Unter Backup &amp; Wiederherstellen erstellst du eine verschlüsselte Sicherung deiner AppStow-Konfiguration. Gesichert werden Kategorien, Zuweisungen, Favoriten, eigene Shortcuts, manuelle Reihenfolgen sowie Sortier-, Anzeige- und Bedienungseinstellungen einschließlich Sprache und Statistik-Anzeigeeinstellungen.</string>
     <string name="help_backup_restore_title">Backup wiederherstellen</string>
-    <string name="help_backup_restore_text">Beim Wiederherstellen wird die vorhandene Konfiguration ersetzt. Ältere Backups ohne Anzeigeeinstellungen verwenden die Standardansicht.</string>
+    <string name="help_backup_restore_text">Beim Wiederherstellen wird die aktuelle Konfiguration ersetzt. Nutzungsstatistiken werden zurückgesetzt. Nicht mehr installierte Apps werden aus Favoriten, Kategoriezuweisungen und App-Reihenfolgen entfernt. Kategorien und eigene Shortcuts bleiben erhalten.</string>
     <string name="help_backup_excluded_title">Nicht enthalten</string>
-    <string name="help_backup_excluded_text">Web-App-Anmeldungen, Cookies, Android-Berechtigungen und die Nutzungsstatistik werden nicht gesichert.</string>
+    <string name="help_backup_excluded_text">Nutzungsstatistiken, Web-App-Anmeldungen und Cookies werden nicht gesichert.</string>
     <string name="about_app_name">AppStow</string>
     <string name="about_description">Ein kompakter App-Launcher für Favoriten, Kategorien, eigene Shortcuts und Web-Apps. Deine Anwendungen bleiben übersichtlich verstaut und schnell erreichbar.</string>
     <string name="about_name_origin_title">Wie der Name entstanden ist</string>

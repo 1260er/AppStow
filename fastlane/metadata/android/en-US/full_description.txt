@@ -14,7 +14,7 @@ Features:
 • Switch between list and grid views
 • Configure grid layouts with 3, 4 or 5 columns
 • Arrange sections and entries manually
-• Back up and restore your configuration
+• Create encrypted backups and restore your configuration
 • English and German interface
 • Light and dark system themes
 

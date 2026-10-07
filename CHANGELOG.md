@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0 – In Entwicklung
+
+- Neues verschlüsseltes Backupformat v3 für die AppStow-Konfiguration.
+- Sortier-, Anzeige-, Bedienungs-, Sprach- und Statistik-Anzeigeeinstellungen werden mitgesichert.
+- Nutzungsstatistiken selbst werden nicht gesichert und nach erfolgreicher Wiederherstellung zurückgesetzt.
+- Nicht mehr installierte Apps werden bei der Wiederherstellung aus Favoriten, Kategoriezuweisungen und App-Reihenfolgen entfernt.
+- Kategorien und eigene Shortcuts bleiben bei der Wiederherstellung erhalten.
+- Das Backupformat von AppStow 3.0 ist absichtlich nicht mit AppStow 2.x kompatibel.
+
 ## 2.0.1 – 4. Oktober 2026
 
 - Android-App-Sprachauswahl für Deutsch und Englisch ergänzt.

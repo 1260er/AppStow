@@ -303,11 +303,11 @@ None found</string>
     <string name="help_backup_title">Backup &amp; Restore</string>
 
     <string name="help_backup_create_title">Create a backup</string>
-    <string name="help_backup_create_text">Under Backup &amp; Restore, save your configuration as a JSON file. It contains categories, assignments, favorites, shortcuts, sorting orders and display settings, including global and individual column counts.</string>
+    <string name="help_backup_create_text">Under Backup &amp; Restore, create an encrypted backup of your AppStow configuration. It includes categories, assignments, favorites, custom shortcuts, manual orders, sorting, display and control settings, including language and statistics display settings.</string>
     <string name="help_backup_restore_title">Restore a backup</string>
-    <string name="help_backup_restore_text">Restoring replaces the current configuration. Older backups without display settings use the default view settings.</string>
+    <string name="help_backup_restore_text">Restoring replaces the current configuration. Usage statistics are reset. Apps that are no longer installed are removed from favorites, category assignments and app orders. Categories and custom shortcuts remain.</string>
     <string name="help_backup_excluded_title">Not included</string>
-    <string name="help_backup_excluded_text">Web app sessions, cookies, Android permissions and usage statistics are not backed up.</string>
+    <string name="help_backup_excluded_text">Usage statistics, web app sessions and cookies are not backed up.</string>
     <string name="about_app_name">AppStow</string>
     <string name="about_description">A compact app launcher for favorites, categories, custom shortcuts and web apps. Keep your applications organized and ready to launch.</string>
     <string name="about_name_origin_title">Where the name comes from</string>
