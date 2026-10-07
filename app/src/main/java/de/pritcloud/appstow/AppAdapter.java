@@ -125,6 +125,16 @@ public class AppAdapter
                 parent.getContext(),
                 view);
 
+        if (viewType != TYPE_GRID) {
+
+            UiHandedness.applyTextEdge(
+                    parent.getContext(),
+                    view.findViewById(
+                            R.id.appName),
+                    view.findViewById(
+                            R.id.appCategories));
+        }
+
         return new AppViewHolder(
                 view,
                 viewType == TYPE_GRID);

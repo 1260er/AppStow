@@ -5781,6 +5781,10 @@ public class MainActivity extends Activity {
                 this,
                 mainHeader);
 
+        UiHandedness.applyTextEdge(
+                this,
+                pageTitle);
+
         View navigationDrawer =
                 findViewById(
                         R.id.navigationDrawer);

@@ -1098,6 +1098,11 @@ final class OverviewAdapter
                     parent.getContext(),
                     view);
 
+            UiHandedness.applyTextEdge(
+                    parent.getContext(),
+                    view.findViewById(
+                            R.id.overviewSectionTitle));
+
             return new SectionViewHolder(
                     view);
         }
@@ -1117,6 +1122,16 @@ final class OverviewAdapter
             UiHandedness.applyContainer(
                     parent.getContext(),
                     view);
+
+            if (viewType != TYPE_GRID_ENTRY) {
+
+                UiHandedness.applyTextEdge(
+                        parent.getContext(),
+                        view.findViewById(
+                                R.id.appName),
+                        view.findViewById(
+                                R.id.appCategories));
+            }
 
             return new EntryViewHolder(
                     view,

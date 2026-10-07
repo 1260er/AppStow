@@ -111,6 +111,14 @@ final class CategoryAdapter
                 parent.getContext(),
                 view);
 
+        if (viewType != TYPE_GRID) {
+
+            UiHandedness.applyTextEdge(
+                    parent.getContext(),
+                    view.findViewById(
+                            R.id.categoryName));
+        }
+
         return new CategoryViewHolder(
                 view,
                 viewType == TYPE_GRID);

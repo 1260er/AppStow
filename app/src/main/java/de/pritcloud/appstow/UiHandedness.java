@@ -1,7 +1,9 @@
 package de.pritcloud.appstow;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.TextView;
 
 final class UiHandedness {
 
@@ -38,5 +40,36 @@ final class UiHandedness {
         view.setLayoutDirection(
                 layoutDirection(
                         context));
+    }
+
+    static void applyTextEdge(
+            Context context,
+            TextView... textViews) {
+
+        if (textViews == null) {
+            return;
+        }
+
+        int horizontalGravity =
+                isLeft(
+                        context)
+                        ? Gravity.RIGHT
+                        : Gravity.LEFT;
+
+        for (TextView textView :
+                textViews) {
+
+            if (textView == null) {
+                continue;
+            }
+
+            int verticalGravity =
+                    textView.getGravity()
+                            & Gravity.VERTICAL_GRAVITY_MASK;
+
+            textView.setGravity(
+                    horizontalGravity
+                            | verticalGravity);
+        }
     }
 }

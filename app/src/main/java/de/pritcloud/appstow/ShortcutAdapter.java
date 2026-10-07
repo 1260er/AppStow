@@ -157,6 +157,16 @@ final class ShortcutAdapter
                 parent.getContext(),
                 view);
 
+        if (viewType != TYPE_GRID) {
+
+            UiHandedness.applyTextEdge(
+                    parent.getContext(),
+                    view.findViewById(
+                            R.id.shortcutName),
+                    view.findViewById(
+                            R.id.shortcutSubtitle));
+        }
+
         return new ViewHolder(
                 view,
                 viewType == TYPE_GRID);

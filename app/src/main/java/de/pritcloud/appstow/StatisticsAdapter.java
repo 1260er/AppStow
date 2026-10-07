@@ -192,6 +192,11 @@ final class StatisticsAdapter
                 view.findViewById(
                         R.id.statisticsCardHeader));
 
+        UiHandedness.applyTextEdge(
+                parent.getContext(),
+                view.findViewById(
+                        R.id.statisticsCardTitle));
+
         return new ViewHolder(
                 view);
     }

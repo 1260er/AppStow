@@ -58,6 +58,14 @@ public class UiHandednessTest {
                                                 R.id.mainHeader)
                                         .getLayoutDirection());
 
+                        assertEquals(
+                                Gravity.LEFT,
+                                ((android.widget.TextView)
+                                        activity.findViewById(
+                                                R.id.pageTitle))
+                                        .getGravity()
+                                        & Gravity.HORIZONTAL_GRAVITY_MASK);
+
                         DrawerLayout.LayoutParams drawerParams =
                                 (DrawerLayout.LayoutParams)
                                         activity.findViewById(
@@ -105,6 +113,14 @@ public class UiHandednessTest {
                                                 R.id.mainHeader)
                                         .getLayoutDirection());
 
+                        assertEquals(
+                                Gravity.RIGHT,
+                                ((android.widget.TextView)
+                                        activity.findViewById(
+                                                R.id.pageTitle))
+                                        .getGravity()
+                                        & Gravity.HORIZONTAL_GRAVITY_MASK);
+
                         DrawerLayout.LayoutParams drawerParams =
                                 (DrawerLayout.LayoutParams)
                                         activity.findViewById(
@@ -127,6 +143,52 @@ public class UiHandednessTest {
                                         == Gravity.START);
                     });
         }
+    }
+
+    @Test
+    public void textEdgeUsesPhysicalOppositeOfControls() {
+
+        android.widget.TextView textView =
+                new android.widget.TextView(
+                        context);
+
+        textView.setGravity(
+                Gravity.CENTER_VERTICAL);
+
+        UiHandedness.applyTextEdge(
+                context,
+                textView);
+
+        assertEquals(
+                Gravity.LEFT,
+                textView.getGravity()
+                        & Gravity.HORIZONTAL_GRAVITY_MASK);
+
+        assertEquals(
+                Gravity.CENTER_VERTICAL,
+                textView.getGravity()
+                        & Gravity.VERTICAL_GRAVITY_MASK);
+
+        new UiSettingsStore(
+                context)
+                .save(
+                        new UiSettingsStore.Settings(
+                                UiSettingsStore.StartBehavior.NEVER,
+                                UiSettingsStore.ControlSide.LEFT));
+
+        UiHandedness.applyTextEdge(
+                context,
+                textView);
+
+        assertEquals(
+                Gravity.RIGHT,
+                textView.getGravity()
+                        & Gravity.HORIZONTAL_GRAVITY_MASK);
+
+        assertEquals(
+                Gravity.CENTER_VERTICAL,
+                textView.getGravity()
+                        & Gravity.VERTICAL_GRAVITY_MASK);
     }
 
     @Test
