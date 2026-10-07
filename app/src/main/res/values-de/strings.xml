@@ -343,6 +343,19 @@ Keines gefunden</string>
     <string name="nav_ui_settings">Darstellung &amp; Bedienung</string>
     <string name="ui_settings_description">Passe Darstellung und Bedienverhalten von AppStow an.</string>
 
+
+    <string name="ui_theme_title">Design</string>
+    <string name="ui_theme_description">Lege fest, ob AppStow dem Systemdesign folgt oder immer ein helles bzw. dunkles Design verwendet.</string>
+    <string name="ui_theme_system">System</string>
+    <string name="ui_theme_light">Hell</string>
+    <string name="ui_theme_dark">Dunkel</string>
+
+    <string name="ui_language_title">Sprache</string>
+    <string name="ui_language_description">Verwende die Android-Systemsprache oder wähle eine Sprache für AppStow.</string>
+    <string name="ui_language_system">System</string>
+    <string name="ui_language_german">Deutsch</string>
+    <string name="ui_language_english">English</string>
+
     <string name="ui_control_side_title">Bedienseite</string>
     <string name="ui_control_side_description">Platziert häufig genutzte Bedienelemente auf der Seite, die einhändig leichter erreichbar ist.</string>
     <string name="ui_control_side_right">Rechts</string>

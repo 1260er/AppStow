@@ -14,6 +14,9 @@ final class UiSettingsStore {
     private static final String KEY_CONTROL_SIDE =
             "control_side";
 
+    private static final String KEY_THEME_MODE =
+            "theme_mode";
+
     private static final String LEGACY_SORTING_PREFS =
             "sorting_settings";
 
@@ -31,25 +34,45 @@ final class UiSettingsStore {
         LEFT
     }
 
+    enum ThemeMode {
+        SYSTEM,
+        LIGHT,
+        DARK
+    }
+
     static final class Settings {
 
         final StartBehavior startBehavior;
         final ControlSide controlSide;
+        final ThemeMode themeMode;
 
         Settings(
                 StartBehavior startBehavior) {
 
             this(
                     startBehavior,
-                    ControlSide.RIGHT);
+                    ControlSide.RIGHT,
+                    ThemeMode.SYSTEM);
         }
 
         Settings(
                 StartBehavior startBehavior,
                 ControlSide controlSide) {
 
+            this(
+                    startBehavior,
+                    controlSide,
+                    ThemeMode.SYSTEM);
+        }
+
+        Settings(
+                StartBehavior startBehavior,
+                ControlSide controlSide,
+                ThemeMode themeMode) {
+
             if (startBehavior == null
-                    || controlSide == null) {
+                    || controlSide == null
+                    || themeMode == null) {
 
                 throw new IllegalArgumentException(
                         "UI settings are incomplete.");
@@ -60,6 +83,9 @@ final class UiSettingsStore {
 
             this.controlSide =
                     controlSide;
+
+            this.themeMode =
+                    themeMode;
         }
     }
 
@@ -99,12 +125,19 @@ final class UiSettingsStore {
                         KEY_CONTROL_SIDE,
                         null);
 
+        String storedThemeMode =
+                preferences.getString(
+                        KEY_THEME_MODE,
+                        null);
+
         return new Settings(
                 parseStartBehavior(
                         stored,
                         fallback),
                 parseControlSide(
-                        storedControlSide));
+                        storedControlSide),
+                parseThemeMode(
+                        storedThemeMode));
     }
 
     void save(
@@ -112,7 +145,8 @@ final class UiSettingsStore {
 
         if (settings == null
                 || settings.startBehavior == null
-                || settings.controlSide == null) {
+                || settings.controlSide == null
+                || settings.themeMode == null) {
 
             throw new IllegalArgumentException(
                     "UI settings are incomplete.");
@@ -125,7 +159,27 @@ final class UiSettingsStore {
                 .putString(
                         KEY_CONTROL_SIDE,
                         settings.controlSide.name())
+                .putString(
+                        KEY_THEME_MODE,
+                        settings.themeMode.name())
                 .apply();
+    }
+
+    private static ThemeMode parseThemeMode(
+            String value) {
+
+        if (value == null) {
+            return ThemeMode.SYSTEM;
+        }
+
+        try {
+            return ThemeMode.valueOf(
+                    value);
+
+        } catch (IllegalArgumentException exception) {
+
+            return ThemeMode.SYSTEM;
+        }
     }
 
     private static ControlSide parseControlSide(

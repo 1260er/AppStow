@@ -46,6 +46,10 @@ public class UiSettingsStoreTest {
         assertEquals(
                 UiSettingsStore.ControlSide.RIGHT,
                 settings.controlSide);
+
+        assertEquals(
+                UiSettingsStore.ThemeMode.SYSTEM,
+                settings.themeMode);
     }
 
     @Test
@@ -136,6 +140,53 @@ public class UiSettingsStoreTest {
                         context)
                         .load()
                         .controlSide);
+    }
+
+    @Test
+    public void themeModePersistsAndCorruptValueFallsBackSystem() {
+
+        UiSettingsStore store =
+                new UiSettingsStore(
+                        context);
+
+        store.save(
+                new UiSettingsStore.Settings(
+                        UiSettingsStore.StartBehavior.START_ONLY,
+                        UiSettingsStore.ControlSide.LEFT,
+                        UiSettingsStore.ThemeMode.DARK));
+
+        UiSettingsStore.Settings saved =
+                new UiSettingsStore(
+                        context)
+                        .load();
+
+        assertEquals(
+                UiSettingsStore.ThemeMode.DARK,
+                saved.themeMode);
+
+        assertEquals(
+                UiSettingsStore.ControlSide.LEFT,
+                saved.controlSide);
+
+        assertEquals(
+                UiSettingsStore.StartBehavior.START_ONLY,
+                saved.startBehavior);
+
+        context.getSharedPreferences(
+                        "ui_settings",
+                        Context.MODE_PRIVATE)
+                .edit()
+                .putString(
+                        "theme_mode",
+                        "INVALID")
+                .commit();
+
+        assertEquals(
+                UiSettingsStore.ThemeMode.SYSTEM,
+                new UiSettingsStore(
+                        context)
+                        .load()
+                        .themeMode);
     }
 
     @Test

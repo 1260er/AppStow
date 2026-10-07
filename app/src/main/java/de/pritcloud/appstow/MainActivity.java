@@ -202,6 +202,8 @@ public class MainActivity extends Activity {
 
     private ViewStub uiSettingsStub;
     private ScrollView uiSettingsManagement;
+    private RadioGroup uiThemeGroup;
+    private RadioGroup uiLanguageGroup;
     private RadioGroup uiControlSideGroup;
     private RadioGroup uiStartBehaviorGroup;
     private UiSettingsStore uiSettingsStore;
@@ -357,6 +359,15 @@ public class MainActivity extends Activity {
                 refreshOverviewForSortingSettingsChange();
                 scheduleNextSortingProfileBoundary();
             };
+
+    @Override
+    protected void attachBaseContext(
+            Context newBase) {
+
+        super.attachBaseContext(
+                UiThemeController.wrap(
+                        newBase));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -5860,6 +5871,14 @@ public class MainActivity extends Activity {
         uiSettingsManagement =
                 (ScrollView) uiSettingsStub.inflate();
 
+        uiThemeGroup =
+                uiSettingsManagement.findViewById(
+                        R.id.uiThemeGroup);
+
+        uiLanguageGroup =
+                uiSettingsManagement.findViewById(
+                        R.id.uiLanguageGroup);
+
         uiControlSideGroup =
                 uiSettingsManagement.findViewById(
                         R.id.uiControlSideGroup);
@@ -5867,6 +5886,22 @@ public class MainActivity extends Activity {
         uiStartBehaviorGroup =
                 uiSettingsManagement.findViewById(
                         R.id.uiStartBehaviorGroup);
+
+        uiThemeGroup.setOnCheckedChangeListener(
+                (group, checkedId) -> {
+
+                    if (!updatingUiSettingsUi) {
+                        saveUiSettingsFromControls();
+                    }
+                });
+
+        uiLanguageGroup.setOnCheckedChangeListener(
+                (group, checkedId) -> {
+
+                    if (!updatingUiSettingsUi) {
+                        saveUiSettingsFromControls();
+                    }
+                });
 
         uiControlSideGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {
@@ -5894,6 +5929,46 @@ public class MainActivity extends Activity {
 
         updatingUiSettingsUi =
                 true;
+
+        if (settings.themeMode
+                == UiSettingsStore.ThemeMode.LIGHT) {
+
+            uiThemeGroup.check(
+                    R.id.uiThemeLight);
+
+        } else if (settings.themeMode
+                == UiSettingsStore.ThemeMode.DARK) {
+
+            uiThemeGroup.check(
+                    R.id.uiThemeDark);
+
+        } else {
+
+            uiThemeGroup.check(
+                    R.id.uiThemeSystem);
+        }
+
+        UiLocaleController.LanguageMode languageMode =
+                UiLocaleController.getLanguageMode(
+                        this);
+
+        if (languageMode
+                == UiLocaleController.LanguageMode.GERMAN) {
+
+            uiLanguageGroup.check(
+                    R.id.uiLanguageGerman);
+
+        } else if (languageMode
+                == UiLocaleController.LanguageMode.ENGLISH) {
+
+            uiLanguageGroup.check(
+                    R.id.uiLanguageEnglish);
+
+        } else {
+
+            uiLanguageGroup.check(
+                    R.id.uiLanguageSystem);
+        }
 
         if (settings.controlSide
                 == UiSettingsStore.ControlSide.LEFT) {
@@ -5972,16 +6047,88 @@ public class MainActivity extends Activity {
                         ? UiSettingsStore.ControlSide.LEFT
                         : UiSettingsStore.ControlSide.RIGHT;
 
+        int themeId =
+                uiThemeGroup
+                        .getCheckedRadioButtonId();
+
+        UiSettingsStore.ThemeMode themeMode;
+
+        if (themeId == R.id.uiThemeLight) {
+
+            themeMode =
+                    UiSettingsStore.ThemeMode.LIGHT;
+
+        } else if (themeId == R.id.uiThemeDark) {
+
+            themeMode =
+                    UiSettingsStore.ThemeMode.DARK;
+
+        } else {
+
+            themeMode =
+                    UiSettingsStore.ThemeMode.SYSTEM;
+        }
+
+        int languageId =
+                uiLanguageGroup
+                        .getCheckedRadioButtonId();
+
+        UiLocaleController.LanguageMode languageMode;
+
+        if (languageId == R.id.uiLanguageGerman) {
+
+            languageMode =
+                    UiLocaleController.LanguageMode.GERMAN;
+
+        } else if (languageId == R.id.uiLanguageEnglish) {
+
+            languageMode =
+                    UiLocaleController.LanguageMode.ENGLISH;
+
+        } else {
+
+            languageMode =
+                    UiLocaleController.LanguageMode.SYSTEM;
+        }
+
+        UiLocaleController.LanguageMode currentLanguage =
+                UiLocaleController.getLanguageMode(
+                        this);
+
         boolean controlSideChanged =
                 current.controlSide
                         != controlSide;
 
+        boolean themeChanged =
+                current.themeMode
+                        != themeMode;
+
+        boolean languageChanged =
+                currentLanguage
+                        != languageMode;
+
         uiSettingsStore.save(
                 new UiSettingsStore.Settings(
                         startBehavior,
-                        controlSide));
+                        controlSide,
+                        themeMode));
 
-        if (controlSideChanged
+        if (languageChanged
+                && !isFinishing()
+                && !isDestroyed()) {
+
+            uiRecreationRequested =
+                    true;
+
+            UiLocaleController.apply(
+                    this,
+                    languageMode);
+
+            return;
+        }
+
+        if ((controlSideChanged
+                || themeChanged)
                 && !isFinishing()
                 && !isDestroyed()) {
 
