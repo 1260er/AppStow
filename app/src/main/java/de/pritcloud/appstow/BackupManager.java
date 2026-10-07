@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.SyncFailedException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -136,11 +135,6 @@ final class BackupManager {
             }
         }
 
-        verifyWrittenBackup(
-                context,
-                uri,
-                data);
-
         return summarizeBackup(
                 backup,
                 System.currentTimeMillis());
@@ -243,60 +237,6 @@ final class BackupManager {
                 favoriteCount,
                 appPackages.size(),
                 shortcuts.length());
-    }
-
-    private static void verifyWrittenBackup(
-            Context context,
-            Uri uri,
-            byte[] expectedData)
-            throws IOException {
-
-        IOException lastException =
-                null;
-
-        for (int attempt = 0;
-             attempt < READ_ATTEMPTS;
-             attempt++) {
-
-            try {
-                byte[] actualData =
-                        readBackupData(
-                                context,
-                                uri);
-
-                if (Arrays.equals(
-                        expectedData,
-                        actualData)) {
-
-                    return;
-                }
-
-                if (actualData.length == 0) {
-
-                    lastException =
-                            new IOException(
-                                    "Der Speicheranbieter liefert die neue Backup-Datei noch leer zurück.");
-
-                } else {
-
-                    lastException =
-                            new IOException(
-                                    "Der Speicheranbieter liefert noch nicht den vollständig geschriebenen Backup-Inhalt zurück.");
-                }
-
-            } catch (IOException exception) {
-
-                lastException =
-                        exception;
-            }
-
-            waitForProvider(
-                    attempt);
-        }
-
-        throw new IOException(
-                "Backup wurde geschrieben, konnte über den gewählten Speicheranbieter aber nicht zuverlässig zurückgelesen werden.",
-                lastException);
     }
 
     private static byte[] readBackupData(

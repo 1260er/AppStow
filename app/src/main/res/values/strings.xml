@@ -326,8 +326,13 @@ None found</string>
     <string name="about_support_failed">Could not open Ko-fi.</string>
     <string name="nav_backup">Backup &amp; Restore</string>
     <string name="backup_create">Create backup</string>
+    <string name="backup_creating">Creating backup...</string>
     <string name="backup_restore">Restore backup</string>
-    <string name="backup_description">Back up categories, app assignments, favorites, custom shortcuts, sorting orders and settings in an encrypted backup file. Usage statistics, web app sessions, cookies and Android permissions are not included.</string>
+    <string name="backup_description_intro">The backup file is stored encrypted.</string>
+    <string name="backup_included_title">Included</string>
+    <string name="backup_included_text">Categories, app assignments, favorites, custom shortcuts, sorting orders and settings.</string>
+    <string name="backup_excluded_title">Not included</string>
+    <string name="backup_excluded_text">Usage statistics, web app sessions, cookies and Android permissions.</string>
     <string name="backup_last_success_title">Last successful backup</string>
     <string name="backup_last_success_none">No successful backup yet</string>
     <string name="backup_last_success_value">%1$s · %2$s</string>

@@ -235,6 +235,7 @@ public class MainActivity extends Activity {
     private boolean uiRecreationRequested;
 
     private View backupManagement;
+    private TextView backupCreateButton;
     private TextView backupLastSuccessDate;
     private View backupLastSuccessDetails;
     private TextView backupSummaryCategories;
@@ -734,9 +735,12 @@ public class MainActivity extends Activity {
                 .setOnClickListener(v ->
                         showShortcutEditor(null));
 
-        findViewById(R.id.backupCreateButton)
-                .setOnClickListener(v ->
-                        createBackup());
+        backupCreateButton =
+                findViewById(
+                        R.id.backupCreateButton);
+
+        backupCreateButton.setOnClickListener(v ->
+                createBackup());
 
         findViewById(R.id.backupRestoreButton)
                 .setOnClickListener(v ->
@@ -8950,6 +8954,12 @@ public class MainActivity extends Activity {
         if (requestCode
                 == REQUEST_CREATE_BACKUP) {
 
+            backupCreateButton.setEnabled(
+                    false);
+
+            backupCreateButton.setText(
+                    R.string.backup_creating);
+
             backupExecutor.execute(() -> {
                 boolean success;
 
@@ -8977,6 +8987,12 @@ public class MainActivity extends Activity {
 
                         return;
                     }
+
+                    backupCreateButton.setEnabled(
+                            true);
+
+                    backupCreateButton.setText(
+                            R.string.backup_create);
 
                     if (backupSucceeded) {
 

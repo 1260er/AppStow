@@ -326,8 +326,13 @@ Keines gefunden</string>
     <string name="about_support_failed">Ko-fi konnte nicht geöffnet werden.</string>
     <string name="nav_backup">Backup &amp; Wiederherstellen</string>
     <string name="backup_create">Backup erstellen</string>
+    <string name="backup_creating">Backup wird erstellt...</string>
     <string name="backup_restore">Backup wiederherstellen</string>
-    <string name="backup_description">Sichert Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts, Sortierreihenfolgen und Einstellungen in einer verschlüsselten Sicherungsdatei. Nutzungsstatistiken, Web-App-Anmeldungen, Cookies und Android-Berechtigungen sind nicht enthalten.</string>
+    <string name="backup_description_intro">Die Sicherungsdatei wird verschlüsselt gespeichert.</string>
+    <string name="backup_included_title">Gesichert</string>
+    <string name="backup_included_text">Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts, Sortierreihenfolgen und Einstellungen.</string>
+    <string name="backup_excluded_title">Nicht enthalten</string>
+    <string name="backup_excluded_text">Nutzungsstatistiken, Web-App-Anmeldungen, Cookies und Android-Berechtigungen.</string>
     <string name="backup_last_success_title">Letzte erfolgreiche Sicherung</string>
     <string name="backup_last_success_none">Noch keine erfolgreiche Sicherung</string>
     <string name="backup_last_success_value">%1$s · %2$s</string>

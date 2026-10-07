@@ -294,13 +294,52 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <TextView
-                    style="@style/UiBodyText"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/spacing_lg"
-                    android:text="@string/backup_description"
-                    android:textColor="@color/ui_text_secondary" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/UiBodyText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/backup_description_intro"
+                        android:textColor="@color/ui_text_secondary" />
+
+                    <TextView
+                        style="@style/UiBodyText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:text="@string/backup_included_title"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        style="@style/UiBodyText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:text="@string/backup_included_text"
+                        android:textColor="@color/ui_text_secondary" />
+
+                    <TextView
+                        style="@style/UiBodyText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:text="@string/backup_excluded_title"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        style="@style/UiBodyText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:text="@string/backup_excluded_text"
+                        android:textColor="@color/ui_text_secondary" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/backupCreateButton"
