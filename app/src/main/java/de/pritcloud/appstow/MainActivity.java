@@ -6789,15 +6789,13 @@ public class MainActivity extends Activity {
                         false);
 
         String shortcutsCurrentText =
-                formatSortingSuggestionChangedOrders(
+                formatSortingSuggestionShortcutOrder(
                         plan,
-                        plan.suggestedShortcutOrders,
                         true);
 
         String shortcutsSuggestedText =
-                formatSortingSuggestionChangedOrders(
+                formatSortingSuggestionShortcutOrder(
                         plan,
-                        plan.suggestedShortcutOrders,
                         false);
 
         configureSortingSuggestionBlock(
@@ -6835,6 +6833,12 @@ public class MainActivity extends Activity {
                 appsCurrent,
                 appsPreview,
                 plan.appOrderChanged(),
+                appsCurrentText,
+                appsSuggestedText);
+
+        setSortingSuggestionCategoryComparisonTexts(
+                appsCurrent,
+                appsPreview,
                 appsCurrentText,
                 appsSuggestedText);
 
@@ -6897,7 +6901,7 @@ public class MainActivity extends Activity {
 
         appsBox.setOnCheckedChangeListener(
                 (buttonView, isChecked) ->
-                        setSortingSuggestionComparisonTexts(
+                        setSortingSuggestionCategoryComparisonTexts(
                                 appsCurrent,
                                 appsPreview,
                                 appsCurrentText,
@@ -7042,7 +7046,101 @@ public class MainActivity extends Activity {
                         suggestedText));
     }
 
-    private CharSequence formatSortingSuggestionTargetText(
+    private void setSortingSuggestionCategoryComparisonTexts(
+            TextView currentPreview,
+            TextView suggestedPreview,
+            String currentText,
+            String suggestedText) {
+
+        currentPreview.setText(
+                formatSortingSuggestionCategoryHeaderText(
+                        currentText));
+
+        suggestedPreview.setText(
+                formatSortingSuggestionCategoryTargetText(
+                        currentText,
+                        suggestedText));
+    }
+
+    private CharSequence formatSortingSuggestionCategoryHeaderText(
+            String text) {
+
+        SpannableString styled =
+                new SpannableString(
+                        text);
+
+        applySortingSuggestionCategoryHeaderColor(
+                styled,
+                text);
+
+        return styled;
+    }
+
+    private CharSequence formatSortingSuggestionCategoryTargetText(
+            String currentText,
+            String suggestedText) {
+
+        SpannableString styled =
+                formatSortingSuggestionTargetText(
+                        currentText,
+                        suggestedText);
+
+        applySortingSuggestionCategoryHeaderColor(
+                styled,
+                suggestedText);
+
+        return styled;
+    }
+
+    private void applySortingSuggestionCategoryHeaderColor(
+            SpannableString styled,
+            String text) {
+
+        int primaryColor =
+                ContextCompat.getColor(
+                        this,
+                        R.color.ui_text_primary);
+
+        int start =
+                0;
+
+        while (start <= text.length()) {
+
+            int newline =
+                    text.indexOf(
+                            "\n",
+                            start);
+
+            int end =
+                    newline >= 0
+                            ? newline
+                            : text.length();
+
+            if (end > start
+                    && text.substring(
+                                    start,
+                                    end)
+                            .endsWith(
+                                    ":")) {
+
+                styled.setSpan(
+                        new ForegroundColorSpan(
+                                primaryColor),
+                        start,
+                        end,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+
+            if (newline < 0) {
+                break;
+            }
+
+            start =
+                    newline + 1;
+        }
+    }
+
+    private SpannableString formatSortingSuggestionTargetText(
             String currentText,
             String suggestedText) {
 
@@ -7230,6 +7328,32 @@ public class MainActivity extends Activity {
         return result.length() == 0
                 ? "\u2014"
                 : result.toString();
+    }
+
+    private String formatSortingSuggestionShortcutOrder(
+            SortingSuggestionEngine.Plan plan,
+            boolean currentState) {
+
+        List<String> current =
+                plan.currentSectionItemOrders
+                        .get(
+                                "shortcuts");
+
+        List<String> suggested =
+                plan.suggestedShortcutOrders
+                        .get(
+                                "shortcuts");
+
+        if (current == null
+                || suggested == null) {
+
+            return "";
+        }
+
+        return formatSortingSuggestionItemOrder(
+                currentState
+                        ? current
+                        : suggested);
     }
 
     private String formatSortingSuggestionChangedOrders(
