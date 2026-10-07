@@ -203,7 +203,7 @@ public class MainActivity extends Activity {
     private ViewStub uiSettingsStub;
     private ScrollView uiSettingsManagement;
     private RadioGroup uiThemeGroup;
-    private RadioGroup uiLanguageGroup;
+    private TextView uiLanguageSelection;
     private RadioGroup uiControlSideGroup;
     private RadioGroup uiStartBehaviorGroup;
     private UiSettingsStore uiSettingsStore;
@@ -5891,9 +5891,9 @@ public class MainActivity extends Activity {
                 uiSettingsManagement.findViewById(
                         R.id.uiThemeGroup);
 
-        uiLanguageGroup =
+        uiLanguageSelection =
                 uiSettingsManagement.findViewById(
-                        R.id.uiLanguageGroup);
+                        R.id.uiLanguageSelection);
 
         uiControlSideGroup =
                 uiSettingsManagement.findViewById(
@@ -5911,13 +5911,9 @@ public class MainActivity extends Activity {
                     }
                 });
 
-        uiLanguageGroup.setOnCheckedChangeListener(
-                (group, checkedId) -> {
-
-                    if (!updatingUiSettingsUi) {
-                        saveUiSettingsFromControls();
-                    }
-                });
+        uiLanguageSelection.setOnClickListener(
+                view ->
+                        showUiLanguageDialog());
 
         uiControlSideGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {
@@ -5968,23 +5964,11 @@ public class MainActivity extends Activity {
                 UiLocaleController.getLanguageMode(
                         this);
 
-        if (languageMode
-                == UiLocaleController.LanguageMode.GERMAN) {
-
-            uiLanguageGroup.check(
-                    R.id.uiLanguageGerman);
-
-        } else if (languageMode
-                == UiLocaleController.LanguageMode.ENGLISH) {
-
-            uiLanguageGroup.check(
-                    R.id.uiLanguageEnglish);
-
-        } else {
-
-            uiLanguageGroup.check(
-                    R.id.uiLanguageSystem);
-        }
+        uiLanguageSelection.setText(
+                getString(
+                        R.string.ui_language_value,
+                        getUiLanguageLabel(
+                                languageMode)));
 
         if (settings.controlSide
                 == UiSettingsStore.ControlSide.LEFT) {
@@ -6018,6 +6002,99 @@ public class MainActivity extends Activity {
 
         updatingUiSettingsUi =
                 false;
+    }
+
+    private String getUiLanguageLabel(
+            UiLocaleController.LanguageMode languageMode) {
+
+        if (languageMode
+                == UiLocaleController.LanguageMode.GERMAN) {
+
+            return getString(
+                    R.string.ui_language_german);
+        }
+
+        if (languageMode
+                == UiLocaleController.LanguageMode.ENGLISH) {
+
+            return getString(
+                    R.string.ui_language_english);
+        }
+
+        return getString(
+                R.string.ui_language_system);
+    }
+
+    private int getUiLanguageSelectionIndex(
+            UiLocaleController.LanguageMode languageMode) {
+
+        if (languageMode
+                == UiLocaleController.LanguageMode.GERMAN) {
+
+            return 1;
+        }
+
+        if (languageMode
+                == UiLocaleController.LanguageMode.ENGLISH) {
+
+            return 2;
+        }
+
+        return 0;
+    }
+
+    private void showUiLanguageDialog() {
+
+        UiLocaleController.LanguageMode current =
+                UiLocaleController.getLanguageMode(
+                        this);
+
+        UiLocaleController.LanguageMode[] modes = {
+                UiLocaleController.LanguageMode.SYSTEM,
+                UiLocaleController.LanguageMode.GERMAN,
+                UiLocaleController.LanguageMode.ENGLISH
+        };
+
+        CharSequence[] choices = {
+                getString(
+                        R.string.ui_language_system),
+                getString(
+                        R.string.ui_language_german),
+                getString(
+                        R.string.ui_language_english)
+        };
+
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.ui_language_title)
+                        .setSingleChoiceItems(
+                                choices,
+                                getUiLanguageSelectionIndex(
+                                        current),
+                                (dialog, which) -> {
+
+                                    UiLocaleController.LanguageMode selected =
+                                            modes[which];
+
+                                    dialog.dismiss();
+
+                                    if (selected == current) {
+                                        return;
+                                    }
+
+                                    uiRecreationRequested =
+                                            true;
+
+                                    UiLocaleController.apply(
+                                            this,
+                                            selected);
+                                })
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .create());
     }
 
     private void saveUiSettingsFromControls() {
@@ -6085,32 +6162,6 @@ public class MainActivity extends Activity {
                     UiSettingsStore.ThemeMode.SYSTEM;
         }
 
-        int languageId =
-                uiLanguageGroup
-                        .getCheckedRadioButtonId();
-
-        UiLocaleController.LanguageMode languageMode;
-
-        if (languageId == R.id.uiLanguageGerman) {
-
-            languageMode =
-                    UiLocaleController.LanguageMode.GERMAN;
-
-        } else if (languageId == R.id.uiLanguageEnglish) {
-
-            languageMode =
-                    UiLocaleController.LanguageMode.ENGLISH;
-
-        } else {
-
-            languageMode =
-                    UiLocaleController.LanguageMode.SYSTEM;
-        }
-
-        UiLocaleController.LanguageMode currentLanguage =
-                UiLocaleController.getLanguageMode(
-                        this);
-
         boolean controlSideChanged =
                 current.controlSide
                         != controlSide;
@@ -6119,29 +6170,11 @@ public class MainActivity extends Activity {
                 current.themeMode
                         != themeMode;
 
-        boolean languageChanged =
-                currentLanguage
-                        != languageMode;
-
         uiSettingsStore.save(
                 new UiSettingsStore.Settings(
                         startBehavior,
                         controlSide,
                         themeMode));
-
-        if (languageChanged
-                && !isFinishing()
-                && !isDestroyed()) {
-
-            uiRecreationRequested =
-                    true;
-
-            UiLocaleController.apply(
-                    this,
-                    languageMode);
-
-            return;
-        }
 
         if ((controlSideChanged
                 || themeChanged)

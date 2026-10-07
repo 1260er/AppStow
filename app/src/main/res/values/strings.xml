@@ -355,6 +355,7 @@ None found</string>
     <string name="ui_language_system">System</string>
     <string name="ui_language_german">Deutsch</string>
     <string name="ui_language_english">English</string>
+    <string name="ui_language_value">Language: %1$s</string>
 
     <string name="ui_control_side_title">Control side</string>
     <string name="ui_control_side_description">Place frequently used controls on the side that is easier to reach with one hand.</string>

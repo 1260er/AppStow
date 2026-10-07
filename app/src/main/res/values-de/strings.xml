@@ -355,6 +355,7 @@ Keines gefunden</string>
     <string name="ui_language_system">System</string>
     <string name="ui_language_german">Deutsch</string>
     <string name="ui_language_english">English</string>
+    <string name="ui_language_value">Sprache: %1$s</string>
 
     <string name="ui_control_side_title">Bedienseite</string>
     <string name="ui_control_side_description">Platziert häufig genutzte Bedienelemente auf der Seite, die einhändig leichter erreichbar ist.</string>
