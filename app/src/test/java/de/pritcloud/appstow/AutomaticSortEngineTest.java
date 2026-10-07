@@ -220,6 +220,123 @@ public class AutomaticSortEngineTest {
     }
 
     @Test
+    public void selectedAppCanMoveAcrossShortcuts() {
+
+        Map<String, Integer> scores =
+                counts(
+                        "shortcut:booking", 1,
+                        "shortcut:amazon", 2,
+                        "shortcut:kleinanzeigen", 3,
+                        "app:kitchenowl", 100);
+
+        Set<String> automaticApps =
+                new HashSet<>(
+                        Arrays.asList(
+                                "app:kitchenowl"));
+
+        List<String> ranked =
+                AutomaticSortEngine
+                        .rankSelectedIdsAcrossPeers(
+                                Arrays.asList(
+                                        "shortcut:booking",
+                                        "shortcut:amazon",
+                                        "shortcut:kleinanzeigen",
+                                        "app:kitchenowl"),
+                                automaticApps,
+                                scores,
+                                new HashMap<>(),
+                                new HashMap<>(),
+                                false);
+
+        assertEquals(
+                Arrays.asList(
+                        "app:kitchenowl",
+                        "shortcut:booking",
+                        "shortcut:amazon",
+                        "shortcut:kleinanzeigen"),
+                ranked);
+    }
+
+    @Test
+    public void selectedShortcutCanMoveAcrossApps() {
+
+        Map<String, Integer> scores =
+                counts(
+                        "app:a", 1,
+                        "app:b", 2,
+                        "app:c", 3,
+                        "shortcut:hot", 100);
+
+        Set<String> automaticShortcuts =
+                new HashSet<>(
+                        Arrays.asList(
+                                "shortcut:hot"));
+
+        List<String> ranked =
+                AutomaticSortEngine
+                        .rankSelectedIdsAcrossPeers(
+                                Arrays.asList(
+                                        "app:a",
+                                        "app:b",
+                                        "app:c",
+                                        "shortcut:hot"),
+                                automaticShortcuts,
+                                scores,
+                                new HashMap<>(),
+                                new HashMap<>(),
+                                false);
+
+        assertEquals(
+                Arrays.asList(
+                        "shortcut:hot",
+                        "app:a",
+                        "app:b",
+                        "app:c"),
+                ranked);
+    }
+
+    @Test
+    public void allSelectedAppsAndShortcutsRankTogether() {
+
+        Map<String, Integer> scores =
+                counts(
+                        "app:a", 5,
+                        "shortcut:x", 20,
+                        "app:b", 30,
+                        "shortcut:y", 10);
+
+        Set<String> automaticItems =
+                new HashSet<>(
+                        Arrays.asList(
+                                "app:a",
+                                "shortcut:x",
+                                "app:b",
+                                "shortcut:y"));
+
+        List<String> ranked =
+                AutomaticSortEngine
+                        .rankSelectedIdsAcrossPeers(
+                                Arrays.asList(
+                                        "app:a",
+                                        "shortcut:x",
+                                        "app:b",
+                                        "shortcut:y"),
+                                automaticItems,
+                                scores,
+                                new HashMap<>(),
+                                new HashMap<>(),
+                                false);
+
+        assertEquals(
+                Arrays.asList(
+                        "app:b",
+                        "shortcut:x",
+                        "shortcut:y",
+                        "app:a"),
+                ranked);
+    }
+
+    @Test
     public void manualSaveRestoresAutomaticBaselineOrder() {
 
         Set<String> automatic =

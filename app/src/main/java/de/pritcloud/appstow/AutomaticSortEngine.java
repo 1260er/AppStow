@@ -177,6 +177,74 @@ final class AutomaticSortEngine {
         return result;
     }
 
+    static List<String> rankSelectedIdsAcrossPeers(
+            List<String> baselineOrder,
+            Set<String> selectedIds,
+            Map<String, Integer> overallWeighted,
+            Map<String, Integer> profileWeighted,
+            Map<String, Integer> profileLaunches,
+            boolean timeProfileEnabled) {
+
+        List<String> baseline =
+                normalizeOrder(
+                        baselineOrder);
+
+        if (selectedIds == null
+                || selectedIds.isEmpty()) {
+
+            return baseline;
+        }
+
+        Set<String> selectedPresent =
+                new LinkedHashSet<>();
+
+        Set<String> fixedIds =
+                new LinkedHashSet<>();
+
+        for (String id :
+                baseline) {
+
+            if (selectedIds.contains(
+                    id)) {
+
+                selectedPresent.add(
+                        id);
+
+            } else {
+
+                fixedIds.add(
+                        id);
+            }
+        }
+
+        if (selectedPresent.isEmpty()) {
+            return baseline;
+        }
+
+        List<String> ranked =
+                rankIds(
+                        baseline,
+                        overallWeighted,
+                        profileWeighted,
+                        profileLaunches,
+                        timeProfileEnabled);
+
+        /*
+         * Die automatisierten Einträge dürfen sich über
+         * Apps/Shortcuts des jeweils anderen Typs hinweg
+         * bewegen. Nicht automatisierte Einträge behalten
+         * dabei untereinander ihre manuelle Reihenfolge.
+         */
+        if (fixedIds.isEmpty()) {
+            return ranked;
+        }
+
+        return preserveSelectedBaselineOrder(
+                ranked,
+                baseline,
+                fixedIds);
+    }
+
     static List<String> preserveSelectedBaselineOrder(
             List<String> displayedOrder,
             List<String> baselineOrder,

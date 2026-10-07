@@ -269,7 +269,7 @@ final class SortingSuggestionEngine {
             appOrders.put(
                     sectionId,
                     AutomaticSortEngine
-                            .rankSelectedIds(
+                            .rankSelectedIdsAcrossPeers(
                                     current,
                                     appIds,
                                     itemScores,
@@ -280,7 +280,7 @@ final class SortingSuggestionEngine {
             shortcutOrders.put(
                     sectionId,
                     AutomaticSortEngine
-                            .rankSelectedIds(
+                            .rankSelectedIdsAcrossPeers(
                                     current,
                                     shortcutIds,
                                     itemScores,

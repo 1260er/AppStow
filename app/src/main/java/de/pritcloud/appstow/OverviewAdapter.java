@@ -553,7 +553,7 @@ final class OverviewAdapter
         }
 
         return AutomaticSortEngine
-                .rankSelectedIds(
+                .rankSelectedIdsAcrossPeers(
                         baselineIds,
                         automaticIds,
                         automaticOverallScores,
@@ -823,7 +823,7 @@ final class OverviewAdapter
 
         List<String> orderedIds =
                 AutomaticSortEngine
-                        .rankSelectedIds(
+                        .rankSelectedIdsAcrossPeers(
                                 baselineIds,
                                 automaticIds,
                                 automaticOverallScores,

@@ -98,20 +98,20 @@ public class SortingSuggestionEngineTest {
 
         assertEquals(
                 Arrays.asList(
-                        "app:b",
                         "shortcut:y",
-                        "app:a",
-                        "shortcut:x"),
+                        "app:b",
+                        "shortcut:x",
+                        "app:a"),
                 plan.suggestedAppOrders
                         .get(
                                 "category:office"));
 
         assertEquals(
                 Arrays.asList(
-                        "app:a",
                         "shortcut:x",
-                        "app:b",
-                        "shortcut:y"),
+                        "app:a",
+                        "shortcut:y",
+                        "app:b"),
                 plan.suggestedShortcutOrders
                         .get(
                                 "category:office"));
@@ -154,6 +154,51 @@ public class SortingSuggestionEngineTest {
 
         assertTrue(
                 plan.hasAnyChange());
+    }
+
+    @Test
+    public void singleHotAppCanMoveAheadOfShortcuts() {
+
+        SortingSuggestionEngine.Plan plan =
+                SortingSuggestionEngine.build(
+                        Arrays.asList(
+                                "favorites",
+                                "category:shopping"),
+                        Map.of(
+                                "favorites",
+                                List.of(),
+                                "category:shopping",
+                                Arrays.asList(
+                                        "shortcut:booking",
+                                        "shortcut:amazon",
+                                        "shortcut:kleinanzeigen",
+                                        "app:kitchenowl")),
+                        Set.of(),
+                        Arrays.asList(
+                                "shortcut:booking",
+                                "shortcut:amazon",
+                                "shortcut:kleinanzeigen",
+                                "app:kitchenowl"),
+                        3,
+                        counts(
+                                "shortcut:booking", 1,
+                                "shortcut:amazon", 2,
+                                "shortcut:kleinanzeigen", 3,
+                                "app:kitchenowl", 100),
+                        new HashMap<>());
+
+        assertTrue(
+                plan.appOrderChanged());
+
+        assertEquals(
+                Arrays.asList(
+                        "app:kitchenowl",
+                        "shortcut:booking",
+                        "shortcut:amazon",
+                        "shortcut:kleinanzeigen"),
+                plan.suggestedAppOrders
+                        .get(
+                                "category:shopping"));
     }
 
     @Test
