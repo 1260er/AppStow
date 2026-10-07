@@ -1094,14 +1094,8 @@ final class OverviewAdapter
                             parent,
                             false);
 
-            UiHandedness.applyContainer(
-                    parent.getContext(),
+            UiHandedness.keepListItemLayout(
                     view);
-
-            UiHandedness.applyTextEdge(
-                    parent.getContext(),
-                    view.findViewById(
-                            R.id.overviewSectionTitle));
 
             return new SectionViewHolder(
                     view);
