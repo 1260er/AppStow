@@ -19,6 +19,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
@@ -6767,7 +6770,11 @@ public class MainActivity extends Activity {
 
         favoriteAssignment.setOnCheckedChangeListener(
                 (buttonView, isChecked) ->
-                        favoriteOrderPreview.setText(
+                        setSortingSuggestionComparisonTexts(
+                                favoriteOrderCurrent,
+                                favoriteOrderPreview,
+                                formatSortingSuggestionItemOrder(
+                                        plan.currentFavoriteOrder),
                                 formatSortingSuggestionItemOrder(
                                         plan.favoriteOrderPreview(
                                                 isChecked))));
@@ -6928,11 +6935,88 @@ public class MainActivity extends Activity {
         checkBox.setChecked(
                 visible);
 
+        setSortingSuggestionComparisonTexts(
+                currentPreview,
+                suggestedPreview,
+                currentText,
+                suggestedText);
+    }
+
+    private void setSortingSuggestionComparisonTexts(
+            TextView currentPreview,
+            TextView suggestedPreview,
+            String currentText,
+            String suggestedText) {
+
         currentPreview.setText(
                 currentText);
 
         suggestedPreview.setText(
-                suggestedText);
+                formatSortingSuggestionTargetText(
+                        currentText,
+                        suggestedText));
+    }
+
+    private CharSequence formatSortingSuggestionTargetText(
+            String currentText,
+            String suggestedText) {
+
+        SpannableString styled =
+                new SpannableString(
+                        suggestedText);
+
+        boolean[] changedLines =
+                SortingSuggestionComparison
+                        .changedTargetLines(
+                                currentText,
+                                suggestedText);
+
+        int dangerColor =
+                ContextCompat.getColor(
+                        this,
+                        R.color.ui_danger);
+
+        int lineIndex =
+                0;
+
+        int start =
+                0;
+
+        while (start <= suggestedText.length()
+                && lineIndex < changedLines.length) {
+
+            int newline =
+                    suggestedText.indexOf(
+                            '\n',
+                            start);
+
+            int end =
+                    newline >= 0
+                            ? newline
+                            : suggestedText.length();
+
+            if (changedLines[lineIndex]
+                    && end > start) {
+
+                styled.setSpan(
+                        new ForegroundColorSpan(
+                                dangerColor),
+                        start,
+                        end,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+
+            if (newline < 0) {
+                break;
+            }
+
+            start =
+                    newline + 1;
+
+            lineIndex++;
+        }
+
+        return styled;
     }
 
     private String formatSortingSuggestionItemOrder(

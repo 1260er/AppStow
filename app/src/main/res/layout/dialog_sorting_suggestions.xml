@@ -56,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:paddingStart="@dimen/spacing_sm"
-                    android:text="@string/sorting_suggestion_new"
+                    android:text="@string/sorting_suggestion_target"
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -132,7 +132,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:paddingStart="@dimen/spacing_sm"
-                    android:text="@string/sorting_suggestion_new"
+                    android:text="@string/sorting_suggestion_target"
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -208,7 +208,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:paddingStart="@dimen/spacing_sm"
-                    android:text="@string/sorting_suggestion_new"
+                    android:text="@string/sorting_suggestion_target"
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -284,7 +284,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:paddingStart="@dimen/spacing_sm"
-                    android:text="@string/sorting_suggestion_new"
+                    android:text="@string/sorting_suggestion_target"
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -360,7 +360,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:paddingStart="@dimen/spacing_sm"
-                    android:text="@string/sorting_suggestion_new"
+                    android:text="@string/sorting_suggestion_target"
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
