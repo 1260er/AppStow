@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 34)
+@Config(sdk = 35)
 public class BackupManagerTest {
 
     private Context context;
@@ -40,15 +40,18 @@ public class BackupManagerTest {
                 "shortcuts",
                 "overview_order",
                 "section_item_order",
-                "overview_display");
+                "overview_display",
+                "sorting_settings",
+                "ui_settings",
+                "statistics_display",
+                "usage_statistics");
     }
 
     @Test
     public void validBackupRestoresAllStores()
             throws Exception {
 
-        BackupManager.restoreBackup(
-                context,
+        restoreBackupForTest(
                 validBackup());
 
         CategoryStore categoryStore =
@@ -138,8 +141,7 @@ public class BackupManagerTest {
                 "categorySymbolsEnabled",
                 false);
 
-        BackupManager.restoreBackup(
-                context,
+        restoreBackupForTest(
                 backup);
 
         CategoryStore categoryStore =
@@ -253,8 +255,7 @@ public class BackupManagerTest {
                 .remove(
                         "symbol");
 
-        BackupManager.restoreBackup(
-                context,
+        restoreBackupForTest(
                 backup);
 
         CategoryStore categoryStore =
@@ -476,8 +477,7 @@ public class BackupManagerTest {
                                 .put(
                                         "shortcut:paypal"));
 
-        BackupManager.restoreBackup(
-                context,
+        restoreBackupForTest(
                 backup);
 
         ShortcutStore shortcutStore =
@@ -642,9 +642,8 @@ public class BackupManagerTest {
                             .clear()
                             .commit());
 
-            BackupManager.restoreBackup(
-                    context,
-                    backup);
+            restoreBackupForTest(
+                backup);
 
             assertTrue(
                     display.getBoolean(
@@ -710,8 +709,7 @@ public class BackupManagerTest {
                                 4)
                         .commit());
 
-        BackupManager.restoreBackup(
-                context,
+        restoreBackupForTest(
                 validBackup());
 
         assertTrue(
@@ -786,8 +784,7 @@ public class BackupManagerTest {
                                 "overviewDisplay",
                                 settings);
 
-        BackupManager.restoreBackup(
-                context,
+        restoreBackupForTest(
                 backup);
 
         assertTrue(
@@ -1014,9 +1011,8 @@ public class BackupManagerTest {
             throws Exception {
 
         try {
-            BackupManager.restoreBackup(
-                    context,
-                    backup);
+            restoreBackupForTest(
+                backup);
 
             fail(
                     "Ungültiges Backup wurde akzeptiert.");
@@ -1140,7 +1136,23 @@ public class BackupManagerTest {
                                         "shortcuts"))
                 .put(
                         "sectionItemOrder",
-                        sectionItemOrder);
+                        sectionItemOrder)
+                .put(
+                        "settings",
+                        BackupV3Configuration.create(
+                                context));
+    }
+
+    private void restoreBackupForTest(
+            JSONObject backup)
+            throws Exception {
+
+        BackupManager.restoreBackup(
+                context,
+                backup,
+                new java.util.HashSet<>(
+                        Arrays.asList(
+                                "com.example.app")));
     }
 
     private JSONObject shortcut(

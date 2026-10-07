@@ -242,26 +242,51 @@ final class BackupManager {
             JSONObject backup)
             throws JSONException, IOException {
 
+        Set<String> installedLauncherPackages =
+                BackupRestoreFilter
+                        .queryInstalledLauncherPackages(
+                                context);
+
+        restoreBackup(
+                context,
+                backup,
+                installedLauncherPackages);
+    }
+
+    static void restoreBackup(
+            Context context,
+            JSONObject backup,
+            Set<String> installedLauncherPackages)
+            throws JSONException, IOException {
+
         validateBackup(
                 backup,
                 true);
+
+        BackupV3Configuration.State configuration =
+                BackupV3Configuration.parse(
+                        backup);
 
         JSONArray categories =
                 backup.getJSONArray(
                         "categories");
 
         JSONObject assignments =
-                backup.getJSONObject(
-                        "categoryAssignments");
+                BackupRestoreFilter.filterAssignments(
+                        backup.getJSONObject(
+                                "categoryAssignments"),
+                        installedLauncherPackages);
 
         boolean categorySymbolsEnabled =
                 backup.optBoolean(
                         "categorySymbolsEnabled",
                         false);
 
-        JSONArray favoritePackages =
-                backup.getJSONArray(
-                        "favoritePackages");
+        Set<String> favorites =
+                BackupRestoreFilter.filterFavorites(
+                        backup.getJSONArray(
+                                "favoritePackages"),
+                        installedLauncherPackages);
 
         JSONArray shortcuts =
                 backup.getJSONArray(
@@ -272,8 +297,10 @@ final class BackupManager {
                         "overviewOrder");
 
         JSONObject sectionItemOrder =
-                backup.getJSONObject(
-                        "sectionItemOrder");
+                BackupRestoreFilter.filterSectionItemOrder(
+                        backup.getJSONObject(
+                                "sectionItemOrder"),
+                        installedLauncherPackages);
 
         JSONObject display =
                 backup.optJSONObject(
@@ -281,29 +308,20 @@ final class BackupManager {
 
         boolean gridMode =
                 display != null
-                        && display.getBoolean("gridMode");
+                        && display.getBoolean(
+                                "gridMode");
 
         int gridColumns =
                 display == null
                         ? 4
-                        : display.getInt("gridColumns");
+                        : display.getInt(
+                                "gridColumns");
 
         JSONObject sectionColumns =
                 display == null
                         ? new JSONObject()
                         : display.getJSONObject(
                                 "sectionColumns");
-
-        Set<String> favorites =
-                new HashSet<>();
-
-        for (int i = 0;
-             i < favoritePackages.length();
-             i++) {
-
-            favorites.add(
-                    favoritePackages.getString(i));
-        }
 
         SharedPreferences categoryPrefs =
                 context.getSharedPreferences(
@@ -335,6 +353,26 @@ final class BackupManager {
                         DISPLAY_PREFS,
                         Context.MODE_PRIVATE);
 
+        SharedPreferences sortingPrefs =
+                context.getSharedPreferences(
+                        BackupV3Configuration.SORTING_PREFS,
+                        Context.MODE_PRIVATE);
+
+        SharedPreferences uiPrefs =
+                context.getSharedPreferences(
+                        BackupV3Configuration.UI_PREFS,
+                        Context.MODE_PRIVATE);
+
+        SharedPreferences statisticsDisplayPrefs =
+                context.getSharedPreferences(
+                        BackupV3Configuration.STATISTICS_DISPLAY_PREFS,
+                        Context.MODE_PRIVATE);
+
+        SharedPreferences usageStatisticsPrefs =
+                context.getSharedPreferences(
+                        BackupV3Configuration.USAGE_STATISTICS_PREFS,
+                        Context.MODE_PRIVATE);
+
         Map<String, Object> categorySnapshot =
                 snapshotPreferences(
                         categoryPrefs);
@@ -358,6 +396,30 @@ final class BackupManager {
         Map<String, Object> displaySnapshot =
                 snapshotPreferences(
                         displayPrefs);
+
+        Map<String, Object> sortingSnapshot =
+                snapshotPreferences(
+                        sortingPrefs);
+
+        Map<String, Object> uiSnapshot =
+                snapshotPreferences(
+                        uiPrefs);
+
+        Map<String, Object> statisticsDisplaySnapshot =
+                snapshotPreferences(
+                        statisticsDisplayPrefs);
+
+        Map<String, Object> usageStatisticsSnapshot =
+                snapshotPreferences(
+                        usageStatisticsPrefs);
+
+        UiLocaleController.LanguageMode currentLanguage =
+                UiLocaleController.getLanguageMode(
+                        context);
+
+        boolean languageChanged =
+                currentLanguage
+                        != configuration.language;
 
         try {
             boolean categoriesSaved =
@@ -438,18 +500,40 @@ final class BackupManager {
             boolean displaySaved =
                     displayEditor.commit();
 
+            boolean configurationSaved =
+                    BackupV3Configuration
+                            .restorePreferences(
+                                    context,
+                                    configuration);
+
+            boolean statisticsReset =
+                    usageStatisticsPrefs
+                            .edit()
+                            .clear()
+                            .commit();
+
             if (!categoriesSaved
                     || !favoritesSaved
                     || !shortcutsSaved
                     || !orderSaved
                     || !sectionItemOrderSaved
-                    || !displaySaved) {
+                    || !displaySaved
+                    || !configurationSaved
+                    || !statisticsReset) {
 
                 throw new IOException(
                         "Backup konnte nicht vollständig wiederhergestellt werden.");
             }
 
+            if (languageChanged) {
+
+                UiLocaleController.apply(
+                        context,
+                        configuration.language);
+            }
+
         } catch (IOException | RuntimeException exception) {
+
             boolean rollbackSaved =
                     restorePreferences(
                             categoryPrefs,
@@ -480,7 +564,46 @@ final class BackupManager {
                             displayPrefs,
                             displaySnapshot);
 
-            if (!rollbackSaved) {
+            rollbackSaved &=
+                    restorePreferences(
+                            sortingPrefs,
+                            sortingSnapshot);
+
+            rollbackSaved &=
+                    restorePreferences(
+                            uiPrefs,
+                            uiSnapshot);
+
+            rollbackSaved &=
+                    restorePreferences(
+                            statisticsDisplayPrefs,
+                            statisticsDisplaySnapshot);
+
+            rollbackSaved &=
+                    restorePreferences(
+                            usageStatisticsPrefs,
+                            usageStatisticsSnapshot);
+
+            boolean languageRollbackSaved =
+                    true;
+
+            if (languageChanged) {
+
+                try {
+                    UiLocaleController.apply(
+                            context,
+                            currentLanguage);
+
+                } catch (RuntimeException rollbackException) {
+
+                    languageRollbackSaved =
+                            false;
+                }
+            }
+
+            if (!rollbackSaved
+                    || !languageRollbackSaved) {
+
                 throw new IOException(
                         "Wiederherstellung und Rollback sind fehlgeschlagen.",
                         exception);
@@ -794,6 +917,11 @@ final class BackupManager {
                 "overviewDisplay",
                 display);
 
+        backup.put(
+                "settings",
+                BackupV3Configuration.create(
+                        context));
+
         validateBackup(
                 backup,
                 true);
@@ -935,6 +1063,9 @@ final class BackupManager {
             throw new JSONException(
                     "Diese Backup-Version wird nicht unterstützt.");
         }
+
+        BackupV3Configuration.validate(
+                backup);
 
         JSONArray categories =
                 backup.getJSONArray(
