@@ -6765,8 +6765,19 @@ public class MainActivity extends Activity {
                         .create();
 
         dialog.setOnShowListener(
-                ignored ->
-                        dialog.getButton(
+                ignored -> {
+
+                    /*
+                     * Übernehmen verändert die bestehende
+                     * manuelle Sortierung und verwendet daher
+                     * dieselbe Danger-UI wie andere
+                     * destruktive Bestätigungen.
+                     */
+                    styleCategoryDialog(
+                            dialog,
+                            true);
+
+                    dialog.getButton(
                                         DialogInterface.BUTTON_POSITIVE)
                                 .setOnClickListener(
                                         view -> {
@@ -6815,7 +6826,8 @@ public class MainActivity extends Activity {
                                                     useShortcuts);
 
                                             dialog.dismiss();
-                                        }));
+                                        });
+                });
 
         dialog.show();
     }
