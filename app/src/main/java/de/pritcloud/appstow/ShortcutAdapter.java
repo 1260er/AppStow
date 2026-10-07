@@ -153,6 +153,10 @@ final class ShortcutAdapter
                                 parent,
                                 false);
 
+        UiHandedness.applyContainer(
+                parent.getContext(),
+                view);
+
         return new ViewHolder(
                 view,
                 viewType == TYPE_GRID);

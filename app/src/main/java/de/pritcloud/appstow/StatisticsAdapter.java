@@ -187,6 +187,11 @@ final class StatisticsAdapter
                                 parent,
                                 false);
 
+        UiHandedness.applyContainer(
+                parent.getContext(),
+                view.findViewById(
+                        R.id.statisticsCardHeader));
+
         return new ViewHolder(
                 view);
     }

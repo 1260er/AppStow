@@ -121,6 +121,10 @@ public class AppAdapter
                                 parent,
                                 false);
 
+        UiHandedness.applyContainer(
+                parent.getContext(),
+                view);
+
         return new AppViewHolder(
                 view,
                 viewType == TYPE_GRID);

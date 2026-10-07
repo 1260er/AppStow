@@ -22,6 +22,46 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_lg"
+            android:text="@string/ui_control_side_title"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/UiBodyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:text="@string/ui_control_side_description"
+            android:textColor="@color/ui_text_secondary" />
+
+        <RadioGroup
+            android:id="@+id/uiControlSideGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm">
+
+            <RadioButton
+                android:id="@+id/uiControlSideRight"
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="@string/ui_control_side_right" />
+
+            <RadioButton
+                android:id="@+id/uiControlSideLeft"
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="@string/ui_control_side_left" />
+
+        </RadioGroup>
+
+        <TextView
+            style="@style/UiBodyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_lg"
             android:text="@string/ui_start_behavior_title"
             android:textStyle="bold" />
 

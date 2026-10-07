@@ -107,6 +107,10 @@ final class CategoryAdapter
                                 parent,
                                 false);
 
+        UiHandedness.applyContainer(
+                parent.getContext(),
+                view);
+
         return new CategoryViewHolder(
                 view,
                 viewType == TYPE_GRID);

@@ -342,6 +342,11 @@ None found</string>
 
     <string name="nav_ui_settings">Appearance &amp; controls</string>
     <string name="ui_settings_description">Adjust how AppStow is displayed and how it behaves when it opens.</string>
+
+    <string name="ui_control_side_title">Control side</string>
+    <string name="ui_control_side_description">Place frequently used controls on the side that is easier to reach with one hand.</string>
+    <string name="ui_control_side_right">Right</string>
+    <string name="ui_control_side_left">Left</string>
     <string name="ui_start_behavior_title">Open favorites automatically</string>
     <string name="ui_start_behavior_description">Choose when AppStow should automatically open Favorites.</string>
     <string name="ui_start_never">Never</string>

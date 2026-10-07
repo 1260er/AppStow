@@ -34,12 +34,18 @@ public class UiSettingsStoreTest {
     @Test
     public void defaultPreservesPreviousDefaultBehavior() {
 
-        assertEquals(
-                UiSettingsStore.StartBehavior.NEVER,
+        UiSettingsStore.Settings settings =
                 new UiSettingsStore(
                         context)
-                        .load()
-                        .startBehavior);
+                        .load();
+
+        assertEquals(
+                UiSettingsStore.StartBehavior.NEVER,
+                settings.startBehavior);
+
+        assertEquals(
+                UiSettingsStore.ControlSide.RIGHT,
+                settings.controlSide);
     }
 
     @Test
@@ -88,6 +94,48 @@ public class UiSettingsStoreTest {
                         context)
                         .load()
                         .startBehavior);
+    }
+
+    @Test
+    public void controlSidePersistsAndCorruptValueFallsBackRight() {
+
+        UiSettingsStore store =
+                new UiSettingsStore(
+                        context);
+
+        store.save(
+                new UiSettingsStore.Settings(
+                        UiSettingsStore.StartBehavior.START_ONLY,
+                        UiSettingsStore.ControlSide.LEFT));
+
+        UiSettingsStore.Settings saved =
+                new UiSettingsStore(
+                        context)
+                        .load();
+
+        assertEquals(
+                UiSettingsStore.StartBehavior.START_ONLY,
+                saved.startBehavior);
+
+        assertEquals(
+                UiSettingsStore.ControlSide.LEFT,
+                saved.controlSide);
+
+        context.getSharedPreferences(
+                        "ui_settings",
+                        Context.MODE_PRIVATE)
+                .edit()
+                .putString(
+                        "control_side",
+                        "INVALID")
+                .commit();
+
+        assertEquals(
+                UiSettingsStore.ControlSide.RIGHT,
+                new UiSettingsStore(
+                        context)
+                        .load()
+                        .controlSide);
     }
 
     @Test

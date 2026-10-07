@@ -1080,6 +1080,10 @@ final class OverviewAdapter
                     parent,
                     false);
 
+            UiHandedness.applyContainer(
+                    parent.getContext(),
+                    view);
+
             return new GridSectionViewHolder(view);
         }
 
@@ -1089,6 +1093,10 @@ final class OverviewAdapter
                             R.layout.item_overview_section,
                             parent,
                             false);
+
+            UiHandedness.applyContainer(
+                    parent.getContext(),
+                    view);
 
             return new SectionViewHolder(
                     view);
@@ -1105,6 +1113,10 @@ final class OverviewAdapter
                                     : R.layout.item_app,
                             parent,
                             false);
+
+            UiHandedness.applyContainer(
+                    parent.getContext(),
+                    view);
 
             return new EntryViewHolder(
                     view,

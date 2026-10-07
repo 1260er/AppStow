@@ -342,6 +342,11 @@ Keines gefunden</string>
 
     <string name="nav_ui_settings">Darstellung &amp; Bedienung</string>
     <string name="ui_settings_description">Passe Darstellung und Bedienverhalten von AppStow an.</string>
+
+    <string name="ui_control_side_title">Bedienseite</string>
+    <string name="ui_control_side_description">Platziert häufig genutzte Bedienelemente auf der Seite, die einhändig leichter erreichbar ist.</string>
+    <string name="ui_control_side_right">Rechts</string>
+    <string name="ui_control_side_left">Links</string>
     <string name="ui_start_behavior_title">Favoriten automatisch öffnen</string>
     <string name="ui_start_behavior_description">Lege fest, wann AppStow automatisch die Favoriten öffnet.</string>
     <string name="ui_start_never">Nie</string>

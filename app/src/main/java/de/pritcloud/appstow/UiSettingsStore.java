@@ -11,6 +11,9 @@ final class UiSettingsStore {
     private static final String KEY_START_BEHAVIOR =
             "start_behavior";
 
+    private static final String KEY_CONTROL_SIDE =
+            "control_side";
+
     private static final String LEGACY_SORTING_PREFS =
             "sorting_settings";
 
@@ -23,20 +26,40 @@ final class UiSettingsStore {
         ALWAYS_FOREGROUND
     }
 
+    enum ControlSide {
+        RIGHT,
+        LEFT
+    }
+
     static final class Settings {
 
         final StartBehavior startBehavior;
+        final ControlSide controlSide;
 
         Settings(
                 StartBehavior startBehavior) {
 
-            if (startBehavior == null) {
+            this(
+                    startBehavior,
+                    ControlSide.RIGHT);
+        }
+
+        Settings(
+                StartBehavior startBehavior,
+                ControlSide controlSide) {
+
+            if (startBehavior == null
+                    || controlSide == null) {
+
                 throw new IllegalArgumentException(
-                        "Start behavior is required.");
+                        "UI settings are incomplete.");
             }
 
             this.startBehavior =
                     startBehavior;
+
+            this.controlSide =
+                    controlSide;
         }
     }
 
@@ -71,17 +94,25 @@ final class UiSettingsStore {
                         KEY_START_BEHAVIOR,
                         null);
 
+        String storedControlSide =
+                preferences.getString(
+                        KEY_CONTROL_SIDE,
+                        null);
+
         return new Settings(
                 parseStartBehavior(
                         stored,
-                        fallback));
+                        fallback),
+                parseControlSide(
+                        storedControlSide));
     }
 
     void save(
             Settings settings) {
 
         if (settings == null
-                || settings.startBehavior == null) {
+                || settings.startBehavior == null
+                || settings.controlSide == null) {
 
             throw new IllegalArgumentException(
                     "UI settings are incomplete.");
@@ -91,7 +122,27 @@ final class UiSettingsStore {
                 .putString(
                         KEY_START_BEHAVIOR,
                         settings.startBehavior.name())
+                .putString(
+                        KEY_CONTROL_SIDE,
+                        settings.controlSide.name())
                 .apply();
+    }
+
+    private static ControlSide parseControlSide(
+            String value) {
+
+        if (value == null) {
+            return ControlSide.RIGHT;
+        }
+
+        try {
+            return ControlSide.valueOf(
+                    value);
+
+        } catch (IllegalArgumentException exception) {
+
+            return ControlSide.RIGHT;
+        }
     }
 
     private static StartBehavior parseStartBehavior(

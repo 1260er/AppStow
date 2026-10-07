@@ -202,10 +202,12 @@ public class MainActivity extends Activity {
 
     private ViewStub uiSettingsStub;
     private ScrollView uiSettingsManagement;
+    private RadioGroup uiControlSideGroup;
     private RadioGroup uiStartBehaviorGroup;
     private UiSettingsStore uiSettingsStore;
     private boolean updatingUiSettingsUi;
     private boolean stoppedForBackground;
+    private boolean uiRecreationRequested;
 
     private View backupManagement;
 
@@ -466,6 +468,8 @@ public class MainActivity extends Activity {
 
         uiSettingsStore =
                 new UiSettingsStore(this);
+
+        applyControlSideUi();
 
         overviewOrderStore =
                 new OverviewOrderStore(this);
@@ -1371,7 +1375,8 @@ public class MainActivity extends Activity {
     protected void onStop() {
 
         stoppedForBackground =
-                !isChangingConfigurations();
+                !isChangingConfigurations()
+                        && !uiRecreationRequested;
 
         sortingProfileHandler.removeCallbacks(
                 sortingProfileBoundaryRunnable);
@@ -2535,7 +2540,7 @@ public class MainActivity extends Activity {
         pageMessage.setVisibility(View.GONE);
         overviewList.setVisibility(View.VISIBLE);
 
-        drawerLayout.closeDrawer(GravityCompat.END);
+        drawerLayout.closeDrawer(getNavigationDrawerGravity());
 
         loadAppsAsync();
     }
@@ -2595,7 +2600,7 @@ public class MainActivity extends Activity {
         appList.post(
                 appAdapter::refreshVisibleState);
 
-        drawerLayout.closeDrawer(GravityCompat.END);
+        drawerLayout.closeDrawer(getNavigationDrawerGravity());
     }
 
     private void showCategoryManagement() {
@@ -2651,7 +2656,7 @@ public class MainActivity extends Activity {
 
         refreshCategories();
 
-        drawerLayout.closeDrawer(GravityCompat.END);
+        drawerLayout.closeDrawer(getNavigationDrawerGravity());
     }
 
     private void showStatisticsManagement() {
@@ -2717,7 +2722,7 @@ public class MainActivity extends Activity {
         refreshStatistics();
 
         drawerLayout.closeDrawer(
-                GravityCompat.END);
+                getNavigationDrawerGravity());
     }
 
     private int getStatisticsPeriodIndex() {
@@ -3626,7 +3631,7 @@ public class MainActivity extends Activity {
                 shortcutAdapter::refreshVisibleState);
 
         drawerLayout.closeDrawer(
-                GravityCompat.END);
+                getNavigationDrawerGravity());
     }
 
     private void refreshShortcuts() {
@@ -5700,7 +5705,7 @@ public class MainActivity extends Activity {
         if (overview) {
             drawerLayout.setDrawerLockMode(
                     DrawerLayout.LOCK_MODE_UNLOCKED,
-                    GravityCompat.END);
+                    getNavigationDrawerGravity());
 
             topNavigationButton.setImageResource(
                     R.drawable.ic_menu);
@@ -5711,17 +5716,17 @@ public class MainActivity extends Activity {
 
             topNavigationButton.setOnClickListener(v ->
                     drawerLayout.openDrawer(
-                            GravityCompat.END));
+                            getNavigationDrawerGravity()));
 
             return;
         }
 
         drawerLayout.closeDrawer(
-                GravityCompat.END);
+                getNavigationDrawerGravity());
 
         drawerLayout.setDrawerLockMode(
                 DrawerLayout.LOCK_MODE_LOCKED_CLOSED,
-                GravityCompat.END);
+                getNavigationDrawerGravity());
 
         topNavigationButton.setImageResource(
                 R.drawable.ic_arrow_back);
@@ -5762,6 +5767,86 @@ public class MainActivity extends Activity {
     }
 
 
+    private int getNavigationDrawerGravity() {
+
+        return UiHandedness.isLeft(
+                this)
+                ? GravityCompat.START
+                : GravityCompat.END;
+    }
+
+    private void applyControlSideUi() {
+
+        UiHandedness.applyContainer(
+                this,
+                mainHeader);
+
+        View navigationDrawer =
+                findViewById(
+                        R.id.navigationDrawer);
+
+        ViewGroup.LayoutParams rawDrawerParams =
+                navigationDrawer.getLayoutParams();
+
+        if (rawDrawerParams
+                instanceof DrawerLayout.LayoutParams) {
+
+            DrawerLayout.LayoutParams drawerParams =
+                    (DrawerLayout.LayoutParams)
+                            rawDrawerParams;
+
+            drawerParams.gravity =
+                    getNavigationDrawerGravity();
+
+            navigationDrawer.setLayoutParams(
+                    drawerParams);
+        }
+
+        FrameLayout.LayoutParams clearParams =
+                (FrameLayout.LayoutParams)
+                        appSearchClear.getLayoutParams();
+
+        clearParams.gravity =
+                (UiHandedness.isLeft(
+                        this)
+                        ? android.view.Gravity.START
+                        : android.view.Gravity.END)
+                        | android.view.Gravity.CENTER_VERTICAL;
+
+        appSearchClear.setLayoutParams(
+                clearParams);
+
+        int normalPadding =
+                getResources().getDimensionPixelSize(
+                        R.dimen.spacing_md);
+
+        int actionPadding =
+                Math.round(
+                        56f
+                                * getResources()
+                                .getDisplayMetrics()
+                                .density);
+
+        if (UiHandedness.isLeft(
+                this)) {
+
+            appSearch.setPaddingRelative(
+                    actionPadding,
+                    appSearch.getPaddingTop(),
+                    normalPadding,
+                    appSearch.getPaddingBottom());
+
+        } else {
+
+            appSearch.setPaddingRelative(
+                    normalPadding,
+                    appSearch.getPaddingTop(),
+                    actionPadding,
+                    appSearch.getPaddingBottom());
+        }
+    }
+
+
     private void ensureUiSettingsInflated() {
 
         if (uiSettingsManagement != null) {
@@ -5771,9 +5856,21 @@ public class MainActivity extends Activity {
         uiSettingsManagement =
                 (ScrollView) uiSettingsStub.inflate();
 
+        uiControlSideGroup =
+                uiSettingsManagement.findViewById(
+                        R.id.uiControlSideGroup);
+
         uiStartBehaviorGroup =
                 uiSettingsManagement.findViewById(
                         R.id.uiStartBehaviorGroup);
+
+        uiControlSideGroup.setOnCheckedChangeListener(
+                (group, checkedId) -> {
+
+                    if (!updatingUiSettingsUi) {
+                        saveUiSettingsFromControls();
+                    }
+                });
 
         uiStartBehaviorGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {
@@ -5793,6 +5890,18 @@ public class MainActivity extends Activity {
 
         updatingUiSettingsUi =
                 true;
+
+        if (settings.controlSide
+                == UiSettingsStore.ControlSide.LEFT) {
+
+            uiControlSideGroup.check(
+                    R.id.uiControlSideLeft);
+
+        } else {
+
+            uiControlSideGroup.check(
+                    R.id.uiControlSideRight);
+        }
 
         if (settings.startBehavior
                 == UiSettingsStore.StartBehavior.START_ONLY) {
@@ -5824,6 +5933,9 @@ public class MainActivity extends Activity {
             return;
         }
 
+        UiSettingsStore.Settings current =
+                uiSettingsStore.load();
+
         int checkedId =
                 uiStartBehaviorGroup
                         .getCheckedRadioButtonId();
@@ -5846,9 +5958,34 @@ public class MainActivity extends Activity {
                     UiSettingsStore.StartBehavior.NEVER;
         }
 
+        int controlSideId =
+                uiControlSideGroup
+                        .getCheckedRadioButtonId();
+
+        UiSettingsStore.ControlSide controlSide =
+                controlSideId
+                        == R.id.uiControlSideLeft
+                        ? UiSettingsStore.ControlSide.LEFT
+                        : UiSettingsStore.ControlSide.RIGHT;
+
+        boolean controlSideChanged =
+                current.controlSide
+                        != controlSide;
+
         uiSettingsStore.save(
                 new UiSettingsStore.Settings(
-                        startBehavior));
+                        startBehavior,
+                        controlSide));
+
+        if (controlSideChanged
+                && !isFinishing()
+                && !isDestroyed()) {
+
+            uiRecreationRequested =
+                    true;
+
+            recreate();
+        }
     }
 
     private void showUiSettingsManagement() {
@@ -5908,7 +6045,7 @@ public class MainActivity extends Activity {
                 0);
 
         drawerLayout.closeDrawer(
-                GravityCompat.END);
+                getNavigationDrawerGravity());
     }
 
 
@@ -7889,7 +8026,7 @@ public class MainActivity extends Activity {
                 0);
 
         drawerLayout.closeDrawer(
-                GravityCompat.END);
+                getNavigationDrawerGravity());
     }
 
     private void ensureHelpInflated() {
@@ -7991,7 +8128,7 @@ public class MainActivity extends Activity {
         aboutManagement.setVisibility(View.VISIBLE);
         aboutManagement.scrollTo(0, 0);
 
-        drawerLayout.closeDrawer(GravityCompat.END);
+        drawerLayout.closeDrawer(getNavigationDrawerGravity());
     }
 
     private void openGithub() {
@@ -8085,7 +8222,7 @@ public class MainActivity extends Activity {
                 View.VISIBLE);
 
         drawerLayout.closeDrawer(
-                GravityCompat.END);
+                getNavigationDrawerGravity());
 
         helpManagement.post(() -> {
             if (jumpToShortcuts) {
@@ -8141,7 +8278,7 @@ public class MainActivity extends Activity {
                 View.VISIBLE);
 
         drawerLayout.closeDrawer(
-                GravityCompat.END);
+                getNavigationDrawerGravity());
     }
 
     private void createBackup() {
