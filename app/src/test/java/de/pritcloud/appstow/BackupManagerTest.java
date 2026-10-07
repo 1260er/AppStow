@@ -179,9 +179,18 @@ public class BackupManagerTest {
                     Uri.fromFile(
                             backupFile);
 
+            java.util.concurrent.atomic.AtomicBoolean verificationStarted =
+                    new java.util.concurrent.atomic.AtomicBoolean(
+                            false);
+
             BackupManager.writeBackup(
                     context,
-                    uri);
+                    uri,
+                    () -> verificationStarted.set(
+                            true));
+
+            assertTrue(
+                    verificationStarted.get());
 
             String rawFile;
 

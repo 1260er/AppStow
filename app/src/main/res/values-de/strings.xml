@@ -327,12 +327,11 @@ Keines gefunden</string>
     <string name="nav_backup">Backup &amp; Wiederherstellen</string>
     <string name="backup_create">Backup erstellen</string>
     <string name="backup_creating">Backup wird erstellt...</string>
+    <string name="backup_verifying">Backup wird geprüft...</string>
     <string name="backup_restore">Backup wiederherstellen</string>
-    <string name="backup_description_intro">Die Sicherungsdatei wird verschlüsselt gespeichert.</string>
-    <string name="backup_included_title">Gesichert</string>
-    <string name="backup_included_text">Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts, Sortierreihenfolgen und Einstellungen.</string>
+    <string name="backup_description_intro">Erstelle eine verschlüsselte Sicherung deiner AppStow-Konfiguration und stelle sie bei Bedarf wieder her.</string>
     <string name="backup_excluded_title">Nicht enthalten</string>
-    <string name="backup_excluded_text">Nutzungsstatistiken, Web-App-Anmeldungen, Cookies und Android-Berechtigungen.</string>
+    <string name="backup_excluded_text">Nutzungsstatistiken, Web-App-Anmeldungen und Cookies.</string>
     <string name="backup_last_success_title">Letzte erfolgreiche Sicherung</string>
     <string name="backup_last_success_none">Noch keine erfolgreiche Sicherung</string>
     <string name="backup_last_success_value">%1$s · %2$s</string>
@@ -353,6 +352,7 @@ Keines gefunden</string>
         <item quantity="other">%d eigene Shortcuts</item>
     </plurals>
     <string name="backup_created">Backup erstellt.</string>
+    <string name="backup_not_confirmed">Backup nicht bestätigt.</string>
     <string name="backup_failed">Backup fehlgeschlagen.</string>
     <string name="backup_restore_failed">Wiederherstellung fehlgeschlagen.</string>
     <string name="backup_restore_title">Backup wiederherstellen?</string>

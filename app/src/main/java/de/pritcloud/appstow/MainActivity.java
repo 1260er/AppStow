@@ -8842,32 +8842,15 @@ public class MainActivity extends Activity {
                         KEY_RESTORE_RESULT_MESSAGE)
                 .apply();
 
-        CharSequence resultMessage;
-
-        if (success) {
-            resultMessage =
-                    getString(
-                            R.string.backup_restored);
-
-        } else if (errorMessage == null
-                || errorMessage.trim().isEmpty()) {
-
-            resultMessage =
-                    getString(
-                            R.string.backup_restore_failed);
-
-        } else {
-            resultMessage =
-                    getString(
-                            R.string.backup_restore_failed)
-                            + "\n"
-                            + errorMessage;
-        }
+        int resultMessage =
+                success
+                        ? R.string.backup_restored
+                        : R.string.backup_restore_failed;
 
         Toast.makeText(
                 this,
                 resultMessage,
-                Toast.LENGTH_LONG)
+                Toast.LENGTH_SHORT)
                 .show();
 
         if (success
@@ -8961,22 +8944,50 @@ public class MainActivity extends Activity {
                     R.string.backup_creating);
 
             backupExecutor.execute(() -> {
-                boolean success;
+                int resultMessage =
+                        R.string.backup_failed;
+
+                boolean success =
+                        false;
 
                 try {
                     BackupManager.BackupSummary summary =
                             BackupManager.writeBackup(
                                     this,
-                                    uri);
+                                    uri,
+                                    () -> runOnUiThread(() -> {
+                                        if (isFinishing()
+                                                || isDestroyed()) {
+
+                                            return;
+                                        }
+
+                                        backupCreateButton.setText(
+                                                R.string.backup_verifying);
+                                    }));
 
                     saveLastBackupSummary(
                             summary);
 
-                    success = true;
+                    resultMessage =
+                            R.string.backup_created;
+
+                    success =
+                            true;
+
+                } catch (BackupManager.BackupVerificationException exception) {
+
+                    resultMessage =
+                            R.string.backup_not_confirmed;
 
                 } catch (Exception exception) {
-                    success = false;
+
+                    resultMessage =
+                            R.string.backup_failed;
                 }
+
+                int finalResultMessage =
+                        resultMessage;
 
                 boolean backupSucceeded =
                         success;
@@ -9001,10 +9012,8 @@ public class MainActivity extends Activity {
 
                     Toast.makeText(
                             this,
-                            backupSucceeded
-                                    ? R.string.backup_created
-                                    : R.string.backup_failed,
-                            Toast.LENGTH_LONG)
+                            finalResultMessage,
+                            Toast.LENGTH_SHORT)
                             .show();
                 });
             });
@@ -9025,9 +9034,6 @@ public class MainActivity extends Activity {
                                     uri);
 
                 } catch (Exception exception) {
-                    String errorMessage =
-                            getRestoreErrorMessage(
-                                    exception);
 
                     runOnUiThread(() -> {
                         if (isFinishing()
@@ -9038,11 +9044,8 @@ public class MainActivity extends Activity {
 
                         Toast.makeText(
                                 this,
-                                getString(
-                                        R.string.backup_restore_failed)
-                                        + "\n"
-                                        + errorMessage,
-                                Toast.LENGTH_LONG)
+                                R.string.backup_restore_failed,
+                                Toast.LENGTH_SHORT)
                                 .show();
                     });
 

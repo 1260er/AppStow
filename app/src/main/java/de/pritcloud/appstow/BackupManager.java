@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.SyncFailedException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,6 +55,19 @@ final class BackupManager {
 
     private static final long READ_RETRY_FINAL_MS =
             2500L;
+
+    static final class BackupVerificationException
+            extends IOException {
+
+        BackupVerificationException(
+                String message,
+                Throwable cause) {
+
+            super(
+                    message,
+                    cause);
+        }
+    }
 
     static final class BackupSummary {
 
@@ -95,6 +109,18 @@ final class BackupManager {
             Uri uri)
             throws IOException, JSONException {
 
+        return writeBackup(
+                context,
+                uri,
+                null);
+    }
+
+    static BackupSummary writeBackup(
+            Context context,
+            Uri uri,
+            Runnable onVerificationStarted)
+            throws IOException, JSONException {
+
         JSONObject backup =
                 createBackup(context);
 
@@ -134,6 +160,16 @@ final class BackupManager {
             } catch (SyncFailedException ignored) {
             }
         }
+
+        if (onVerificationStarted != null) {
+
+            onVerificationStarted.run();
+        }
+
+        verifyWrittenBackup(
+                context,
+                uri,
+                data);
 
         return summarizeBackup(
                 backup,
@@ -237,6 +273,60 @@ final class BackupManager {
                 favoriteCount,
                 appPackages.size(),
                 shortcuts.length());
+    }
+
+    private static void verifyWrittenBackup(
+            Context context,
+            Uri uri,
+            byte[] expectedData)
+            throws IOException {
+
+        IOException lastException =
+                null;
+
+        for (int attempt = 0;
+             attempt < READ_ATTEMPTS;
+             attempt++) {
+
+            try {
+                byte[] actualData =
+                        readBackupData(
+                                context,
+                                uri);
+
+                if (Arrays.equals(
+                        expectedData,
+                        actualData)) {
+
+                    return;
+                }
+
+                if (actualData.length == 0) {
+
+                    lastException =
+                            new IOException(
+                                    "Der Speicheranbieter liefert die neue Backup-Datei noch leer zurück.");
+
+                } else {
+
+                    lastException =
+                            new IOException(
+                                    "Der Speicheranbieter liefert noch nicht den vollständig geschriebenen Backup-Inhalt zurück.");
+                }
+
+            } catch (IOException exception) {
+
+                lastException =
+                        exception;
+            }
+
+            waitForProvider(
+                    attempt);
+        }
+
+        throw new BackupVerificationException(
+                "Backup konnte über den Speicheranbieter noch nicht bestätigt werden.",
+                lastException);
     }
 
     private static byte[] readBackupData(
