@@ -352,7 +352,7 @@ None found</string>
         <item quantity="other">%d custom shortcuts</item>
     </plurals>
     <string name="backup_created">Backup created.</string>
-    <string name="backup_not_confirmed">Backup not confirmed.</string>
+    <string name="backup_not_confirmed">Backup saved.</string>
     <string name="backup_failed">Backup failed.</string>
     <string name="backup_restore_failed">Restore failed.</string>
     <string name="backup_restore_title">Restore backup?</string>

@@ -249,6 +249,99 @@ public class BackupManagerTest {
     }
 
     @Test
+    public void retryWindowsStayWithinUiTargets()
+            throws Exception {
+
+        java.lang.reflect.Field writeAttemptsField =
+                BackupManager.class.getDeclaredField(
+                        "WRITE_VERIFY_ATTEMPTS");
+
+        writeAttemptsField.setAccessible(
+                true);
+
+        java.lang.reflect.Field writeDelaysField =
+                BackupManager.class.getDeclaredField(
+                        "WRITE_VERIFY_RETRY_DELAYS_MS");
+
+        writeDelaysField.setAccessible(
+                true);
+
+        java.lang.reflect.Field restoreAttemptsField =
+                BackupManager.class.getDeclaredField(
+                        "RESTORE_READ_ATTEMPTS");
+
+        restoreAttemptsField.setAccessible(
+                true);
+
+        java.lang.reflect.Field restoreDelaysField =
+                BackupManager.class.getDeclaredField(
+                        "RESTORE_RETRY_DELAYS_MS");
+
+        restoreDelaysField.setAccessible(
+                true);
+
+        int writeAttempts =
+                writeAttemptsField.getInt(
+                        null);
+
+        long[] writeDelays =
+                (long[]) writeDelaysField.get(
+                        null);
+
+        int restoreAttempts =
+                restoreAttemptsField.getInt(
+                        null);
+
+        long[] restoreDelays =
+                (long[]) restoreDelaysField.get(
+                        null);
+
+        long writeDelayTotal =
+                0L;
+
+        for (long delay :
+                writeDelays) {
+
+            writeDelayTotal +=
+                    delay;
+        }
+
+        long restoreDelayTotal =
+                0L;
+
+        for (long delay :
+                restoreDelays) {
+
+            restoreDelayTotal +=
+                    delay;
+        }
+
+        assertEquals(
+                3,
+                writeAttempts);
+
+        assertEquals(
+                writeAttempts - 1,
+                writeDelays.length);
+
+        assertEquals(
+                1000L,
+                writeDelayTotal);
+
+        assertEquals(
+                7,
+                restoreAttempts);
+
+        assertEquals(
+                restoreAttempts - 1,
+                restoreDelays.length);
+
+        assertEquals(
+                5000L,
+                restoreDelayTotal);
+    }
+
+    @Test
     public void legacyBackupWithoutSymbolsStillRestores()
             throws Exception {
 

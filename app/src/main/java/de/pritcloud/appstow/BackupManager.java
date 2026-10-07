@@ -41,20 +41,25 @@ final class BackupManager {
     private static final int MAX_BACKUP_BYTES =
             5 * 1024 * 1024;
 
-    private static final int READ_ATTEMPTS =
-            15;
+    private static final int WRITE_VERIFY_ATTEMPTS =
+            3;
 
-    private static final long READ_RETRY_SHORT_MS =
-            250L;
+    private static final long[] WRITE_VERIFY_RETRY_DELAYS_MS = {
+            250L,
+            750L
+    };
 
-    private static final long READ_RETRY_MEDIUM_MS =
-            750L;
+    private static final int RESTORE_READ_ATTEMPTS =
+            7;
 
-    private static final long READ_RETRY_LONG_MS =
-            1500L;
-
-    private static final long READ_RETRY_FINAL_MS =
-            2500L;
+    private static final long[] RESTORE_RETRY_DELAYS_MS = {
+            250L,
+            250L,
+            500L,
+            750L,
+            1250L,
+            2000L
+    };
 
     static final class BackupVerificationException
             extends IOException {
@@ -285,7 +290,7 @@ final class BackupManager {
                 null;
 
         for (int attempt = 0;
-             attempt < READ_ATTEMPTS;
+             attempt < WRITE_VERIFY_ATTEMPTS;
              attempt++) {
 
             try {
@@ -321,7 +326,9 @@ final class BackupManager {
             }
 
             waitForProvider(
-                    attempt);
+                    attempt,
+                    WRITE_VERIFY_ATTEMPTS,
+                    WRITE_VERIFY_RETRY_DELAYS_MS);
         }
 
         throw new BackupVerificationException(
@@ -392,7 +399,7 @@ final class BackupManager {
                 null;
 
         for (int attempt = 0;
-             attempt < READ_ATTEMPTS;
+             attempt < RESTORE_READ_ATTEMPTS;
              attempt++) {
 
             byte[] data;
@@ -409,7 +416,9 @@ final class BackupManager {
                         exception;
 
                 waitForProvider(
-                        attempt);
+                        attempt,
+                        RESTORE_READ_ATTEMPTS,
+                        RESTORE_RETRY_DELAYS_MS);
 
                 continue;
             }
@@ -423,7 +432,9 @@ final class BackupManager {
                                         + "noch nicht vollständig bereitgestellt.");
 
                 waitForProvider(
-                        attempt);
+                        attempt,
+                        RESTORE_READ_ATTEMPTS,
+                        RESTORE_RETRY_DELAYS_MS);
 
                 continue;
             }
@@ -443,7 +454,9 @@ final class BackupManager {
                         exception;
 
                 waitForProvider(
-                        attempt);
+                        attempt,
+                        RESTORE_READ_ATTEMPTS,
+                        RESTORE_RETRY_DELAYS_MS);
 
                 continue;
             }
@@ -475,7 +488,9 @@ final class BackupManager {
                         exception;
 
                 waitForProvider(
-                        attempt);
+                        attempt,
+                        RESTORE_READ_ATTEMPTS,
+                        RESTORE_RETRY_DELAYS_MS);
 
                 continue;
             }
@@ -506,42 +521,30 @@ final class BackupManager {
     }
 
     private static void waitForProvider(
-            int completedAttempt)
+            int completedAttempt,
+            int maxAttempts,
+            long[] retryDelaysMillis)
             throws IOException {
 
         if (completedAttempt
                 + 1
-                >= READ_ATTEMPTS) {
+                >= maxAttempts) {
 
             return;
         }
 
-        long delayMillis;
+        if (completedAttempt < 0
+                || completedAttempt
+                >= retryDelaysMillis.length) {
 
-        if (completedAttempt < 4) {
-
-            delayMillis =
-                    READ_RETRY_SHORT_MS;
-
-        } else if (completedAttempt < 8) {
-
-            delayMillis =
-                    READ_RETRY_MEDIUM_MS;
-
-        } else if (completedAttempt < 12) {
-
-            delayMillis =
-                    READ_RETRY_LONG_MS;
-
-        } else {
-
-            delayMillis =
-                    READ_RETRY_FINAL_MS;
+            throw new IOException(
+                    "Ungültige Retry-Konfiguration.");
         }
 
         try {
             Thread.sleep(
-                    delayMillis);
+                    retryDelaysMillis[
+                            completedAttempt]);
 
         } catch (InterruptedException exception) {
 

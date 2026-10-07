@@ -236,6 +236,8 @@ public class MainActivity extends Activity {
 
     private View backupManagement;
     private TextView backupCreateButton;
+    private View backupProgressContainer;
+    private TextView backupProgressText;
     private TextView backupLastSuccessDate;
     private View backupLastSuccessDetails;
     private TextView backupSummaryCategories;
@@ -461,6 +463,14 @@ public class MainActivity extends Activity {
 
         backupManagement =
                 findViewById(R.id.backupManagement);
+
+        backupProgressContainer =
+                findViewById(
+                        R.id.backupProgressContainer);
+
+        backupProgressText =
+                findViewById(
+                        R.id.backupProgressText);
 
         backupLastSuccessDate =
                 findViewById(
@@ -8940,8 +8950,11 @@ public class MainActivity extends Activity {
             backupCreateButton.setEnabled(
                     false);
 
-            backupCreateButton.setText(
+            backupProgressText.setText(
                     R.string.backup_creating);
+
+            backupProgressContainer.setVisibility(
+                    View.VISIBLE);
 
             backupExecutor.execute(() -> {
                 int resultMessage =
@@ -8962,7 +8975,7 @@ public class MainActivity extends Activity {
                                             return;
                                         }
 
-                                        backupCreateButton.setText(
+                                        backupProgressText.setText(
                                                 R.string.backup_verifying);
                                     }));
 
@@ -9002,8 +9015,8 @@ public class MainActivity extends Activity {
                     backupCreateButton.setEnabled(
                             true);
 
-                    backupCreateButton.setText(
-                            R.string.backup_create);
+                    backupProgressContainer.setVisibility(
+                            View.GONE);
 
                     if (backupSucceeded) {
 

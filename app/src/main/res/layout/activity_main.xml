@@ -340,6 +340,33 @@
                     android:text="@string/backup_create"
                     android:textStyle="bold" />
 
+                <LinearLayout
+                    android:id="@+id/backupProgressContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/spacing_sm"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:indeterminate="true" />
+
+                    <TextView
+                        android:id="@+id/backupProgressText"
+                        style="@style/UiBodyText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:text="@string/backup_creating"
+                        android:textColor="@color/ui_text_secondary" />
+
+                </LinearLayout>
+
                 <TextView
                     android:id="@+id/backupRestoreButton"
                     style="@style/UiBodyText"
