@@ -153,18 +153,16 @@ final class ShortcutAdapter
                                 parent,
                                 false);
 
-        UiHandedness.applyContainer(
-                parent.getContext(),
-                view);
+        if (viewType == TYPE_GRID) {
 
-        if (viewType != TYPE_GRID) {
-
-            UiHandedness.applyTextEdge(
+            UiHandedness.applyContainer(
                     parent.getContext(),
-                    view.findViewById(
-                            R.id.shortcutName),
-                    view.findViewById(
-                            R.id.shortcutSubtitle));
+                    view);
+
+        } else {
+
+            UiHandedness.keepListItemLayout(
+                    view);
         }
 
         return new ViewHolder(

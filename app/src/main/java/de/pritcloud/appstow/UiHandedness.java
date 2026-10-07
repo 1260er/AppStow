@@ -42,6 +42,23 @@ final class UiHandedness {
                         context));
     }
 
+    static void keepListItemLayout(
+            View view) {
+
+        if (view == null) {
+            return;
+        }
+
+        /*
+         * Einzelne Listeneinträge bleiben unabhängig von
+         * der gewählten Bedienseite in der gewohnten
+         * Links-nach-Rechts-Anordnung. Nur übergeordnete
+         * Bedienelemente werden gespiegelt.
+         */
+        view.setLayoutDirection(
+                View.LAYOUT_DIRECTION_LTR);
+    }
+
     static void applyTextEdge(
             Context context,
             TextView... textViews) {

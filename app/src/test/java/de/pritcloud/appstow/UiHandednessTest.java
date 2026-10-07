@@ -146,6 +146,38 @@ public class UiHandednessTest {
     }
 
     @Test
+    public void listItemLayoutRemainsLeftToRightOnBothControlSides() {
+
+        View row =
+                new View(
+                        context);
+
+        UiHandedness.keepListItemLayout(
+                row);
+
+        assertEquals(
+                View.LAYOUT_DIRECTION_LTR,
+                row.getLayoutDirection());
+
+        new UiSettingsStore(
+                context)
+                .save(
+                        new UiSettingsStore.Settings(
+                                UiSettingsStore.StartBehavior.NEVER,
+                                UiSettingsStore.ControlSide.LEFT));
+
+        row.setLayoutDirection(
+                View.LAYOUT_DIRECTION_RTL);
+
+        UiHandedness.keepListItemLayout(
+                row);
+
+        assertEquals(
+                View.LAYOUT_DIRECTION_LTR,
+                row.getLayoutDirection());
+    }
+
+    @Test
     public void textEdgeUsesPhysicalOppositeOfControls() {
 
         android.widget.TextView textView =
