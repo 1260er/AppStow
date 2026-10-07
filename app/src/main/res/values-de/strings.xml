@@ -327,12 +327,31 @@ Keines gefunden</string>
     <string name="nav_backup">Backup &amp; Wiederherstellen</string>
     <string name="backup_create">Backup erstellen</string>
     <string name="backup_restore">Backup wiederherstellen</string>
-    <string name="backup_description">Sichert Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts, Sortierreihenfolgen und Anzeigeeinstellungen als JSON-Datei. Web-App-Anmeldungen, Cookies und Android-Berechtigungen sind nicht enthalten.</string>
+    <string name="backup_description">Sichert Kategorien, App-Zuweisungen, Favoriten, eigene Shortcuts, Sortierreihenfolgen und Einstellungen in einer verschlüsselten Sicherungsdatei. Nutzungsstatistiken, Web-App-Anmeldungen, Cookies und Android-Berechtigungen sind nicht enthalten.</string>
+    <string name="backup_last_success_title">Letzte erfolgreiche Sicherung</string>
+    <string name="backup_last_success_none">Noch keine erfolgreiche Sicherung</string>
+    <string name="backup_last_success_value">%1$s · %2$s</string>
+    <plurals name="backup_summary_categories">
+        <item quantity="one">%d Kategorie</item>
+        <item quantity="other">%d Kategorien</item>
+    </plurals>
+    <plurals name="backup_summary_favorites">
+        <item quantity="one">%d Favorit</item>
+        <item quantity="other">%d Favoriten</item>
+    </plurals>
+    <plurals name="backup_summary_apps">
+        <item quantity="one">%d App erfasst</item>
+        <item quantity="other">%d Apps erfasst</item>
+    </plurals>
+    <plurals name="backup_summary_shortcuts">
+        <item quantity="one">%d eigener Shortcut</item>
+        <item quantity="other">%d eigene Shortcuts</item>
+    </plurals>
     <string name="backup_created">Backup erstellt.</string>
     <string name="backup_failed">Backup fehlgeschlagen.</string>
     <string name="backup_restore_failed">Wiederherstellung fehlgeschlagen.</string>
     <string name="backup_restore_title">Backup wiederherstellen?</string>
-    <string name="backup_restore_message">Die vorhandenen Kategorien, App-Zuweisungen, Favoriten, eigenen Shortcuts, Sortierreihenfolgen und Anzeigeeinstellungen werden durch das Backup ersetzt.</string>
+    <string name="backup_restore_message">Die Einstellungen und Anordnungen aus der ausgewählten Sicherung ersetzen den aktuellen Zustand.\n\nNutzungsstatistiken werden vollständig zurückgesetzt. Nicht mehr installierte Apps werden aus Favoriten, Kategoriezuweisungen und App-Reihenfolgen entfernt. Eigene Shortcuts und Kategorien bleiben erhalten.</string>
     <string name="backup_restore_confirm">Wiederherstellen</string>
     <string name="backup_restored">Backup wiederhergestellt.</string>
 

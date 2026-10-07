@@ -56,10 +56,42 @@ final class BackupManager {
     private static final long READ_RETRY_FINAL_MS =
             2500L;
 
+    static final class BackupSummary {
+
+        final long completedAtMillis;
+        final int categoryCount;
+        final int favoriteCount;
+        final int appCount;
+        final int customShortcutCount;
+
+        BackupSummary(
+                long completedAtMillis,
+                int categoryCount,
+                int favoriteCount,
+                int appCount,
+                int customShortcutCount) {
+
+            this.completedAtMillis =
+                    completedAtMillis;
+
+            this.categoryCount =
+                    categoryCount;
+
+            this.favoriteCount =
+                    favoriteCount;
+
+            this.appCount =
+                    appCount;
+
+            this.customShortcutCount =
+                    customShortcutCount;
+        }
+    }
+
     private BackupManager() {
     }
 
-    static void writeBackup(
+    static BackupSummary writeBackup(
             Context context,
             Uri uri)
             throws IOException, JSONException {
@@ -108,6 +140,109 @@ final class BackupManager {
                 context,
                 uri,
                 data);
+
+        return summarizeBackup(
+                backup,
+                System.currentTimeMillis());
+    }
+
+    static BackupSummary summarizeBackup(
+            JSONObject backup,
+            long completedAtMillis)
+            throws JSONException {
+
+        JSONArray categories =
+                backup.getJSONArray(
+                        "categories");
+
+        JSONObject assignments =
+                backup.getJSONObject(
+                        "categoryAssignments");
+
+        JSONArray favoritePackages =
+                backup.getJSONArray(
+                        "favoritePackages");
+
+        JSONArray shortcuts =
+                backup.getJSONArray(
+                        "shortcuts");
+
+        JSONObject sectionItemOrder =
+                backup.getJSONObject(
+                        "sectionItemOrder");
+
+        Set<String> appPackages =
+                new HashSet<>();
+
+        Iterator<String> assignmentKeys =
+                assignments.keys();
+
+        while (assignmentKeys.hasNext()) {
+
+            appPackages.add(
+                    assignmentKeys.next());
+        }
+
+        for (int i = 0;
+             i < favoritePackages.length();
+             i++) {
+
+            appPackages.add(
+                    favoritePackages.getString(
+                            i));
+        }
+
+        Iterator<String> orderKeys =
+                sectionItemOrder.keys();
+
+        while (orderKeys.hasNext()) {
+
+            JSONArray itemIds =
+                    sectionItemOrder.getJSONArray(
+                            orderKeys.next());
+
+            for (int i = 0;
+                 i < itemIds.length();
+                 i++) {
+
+                String itemId =
+                        itemIds.getString(
+                                i);
+
+                if (itemId.startsWith(
+                        "app:")
+                        && itemId.length()
+                        > "app:".length()) {
+
+                    appPackages.add(
+                            itemId.substring(
+                                    "app:".length()));
+                }
+            }
+        }
+
+        int favoriteCount =
+                favoritePackages.length();
+
+        for (int i = 0;
+             i < shortcuts.length();
+             i++) {
+
+            if (shortcuts.getJSONObject(i)
+                    .optBoolean(
+                            "favorite",
+                            false)) {
+
+                favoriteCount++;
+            }
+        }
+
+        return new BackupSummary(
+                completedAtMillis,
+                categories.length(),
+                favoriteCount,
+                appPackages.size(),
+                shortcuts.length());
     }
 
     private static void verifyWrittenBackup(

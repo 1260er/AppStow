@@ -85,6 +85,22 @@ public class MainActivity extends Activity {
             "restore_result_success";
     private static final String KEY_RESTORE_RESULT_MESSAGE =
             "restore_result_message";
+
+    private static final String KEY_LAST_BACKUP_AT =
+            "last_backup_at";
+
+    private static final String KEY_LAST_BACKUP_CATEGORIES =
+            "last_backup_categories";
+
+    private static final String KEY_LAST_BACKUP_FAVORITES =
+            "last_backup_favorites";
+
+    private static final String KEY_LAST_BACKUP_APPS =
+            "last_backup_apps";
+
+    private static final String KEY_LAST_BACKUP_SHORTCUTS =
+            "last_backup_shortcuts";
+
     private static final String ACTION_RESTORE_FINISHED =
             MainActivity.class.getName()
                     + ".action.RESTORE_FINISHED";
@@ -219,6 +235,12 @@ public class MainActivity extends Activity {
     private boolean uiRecreationRequested;
 
     private View backupManagement;
+    private TextView backupLastSuccessDate;
+    private View backupLastSuccessDetails;
+    private TextView backupSummaryCategories;
+    private TextView backupSummaryFavorites;
+    private TextView backupSummaryApps;
+    private TextView backupSummaryShortcuts;
 
     private ViewStub helpStub;
     private ScrollView helpManagement;
@@ -438,6 +460,30 @@ public class MainActivity extends Activity {
 
         backupManagement =
                 findViewById(R.id.backupManagement);
+
+        backupLastSuccessDate =
+                findViewById(
+                        R.id.backupLastSuccessDate);
+
+        backupLastSuccessDetails =
+                findViewById(
+                        R.id.backupLastSuccessDetails);
+
+        backupSummaryCategories =
+                findViewById(
+                        R.id.backupSummaryCategories);
+
+        backupSummaryFavorites =
+                findViewById(
+                        R.id.backupSummaryFavorites);
+
+        backupSummaryApps =
+                findViewById(
+                        R.id.backupSummaryApps);
+
+        backupSummaryShortcuts =
+                findViewById(
+                        R.id.backupSummaryShortcuts);
 
         helpStub =
                 findViewById(R.id.helpStub);
@@ -8491,11 +8537,137 @@ public class MainActivity extends Activity {
         pageTitle.setText(
                 R.string.nav_backup);
 
+        refreshBackupSummary();
+
         backupManagement.setVisibility(
                 View.VISIBLE);
 
         drawerLayout.closeDrawer(
                 getNavigationDrawerGravity());
+    }
+
+    private void saveLastBackupSummary(
+            BackupManager.BackupSummary summary) {
+
+        getSharedPreferences(
+                        BACKUP_RUNTIME_PREFS,
+                        MODE_PRIVATE)
+                .edit()
+                .putLong(
+                        KEY_LAST_BACKUP_AT,
+                        summary.completedAtMillis)
+                .putInt(
+                        KEY_LAST_BACKUP_CATEGORIES,
+                        summary.categoryCount)
+                .putInt(
+                        KEY_LAST_BACKUP_FAVORITES,
+                        summary.favoriteCount)
+                .putInt(
+                        KEY_LAST_BACKUP_APPS,
+                        summary.appCount)
+                .putInt(
+                        KEY_LAST_BACKUP_SHORTCUTS,
+                        summary.customShortcutCount)
+                .apply();
+    }
+
+    private void refreshBackupSummary() {
+
+        SharedPreferences preferences =
+                getSharedPreferences(
+                        BACKUP_RUNTIME_PREFS,
+                        MODE_PRIVATE);
+
+        long timestamp =
+                preferences.getLong(
+                        KEY_LAST_BACKUP_AT,
+                        0L);
+
+        if (timestamp <= 0L) {
+
+            backupLastSuccessDate.setText(
+                    R.string.backup_last_success_none);
+
+            backupLastSuccessDetails.setVisibility(
+                    View.GONE);
+
+            return;
+        }
+
+        java.util.Date date =
+                new java.util.Date(
+                        timestamp);
+
+        String dateText =
+                android.text.format.DateFormat
+                        .getMediumDateFormat(
+                                this)
+                        .format(
+                                date);
+
+        String timeText =
+                android.text.format.DateFormat
+                        .getTimeFormat(
+                                this)
+                        .format(
+                                date);
+
+        backupLastSuccessDate.setText(
+                getString(
+                        R.string.backup_last_success_value,
+                        dateText,
+                        timeText));
+
+        int categories =
+                preferences.getInt(
+                        KEY_LAST_BACKUP_CATEGORIES,
+                        0);
+
+        int favorites =
+                preferences.getInt(
+                        KEY_LAST_BACKUP_FAVORITES,
+                        0);
+
+        int apps =
+                preferences.getInt(
+                        KEY_LAST_BACKUP_APPS,
+                        0);
+
+        int shortcuts =
+                preferences.getInt(
+                        KEY_LAST_BACKUP_SHORTCUTS,
+                        0);
+
+        backupSummaryCategories.setText(
+                getResources()
+                        .getQuantityString(
+                                R.plurals.backup_summary_categories,
+                                categories,
+                                categories));
+
+        backupSummaryFavorites.setText(
+                getResources()
+                        .getQuantityString(
+                                R.plurals.backup_summary_favorites,
+                                favorites,
+                                favorites));
+
+        backupSummaryApps.setText(
+                getResources()
+                        .getQuantityString(
+                                R.plurals.backup_summary_apps,
+                                apps,
+                                apps));
+
+        backupSummaryShortcuts.setText(
+                getResources()
+                        .getQuantityString(
+                                R.plurals.backup_summary_shortcuts,
+                                shortcuts,
+                                shortcuts));
+
+        backupLastSuccessDetails.setVisibility(
+                View.VISIBLE);
     }
 
     private void createBackup() {
@@ -8782,9 +8954,13 @@ public class MainActivity extends Activity {
                 boolean success;
 
                 try {
-                    BackupManager.writeBackup(
-                            this,
-                            uri);
+                    BackupManager.BackupSummary summary =
+                            BackupManager.writeBackup(
+                                    this,
+                                    uri);
+
+                    saveLastBackupSummary(
+                            summary);
 
                     success = true;
 
@@ -8800,6 +8976,11 @@ public class MainActivity extends Activity {
                             || isDestroyed()) {
 
                         return;
+                    }
+
+                    if (backupSucceeded) {
+
+                        refreshBackupSummary();
                     }
 
                     Toast.makeText(

@@ -327,12 +327,31 @@ None found</string>
     <string name="nav_backup">Backup &amp; Restore</string>
     <string name="backup_create">Create backup</string>
     <string name="backup_restore">Restore backup</string>
-    <string name="backup_description">Back up categories, app assignments, favorites, custom shortcuts, sorting orders and display settings as a JSON file. Web app sessions, cookies and Android permissions are not included.</string>
+    <string name="backup_description">Back up categories, app assignments, favorites, custom shortcuts, sorting orders and settings in an encrypted backup file. Usage statistics, web app sessions, cookies and Android permissions are not included.</string>
+    <string name="backup_last_success_title">Last successful backup</string>
+    <string name="backup_last_success_none">No successful backup yet</string>
+    <string name="backup_last_success_value">%1$s · %2$s</string>
+    <plurals name="backup_summary_categories">
+        <item quantity="one">%d category</item>
+        <item quantity="other">%d categories</item>
+    </plurals>
+    <plurals name="backup_summary_favorites">
+        <item quantity="one">%d favorite</item>
+        <item quantity="other">%d favorites</item>
+    </plurals>
+    <plurals name="backup_summary_apps">
+        <item quantity="one">%d app recorded</item>
+        <item quantity="other">%d apps recorded</item>
+    </plurals>
+    <plurals name="backup_summary_shortcuts">
+        <item quantity="one">%d custom shortcut</item>
+        <item quantity="other">%d custom shortcuts</item>
+    </plurals>
     <string name="backup_created">Backup created.</string>
     <string name="backup_failed">Backup failed.</string>
     <string name="backup_restore_failed">Restore failed.</string>
     <string name="backup_restore_title">Restore backup?</string>
-    <string name="backup_restore_message">The existing categories, app assignments, favorites, custom shortcuts, sorting orders and display settings will be replaced by the backup.</string>
+    <string name="backup_restore_message">The settings and arrangements from the selected backup replace the current state.\n\nUsage statistics are completely reset. Apps that are no longer installed are removed from favorites, category assignments and app orders. Custom shortcuts and categories remain.</string>
     <string name="backup_restore_confirm">Restore</string>
     <string name="backup_restored">Backup restored.</string>
 
