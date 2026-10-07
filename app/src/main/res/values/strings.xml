@@ -360,10 +360,10 @@ None found</string>
     <string name="ui_control_side_description">Place frequently used controls on the side that is easier to reach with one hand.</string>
     <string name="ui_control_side_right">Right</string>
     <string name="ui_control_side_left">Left</string>
-    <string name="ui_start_behavior_title">Open favorites automatically</string>
+    <string name="ui_start_behavior_title">Open favorites</string>
     <string name="ui_start_behavior_description">Choose when AppStow should automatically open Favorites.</string>
     <string name="ui_start_never">Never</string>
-    <string name="ui_start_once">Only when AppStow starts</string>
-    <string name="ui_start_always">Whenever AppStow returns to the foreground</string>
+    <string name="ui_start_once">On start</string>
+    <string name="ui_start_always">Always</string>
 
 </resources>

@@ -2,6 +2,7 @@ package de.pritcloud.appstow;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.RadioGroup;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
@@ -74,6 +75,50 @@ public class UiAppearancePageTest {
                                 activity.findViewById(
                                                 R.id.uiStartBehaviorGroup)
                                         .getVisibility());
+
+                        RadioGroup themeGroup =
+                                activity.findViewById(
+                                        R.id.uiThemeGroup);
+
+                        RadioGroup languageGroup =
+                                activity.findViewById(
+                                        R.id.uiLanguageGroup);
+
+                        RadioGroup controlSideGroup =
+                                activity.findViewById(
+                                        R.id.uiControlSideGroup);
+
+                        RadioGroup startBehaviorGroup =
+                                activity.findViewById(
+                                        R.id.uiStartBehaviorGroup);
+
+                        assertEquals(
+                                RadioGroup.HORIZONTAL,
+                                themeGroup.getOrientation());
+
+                        assertEquals(
+                                RadioGroup.HORIZONTAL,
+                                languageGroup.getOrientation());
+
+                        assertEquals(
+                                RadioGroup.HORIZONTAL,
+                                controlSideGroup.getOrientation());
+
+                        assertEquals(
+                                RadioGroup.HORIZONTAL,
+                                startBehaviorGroup.getOrientation());
+
+                        assertEquals(
+                                R.id.uiControlSideLeft,
+                                controlSideGroup
+                                        .getChildAt(0)
+                                        .getId());
+
+                        assertEquals(
+                                R.id.uiControlSideRight,
+                                controlSideGroup
+                                        .getChildAt(1)
+                                        .getId());
                     });
         }
     }
