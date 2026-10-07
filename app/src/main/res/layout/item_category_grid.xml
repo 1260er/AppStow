@@ -19,7 +19,9 @@
             android:id="@+id/categorySymbol"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:alpha="1"
             android:gravity="center"
+            android:textColor="@color/ui_text_primary"
             android:includeFontPadding="false"
             android:maxLines="1"
             android:textSize="33sp" />

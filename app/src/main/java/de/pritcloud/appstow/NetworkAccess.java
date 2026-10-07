@@ -48,25 +48,27 @@ final class NetworkAccess {
     static void showNetworkHelp(
             Activity activity) {
 
-        new AlertDialog.Builder(activity)
-                .setTitle(
-                        R.string.webapp_network_title)
-                .setMessage(
-                        R.string.webapp_network_message)
-                .setPositiveButton(
-                        R.string.webapp_network_open_network_settings,
-                        (dialog, which) ->
-                                openNetworkSettings(
-                                        activity))
-                .setNeutralButton(
-                        R.string.webapp_network_open_settings,
-                        (dialog, which) ->
-                                openAppSettings(
-                                        activity))
-                .setNegativeButton(
-                        R.string.action_cancel,
-                        null)
-                .show();
+        UiDialogHandedness.show(
+                activity,
+                new AlertDialog.Builder(activity)
+                        .setTitle(
+                                R.string.webapp_network_title)
+                        .setMessage(
+                                R.string.webapp_network_message)
+                        .setPositiveButton(
+                                R.string.webapp_network_open_network_settings,
+                                (dialog, which) ->
+                                        openNetworkSettings(
+                                                activity))
+                        .setNeutralButton(
+                                R.string.webapp_network_open_settings,
+                                (dialog, which) ->
+                                        openAppSettings(
+                                                activity))
+                        .setNegativeButton(
+                                R.string.action_cancel,
+                                null)
+                        .create());
     }
 
     static void openAppSettings(

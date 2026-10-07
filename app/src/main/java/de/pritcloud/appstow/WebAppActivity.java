@@ -2239,6 +2239,10 @@ public class WebAppActivity extends Activity {
         });
 
         dialog.show();
+
+        UiDialogHandedness.apply(
+                this,
+                dialog);
     }
 
     private void dismissErrorDialog() {

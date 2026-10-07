@@ -2219,7 +2219,9 @@ public class MainActivity extends Activity {
                 getString(R.string.grid_columns_5)
         };
 
-        new AlertDialog.Builder(this)
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
                 .setTitle(R.string.grid_columns_title)
                 .setSingleChoiceItems(
                         choices,
@@ -2242,7 +2244,7 @@ public class MainActivity extends Activity {
                 .setNegativeButton(
                         R.string.action_cancel,
                         null)
-                .show();
+                .create());
     }
 
     private int getSectionGridColumns(
@@ -2282,7 +2284,9 @@ public class MainActivity extends Activity {
                 getString(R.string.grid_columns_5)
         };
 
-        new AlertDialog.Builder(this)
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
                 .setTitle(R.string.grid_columns_title)
                 .setSingleChoiceItems(
                         choices,
@@ -2320,7 +2324,7 @@ public class MainActivity extends Activity {
                 .setNegativeButton(
                         R.string.action_cancel,
                         null)
-                .show();
+                .create());
     }
 
     private void openGridSection(
@@ -2917,7 +2921,9 @@ public class MainActivity extends Activity {
                 STATISTICS_TOP_LIMIT_ALL
         };
 
-        new AlertDialog.Builder(this)
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
                 .setTitle(
                         R.string.statistics_limit_title)
                 .setSingleChoiceItems(
@@ -2941,7 +2947,7 @@ public class MainActivity extends Activity {
                 .setNegativeButton(
                         R.string.action_cancel,
                         null)
-                .show();
+                .create());
     }
 
     private void showStatisticsPeriodDialog() {
@@ -2963,7 +2969,9 @@ public class MainActivity extends Activity {
                 UsageStatisticsStore.Period.ONE_YEAR
         };
 
-        new AlertDialog.Builder(this)
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
                 .setTitle(
                         R.string.statistics_period_title)
                 .setSingleChoiceItems(
@@ -2988,7 +2996,7 @@ public class MainActivity extends Activity {
                 .setNegativeButton(
                         R.string.action_cancel,
                         null)
-                .show();
+                .create());
     }
 
     private void showStatisticsResetDialog() {
@@ -4074,6 +4082,10 @@ public class MainActivity extends Activity {
                         destructive
                                 ? dangerColor
                                 : neutralColor);
+
+        UiDialogHandedness.apply(
+                this,
+                dialog);
     }
 
     private void showEmojiPicker(
@@ -4434,6 +4446,10 @@ public class MainActivity extends Activity {
         }
 
         dialog.show();
+
+        UiDialogHandedness.apply(
+                this,
+                dialog);
 
         if (restoredPosition
                 != RecyclerView.NO_POSITION) {
@@ -6601,7 +6617,9 @@ public class MainActivity extends Activity {
                         ? current.dayStartHour
                         : current.eveningStartHour;
 
-        new AlertDialog.Builder(this)
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
                 .setTitle(
                         dayStart
                                 ? R.string.sorting_day_start_title
@@ -6658,7 +6676,7 @@ public class MainActivity extends Activity {
                 .setNegativeButton(
                         R.string.action_cancel,
                         null)
-                .show();
+                .create());
     }
 
     private void showAutomaticFavoriteCountDialog() {
@@ -6684,7 +6702,9 @@ public class MainActivity extends Activity {
                         ? current.automaticFavoriteCount - 3
                         : -1;
 
-        new AlertDialog.Builder(this)
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
                 .setTitle(
                         R.string.sorting_favorite_count_title)
                 .setSingleChoiceItems(
@@ -6723,7 +6743,7 @@ public class MainActivity extends Activity {
                 .setNegativeButton(
                         R.string.action_cancel,
                         null)
-                .show();
+                .create());
     }
 
     private void showSortingSuggestionIntervalDialog() {
@@ -6769,7 +6789,9 @@ public class MainActivity extends Activity {
             }
         }
 
-        new AlertDialog.Builder(this)
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
                 .setTitle(
                         R.string.sorting_suggestion_interval_title)
                 .setSingleChoiceItems(
@@ -6805,7 +6827,7 @@ public class MainActivity extends Activity {
                 .setNegativeButton(
                         R.string.action_cancel,
                         null)
-                .show();
+                .create());
     }
 
     private void requestSortingSuggestionCheckNow() {
@@ -6901,13 +6923,15 @@ public class MainActivity extends Activity {
 
             if (explicitCheck) {
 
-                new AlertDialog.Builder(this)
-                        .setMessage(
-                                R.string.sorting_suggestion_up_to_date)
-                        .setPositiveButton(
-                                android.R.string.ok,
-                                null)
-                        .show();
+                UiDialogHandedness.show(
+                        this,
+                        new AlertDialog.Builder(this)
+                                .setMessage(
+                                        R.string.sorting_suggestion_up_to_date)
+                                .setPositiveButton(
+                                        android.R.string.ok,
+                                        null)
+                                .create());
             }
 
             return;
@@ -6921,24 +6945,26 @@ public class MainActivity extends Activity {
             return;
         }
 
-        new AlertDialog.Builder(this)
-                .setTitle(
-                        R.string.sorting_suggestion_available_title)
-                .setMessage(
-                        R.string.sorting_suggestion_available_message)
-                .setPositiveButton(
-                        R.string.sorting_suggestion_show,
-                        (dialog, which) ->
-                                showSortingSuggestionPreview(
-                                        plan))
-                .setNeutralButton(
-                        R.string.sorting_suggestion_skip,
-                        null)
-                .setNegativeButton(
-                        R.string.sorting_suggestion_disable,
-                        (dialog, which) ->
-                                disableSortingSuggestions())
-                .show();
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.sorting_suggestion_available_title)
+                        .setMessage(
+                                R.string.sorting_suggestion_available_message)
+                        .setPositiveButton(
+                                R.string.sorting_suggestion_show,
+                                (dialog, which) ->
+                                        showSortingSuggestionPreview(
+                                                plan))
+                        .setNeutralButton(
+                                R.string.sorting_suggestion_skip,
+                                null)
+                        .setNegativeButton(
+                                R.string.sorting_suggestion_disable,
+                                (dialog, which) ->
+                                        disableSortingSuggestions())
+                        .create());
     }
 
     private void disableSortingSuggestions() {

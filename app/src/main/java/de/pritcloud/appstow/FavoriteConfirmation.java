@@ -52,6 +52,10 @@ final class FavoriteConfirmation {
                             AlertDialog.BUTTON_POSITIVE)
                     .setTextColor(
                             dangerColor);
+
+            UiDialogHandedness.apply(
+                    context,
+                    dialog);
         });
 
         dialog.show();
