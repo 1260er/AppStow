@@ -2392,6 +2392,21 @@ public class MainActivity extends Activity {
         }
 
         /*
+         * Bei einer echten Rückkehr aus dem Hintergrund
+         * muss zuerst die Übersicht sichtbar werden.
+         * Sonst würde die Favoriten-Auswahl zwar intern
+         * aktualisiert, während z. B. Statistik oder
+         * Shortcut-Verwaltung sichtbar bleiben.
+         *
+         * Activity-Recreation erreicht diesen Pfad nicht,
+         * weil onStop() bei isChangingConfigurations()
+         * stoppedForBackground nicht setzt.
+         */
+        if (returningFromBackground) {
+            showOverview();
+        }
+
+        /*
          * Dieser Zugriff beeinflusst ausschließlich
          * die Sortierbewertung. Sichtbare Statistik-
          * Zähler und Gesamtstarts bleiben unverändert.

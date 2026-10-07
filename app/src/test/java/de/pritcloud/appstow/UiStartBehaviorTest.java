@@ -121,6 +121,88 @@ public class UiStartBehaviorTest {
         }
     }
 
+    @Test
+    public void alwaysForegroundLeavesOtherPagesAndOpensFavorites() {
+
+        save(
+                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND);
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navStatistics)
+                                .performClick();
+
+                        assertEquals(
+                                "statistics",
+                                privateField(
+                                        activity,
+                                        "currentPage",
+                                        String.class));
+                    });
+
+            scenario.moveToState(
+                    Lifecycle.State.CREATED);
+
+            scenario.moveToState(
+                    Lifecycle.State.RESUMED);
+
+            scenario.onActivity(
+                    activity ->
+                            assertEquals(
+                                    "overview",
+                                    privateField(
+                                            activity,
+                                            "currentPage",
+                                            String.class)));
+
+            assertEquals(
+                    2,
+                    favoriteAccessCount(
+                            scenario));
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navShortcuts)
+                                .performClick();
+
+                        assertEquals(
+                                "shortcuts",
+                                privateField(
+                                        activity,
+                                        "currentPage",
+                                        String.class));
+                    });
+
+            scenario.moveToState(
+                    Lifecycle.State.CREATED);
+
+            scenario.moveToState(
+                    Lifecycle.State.RESUMED);
+
+            scenario.onActivity(
+                    activity ->
+                            assertEquals(
+                                    "overview",
+                                    privateField(
+                                            activity,
+                                            "currentPage",
+                                            String.class)));
+
+            assertEquals(
+                    3,
+                    favoriteAccessCount(
+                            scenario));
+        }
+    }
+
     private void save(
             UiSettingsStore.StartBehavior behavior) {
 
