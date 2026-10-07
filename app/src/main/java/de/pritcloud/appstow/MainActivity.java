@@ -52,6 +52,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONObject;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,6 +68,11 @@ public class MainActivity extends Activity {
 
     private static final int DEFAULT_STATISTICS_TOP_LIMIT = 10;
     private static final int STATISTICS_TOP_LIMIT_ALL = -1;
+
+    private static final DateTimeFormatter BACKUP_FILE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern(
+                    "yyyyMMdd-HHmmss",
+                    Locale.ROOT);
 
     private static final int REQUEST_CREATE_BACKUP = 1001;
     private static final int REQUEST_RESTORE_BACKUP = 1002;
@@ -8502,9 +8509,16 @@ public class MainActivity extends Activity {
         intent.setType(
                 "application/json");
 
+        String backupFileName =
+                "AppStow-backup-"
+                        + LocalDateTime.now()
+                                .format(
+                                        BACKUP_FILE_TIME_FORMAT)
+                        + ".json";
+
         intent.putExtra(
                 Intent.EXTRA_TITLE,
-                "AppStow-backup.json");
+                backupFileName);
 
         try {
             startActivityForResult(

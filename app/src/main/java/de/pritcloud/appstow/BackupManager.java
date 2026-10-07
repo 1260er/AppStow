@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.SyncFailedException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,11 +41,20 @@ final class BackupManager {
     private static final int MAX_BACKUP_BYTES =
             5 * 1024 * 1024;
 
-    private static final int READ_EMPTY_ATTEMPTS =
-            5;
+    private static final int READ_ATTEMPTS =
+            15;
 
-    private static final long READ_EMPTY_DELAY_MS =
+    private static final long READ_RETRY_SHORT_MS =
             250L;
+
+    private static final long READ_RETRY_MEDIUM_MS =
+            750L;
+
+    private static final long READ_RETRY_LONG_MS =
+            1500L;
+
+    private static final long READ_RETRY_FINAL_MS =
+            2500L;
 
     private BackupManager() {
     }
@@ -70,7 +80,7 @@ final class BackupManager {
                 context.getContentResolver()
                         .openFileDescriptor(
                                 uri,
-                                "rwt");
+                                "w");
 
         if (descriptor == null) {
             throw new IOException(
@@ -93,6 +103,65 @@ final class BackupManager {
             } catch (SyncFailedException ignored) {
             }
         }
+
+        verifyWrittenBackup(
+                context,
+                uri,
+                data);
+    }
+
+    private static void verifyWrittenBackup(
+            Context context,
+            Uri uri,
+            byte[] expectedData)
+            throws IOException {
+
+        IOException lastException =
+                null;
+
+        for (int attempt = 0;
+             attempt < READ_ATTEMPTS;
+             attempt++) {
+
+            try {
+                byte[] actualData =
+                        readBackupData(
+                                context,
+                                uri);
+
+                if (Arrays.equals(
+                        expectedData,
+                        actualData)) {
+
+                    return;
+                }
+
+                if (actualData.length == 0) {
+
+                    lastException =
+                            new IOException(
+                                    "Der Speicheranbieter liefert die neue Backup-Datei noch leer zurück.");
+
+                } else {
+
+                    lastException =
+                            new IOException(
+                                    "Der Speicheranbieter liefert noch nicht den vollständig geschriebenen Backup-Inhalt zurück.");
+                }
+
+            } catch (IOException exception) {
+
+                lastException =
+                        exception;
+            }
+
+            waitForProvider(
+                    attempt);
+        }
+
+        throw new IOException(
+                "Backup wurde geschrieben, konnte über den gewählten Speicheranbieter aber nicht zuverlässig zurückgelesen werden.",
+                lastException);
     }
 
     private static byte[] readBackupData(
@@ -146,77 +215,111 @@ final class BackupManager {
             throws IOException, JSONException {
 
         /*
-         * WICHTIG: Diese Wiederholungen nicht entfernen.
-         * Einige Dokument-/Cloud-Provider stellen eine neu geschriebene
-         * Datei bereits bereit, obwohl deren Inhalt kurzzeitig noch leer
-         * oder unvollständig ist. Das war bereits bei Backup v2 relevant.
+         * Cloud-/DocumentsProvider können kurzzeitig einen leeren,
+         * unvollständigen oder noch gecachten Stand liefern.
          *
-         * Bei v3 kann ein unvollständiger Inhalt zusätzlich wie ungültiges
-         * JSON oder wie ein fehlgeschlagener GCM-Tag aussehen. Deshalb
-         * werden sowohl IO- als auch JSON-/Entschlüsselungsfehler in diesem
-         * kurzen Zeitfenster erneut versucht.
+         * Deshalb wird adaptiv erneut gelesen. Eindeutig falsche
+         * AppStow-Formatversionen werden dagegen sofort abgelehnt.
+         * Sobald ein Payload erfolgreich entschlüsselt wurde, gilt
+         * ein Validierungsfehler ebenfalls als endgültig.
          */
         Exception lastReadException =
                 null;
 
         for (int attempt = 0;
-             attempt < READ_EMPTY_ATTEMPTS;
+             attempt < READ_ATTEMPTS;
              attempt++) {
 
+            byte[] data;
+
             try {
-                byte[] data =
+                data =
                         readBackupData(
                                 context,
                                 uri);
 
-                if (data.length == 0) {
+            } catch (IOException exception) {
 
-                    throw new IOException(
-                            "Backup-Datei ist noch leer. "
-                                    + "Der Cloudspeicher hat sie möglicherweise "
-                                    + "noch nicht vollständig bereitgestellt.");
-                }
+                lastReadException =
+                        exception;
 
-                JSONObject envelope =
+                waitForProvider(
+                        attempt);
+
+                continue;
+            }
+
+            if (data.length == 0) {
+
+                lastReadException =
+                        new IOException(
+                                "Backup-Datei ist noch leer. "
+                                        + "Der Speicheranbieter hat sie möglicherweise "
+                                        + "noch nicht vollständig bereitgestellt.");
+
+                waitForProvider(
+                        attempt);
+
+                continue;
+            }
+
+            JSONObject envelope;
+
+            try {
+                envelope =
                         new JSONObject(
                                 new String(
                                         data,
                                         StandardCharsets.UTF_8));
 
-                JSONObject backup =
+            } catch (JSONException exception) {
+
+                lastReadException =
+                        exception;
+
+                waitForProvider(
+                        attempt);
+
+                continue;
+            }
+
+            if (!FORMAT_ID.equals(
+                    envelope.optString(
+                            "format",
+                            ""))
+                    || envelope.optInt(
+                            "formatVersion",
+                            -1)
+                    != FORMAT_VERSION) {
+
+                throw new JSONException(
+                        "Diese Backup-Datei gehört nicht zum unterstützten AppStow-Backupformat v3.");
+            }
+
+            JSONObject backup;
+
+            try {
+                backup =
                         BackupCrypto.decrypt(
                                 envelope);
-
-                validateBackup(
-                        backup,
-                        true);
-
-                return backup;
 
             } catch (IOException
                      | JSONException exception) {
 
                 lastReadException =
                         exception;
+
+                waitForProvider(
+                        attempt);
+
+                continue;
             }
 
-            if (attempt
-                    + 1
-                    < READ_EMPTY_ATTEMPTS) {
+            validateBackup(
+                    backup,
+                    true);
 
-                try {
-                    Thread.sleep(
-                            READ_EMPTY_DELAY_MS);
-
-                } catch (InterruptedException exception) {
-                    Thread.currentThread()
-                            .interrupt();
-
-                    throw new IOException(
-                            "Backup-Lesevorgang wurde unterbrochen.",
-                            exception);
-                }
-            }
+            return backup;
         }
 
         if (lastReadException
@@ -235,6 +338,55 @@ final class BackupManager {
 
         throw new IOException(
                 "Backup-Datei konnte nicht gelesen werden.");
+    }
+
+    private static void waitForProvider(
+            int completedAttempt)
+            throws IOException {
+
+        if (completedAttempt
+                + 1
+                >= READ_ATTEMPTS) {
+
+            return;
+        }
+
+        long delayMillis;
+
+        if (completedAttempt < 4) {
+
+            delayMillis =
+                    READ_RETRY_SHORT_MS;
+
+        } else if (completedAttempt < 8) {
+
+            delayMillis =
+                    READ_RETRY_MEDIUM_MS;
+
+        } else if (completedAttempt < 12) {
+
+            delayMillis =
+                    READ_RETRY_LONG_MS;
+
+        } else {
+
+            delayMillis =
+                    READ_RETRY_FINAL_MS;
+        }
+
+        try {
+            Thread.sleep(
+                    delayMillis);
+
+        } catch (InterruptedException exception) {
+
+            Thread.currentThread()
+                    .interrupt();
+
+            throw new IOException(
+                    "Backup-Lesevorgang wurde unterbrochen.",
+                    exception);
+        }
     }
 
     static void restoreBackup(
