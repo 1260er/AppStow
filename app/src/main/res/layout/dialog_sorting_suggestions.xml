@@ -17,42 +17,156 @@
             android:textColor="@color/ui_text_secondary" />
 
         <CheckBox
-            android:id="@+id/suggestionApplyFavoriteOrder"
+            android:id="@+id/suggestionApplyFavoriteAssignment"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
             android:minHeight="48dp"
-            android:text="@string/sorting_suggestion_favorites_order" />
+            android:text="@string/sorting_suggestion_favorites_assignment" />
 
-        <TextView
-            android:id="@+id/suggestionFavoriteOrderPreview"
-            style="@style/UiBodyText"
+        <LinearLayout
+            android:id="@+id/suggestionFavoriteAssignmentComparison"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingStart="@dimen/spacing_md"
             android:paddingEnd="@dimen/spacing_sm"
-            android:textColor="@color/ui_text_secondary"
-            android:textSize="13sp" />
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_current"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_new"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/suggestionFavoriteAssignmentCurrent"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/suggestionFavoriteAssignmentPreview"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <CheckBox
-            android:id="@+id/suggestionApplyFavoriteAssignment"
+            android:id="@+id/suggestionApplyFavoriteOrder"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_sm"
             android:minHeight="48dp"
-            android:text="@string/sorting_suggestion_favorites_assignment" />
+            android:text="@string/sorting_suggestion_favorites_order" />
 
-        <TextView
-            android:id="@+id/suggestionFavoriteAssignmentPreview"
-            style="@style/UiBodyText"
+        <LinearLayout
+            android:id="@+id/suggestionFavoriteOrderComparison"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingStart="@dimen/spacing_md"
             android:paddingEnd="@dimen/spacing_sm"
-            android:textColor="@color/ui_text_secondary"
-            android:textSize="13sp" />
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_current"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_new"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/suggestionFavoriteOrderCurrent"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/suggestionFavoriteOrderPreview"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/suggestionApplyCategories"
@@ -63,15 +177,72 @@
             android:minHeight="48dp"
             android:text="@string/sorting_suggestion_categories_order" />
 
-        <TextView
-            android:id="@+id/suggestionCategoriesPreview"
-            style="@style/UiBodyText"
+        <LinearLayout
+            android:id="@+id/suggestionCategoriesComparison"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingStart="@dimen/spacing_md"
             android:paddingEnd="@dimen/spacing_sm"
-            android:textColor="@color/ui_text_secondary"
-            android:textSize="13sp" />
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_current"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_new"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/suggestionCategoriesCurrent"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/suggestionCategoriesPreview"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/suggestionApplyApps"
@@ -82,15 +253,72 @@
             android:minHeight="48dp"
             android:text="@string/sorting_suggestion_apps_order" />
 
-        <TextView
-            android:id="@+id/suggestionAppsPreview"
-            style="@style/UiBodyText"
+        <LinearLayout
+            android:id="@+id/suggestionAppsComparison"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingStart="@dimen/spacing_md"
             android:paddingEnd="@dimen/spacing_sm"
-            android:textColor="@color/ui_text_secondary"
-            android:textSize="13sp" />
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_current"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_new"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/suggestionAppsCurrent"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/suggestionAppsPreview"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/suggestionApplyShortcuts"
@@ -101,15 +329,72 @@
             android:minHeight="48dp"
             android:text="@string/sorting_suggestion_shortcuts_order" />
 
-        <TextView
-            android:id="@+id/suggestionShortcutsPreview"
-            style="@style/UiBodyText"
+        <LinearLayout
+            android:id="@+id/suggestionShortcutsComparison"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingStart="@dimen/spacing_md"
             android:paddingEnd="@dimen/spacing_sm"
-            android:textColor="@color/ui_text_secondary"
-            android:textSize="13sp" />
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_current"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:text="@string/sorting_suggestion_new"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/suggestionShortcutsCurrent"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingEnd="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/suggestionShortcutsPreview"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/spacing_sm"
+                    android:textColor="@color/ui_text_secondary"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
     </LinearLayout>
 

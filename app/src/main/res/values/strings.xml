@@ -49,6 +49,8 @@
     <string name="sorting_suggestion_up_to_date">The current sorting already matches your usage.</string>
     <string name="sorting_suggestion_preview_title">Sorting suggestions</string>
     <string name="sorting_suggestion_preview_intro">Choose which suggestions should be applied.</string>
+    <string name="sorting_suggestion_current">Current</string>
+    <string name="sorting_suggestion_new">New</string>
     <string name="sorting_suggestion_favorites_order">Sort favorites</string>
     <string name="sorting_suggestion_favorites_assignment">Reassign favorites</string>
     <string name="sorting_suggestion_categories_order">Sort categories</string>

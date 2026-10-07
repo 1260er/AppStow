@@ -98,6 +98,16 @@ final class SortingSuggestionEngine {
                             suggestedAssignedFavoriteOrder);
         }
 
+        List<String> favoriteOrderPreview(
+                boolean applyFavoriteAssignment) {
+
+            return new ArrayList<>(
+                    applyFavoriteAssignment
+                            && favoriteAssignmentChanged()
+                            ? suggestedAssignedFavoriteOrder
+                            : suggestedFavoriteOrder);
+        }
+
         boolean favoriteOrderChanged() {
 
             return !currentFavoriteOrder.equals(

@@ -126,6 +126,20 @@ public class SortingSuggestionEngineTest {
                         .get(
                                 "category:office"));
 
+        assertEquals(
+                Arrays.asList(
+                        "shortcut:y",
+                        "app:a"),
+                plan.favoriteOrderPreview(
+                        false));
+
+        assertEquals(
+                Arrays.asList(
+                        "shortcut:x",
+                        "app:b"),
+                plan.favoriteOrderPreview(
+                        true));
+
         assertTrue(
                 plan.favoriteAssignmentChanged());
 

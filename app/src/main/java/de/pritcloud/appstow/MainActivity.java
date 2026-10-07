@@ -6677,6 +6677,14 @@ public class MainActivity extends Activity {
                 content.findViewById(
                         R.id.suggestionApplyFavoriteOrder);
 
+        View favoriteOrderComparison =
+                content.findViewById(
+                        R.id.suggestionFavoriteOrderComparison);
+
+        TextView favoriteOrderCurrent =
+                content.findViewById(
+                        R.id.suggestionFavoriteOrderCurrent);
+
         TextView favoriteOrderPreview =
                 content.findViewById(
                         R.id.suggestionFavoriteOrderPreview);
@@ -6684,6 +6692,14 @@ public class MainActivity extends Activity {
         CheckBox favoriteAssignment =
                 content.findViewById(
                         R.id.suggestionApplyFavoriteAssignment);
+
+        View favoriteAssignmentComparison =
+                content.findViewById(
+                        R.id.suggestionFavoriteAssignmentComparison);
+
+        TextView favoriteAssignmentCurrent =
+                content.findViewById(
+                        R.id.suggestionFavoriteAssignmentCurrent);
 
         TextView favoriteAssignmentPreview =
                 content.findViewById(
@@ -6693,6 +6709,14 @@ public class MainActivity extends Activity {
                 content.findViewById(
                         R.id.suggestionApplyCategories);
 
+        View categoriesComparison =
+                content.findViewById(
+                        R.id.suggestionCategoriesComparison);
+
+        TextView categoriesCurrent =
+                content.findViewById(
+                        R.id.suggestionCategoriesCurrent);
+
         TextView categoriesPreview =
                 content.findViewById(
                         R.id.suggestionCategoriesPreview);
@@ -6700,6 +6724,14 @@ public class MainActivity extends Activity {
         CheckBox appsBox =
                 content.findViewById(
                         R.id.suggestionApplyApps);
+
+        View appsComparison =
+                content.findViewById(
+                        R.id.suggestionAppsComparison);
+
+        TextView appsCurrent =
+                content.findViewById(
+                        R.id.suggestionAppsCurrent);
 
         TextView appsPreview =
                 content.findViewById(
@@ -6709,46 +6741,88 @@ public class MainActivity extends Activity {
                 content.findViewById(
                         R.id.suggestionApplyShortcuts);
 
+        View shortcutsComparison =
+                content.findViewById(
+                        R.id.suggestionShortcutsComparison);
+
+        TextView shortcutsCurrent =
+                content.findViewById(
+                        R.id.suggestionShortcutsCurrent);
+
         TextView shortcutsPreview =
                 content.findViewById(
                         R.id.suggestionShortcutsPreview);
 
         configureSortingSuggestionBlock(
                 favoriteOrder,
+                favoriteOrderComparison,
+                favoriteOrderCurrent,
                 favoriteOrderPreview,
                 plan.favoriteOrderChanged(),
                 formatSortingSuggestionItemOrder(
-                        plan.suggestedFavoriteOrder));
+                        plan.currentFavoriteOrder),
+                formatSortingSuggestionItemOrder(
+                        plan.favoriteOrderPreview(
+                                favoriteAssignment.isChecked())));
+
+        favoriteAssignment.setOnCheckedChangeListener(
+                (buttonView, isChecked) ->
+                        favoriteOrderPreview.setText(
+                                formatSortingSuggestionItemOrder(
+                                        plan.favoriteOrderPreview(
+                                                isChecked))));
 
         configureSortingSuggestionBlock(
                 favoriteAssignment,
+                favoriteAssignmentComparison,
+                favoriteAssignmentCurrent,
                 favoriteAssignmentPreview,
                 plan.favoriteAssignmentChanged(),
-                formatSortingSuggestionFavoriteAssignment(
+                formatSortingSuggestionFavoriteRemovals(
+                        plan),
+                formatSortingSuggestionFavoriteAdditions(
                         plan));
 
         configureSortingSuggestionBlock(
                 categories,
+                categoriesComparison,
+                categoriesCurrent,
                 categoriesPreview,
                 plan.categoryOrderChanged(),
+                formatSortingSuggestionSectionOrder(
+                        plan.currentSectionOrder),
                 formatSortingSuggestionSectionOrder(
                         plan.suggestedSectionOrder));
 
         configureSortingSuggestionBlock(
                 appsBox,
+                appsComparison,
+                appsCurrent,
                 appsPreview,
                 plan.appOrderChanged(),
                 formatSortingSuggestionChangedOrders(
                         plan,
-                        plan.suggestedAppOrders));
+                        plan.suggestedAppOrders,
+                        true),
+                formatSortingSuggestionChangedOrders(
+                        plan,
+                        plan.suggestedAppOrders,
+                        false));
 
         configureSortingSuggestionBlock(
                 shortcutsBox,
+                shortcutsComparison,
+                shortcutsCurrent,
                 shortcutsPreview,
                 plan.shortcutOrderChanged(),
                 formatSortingSuggestionChangedOrders(
                         plan,
-                        plan.suggestedShortcutOrders));
+                        plan.suggestedShortcutOrders,
+                        true),
+                formatSortingSuggestionChangedOrders(
+                        plan,
+                        plan.suggestedShortcutOrders,
+                        false));
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
@@ -6834,16 +6908,19 @@ public class MainActivity extends Activity {
 
     private void configureSortingSuggestionBlock(
             CheckBox checkBox,
-            TextView preview,
+            View comparison,
+            TextView currentPreview,
+            TextView suggestedPreview,
             boolean visible,
-            String text) {
+            String currentText,
+            String suggestedText) {
 
         checkBox.setVisibility(
                 visible
                         ? View.VISIBLE
                         : View.GONE);
 
-        preview.setVisibility(
+        comparison.setVisibility(
                 visible
                         ? View.VISIBLE
                         : View.GONE);
@@ -6851,8 +6928,11 @@ public class MainActivity extends Activity {
         checkBox.setChecked(
                 visible);
 
-        preview.setText(
-                text);
+        currentPreview.setText(
+                currentText);
+
+        suggestedPreview.setText(
+                suggestedText);
     }
 
     private String formatSortingSuggestionItemOrder(
@@ -6917,7 +6997,40 @@ public class MainActivity extends Activity {
         return result.toString();
     }
 
-    private String formatSortingSuggestionFavoriteAssignment(
+    private String formatSortingSuggestionFavoriteRemovals(
+            SortingSuggestionEngine.Plan plan) {
+
+        StringBuilder result =
+                new StringBuilder();
+
+        for (String id :
+                plan.currentFavoriteOrder) {
+
+            if (plan.suggestedFavoriteIds
+                    .contains(
+                            id)) {
+
+                continue;
+            }
+
+            if (result.length() > 0) {
+                result.append(
+                        "\n");
+            }
+
+            result.append(
+                    "− ")
+                    .append(
+                            getSortingSuggestionItemLabel(
+                                    id));
+        }
+
+        return result.length() == 0
+                ? "\u2014"
+                : result.toString();
+    }
+
+    private String formatSortingSuggestionFavoriteAdditions(
             SortingSuggestionEngine.Plan plan) {
 
         StringBuilder result =
@@ -6945,34 +7058,15 @@ public class MainActivity extends Activity {
                                     id));
         }
 
-        for (String id :
-                plan.currentFavoriteOrder) {
-
-            if (plan.suggestedFavoriteIds
-                    .contains(
-                            id)) {
-
-                continue;
-            }
-
-            if (result.length() > 0) {
-                result.append(
-                        "\n");
-            }
-
-            result.append(
-                    "− ")
-                    .append(
-                            getSortingSuggestionItemLabel(
-                                    id));
-        }
-
-        return result.toString();
+        return result.length() == 0
+                ? "\u2014"
+                : result.toString();
     }
 
     private String formatSortingSuggestionChangedOrders(
             SortingSuggestionEngine.Plan plan,
-            Map<String, List<String>> suggestedOrders) {
+            Map<String, List<String>> suggestedOrders,
+            boolean currentState) {
 
         StringBuilder result =
                 new StringBuilder();
@@ -7016,7 +7110,9 @@ public class MainActivity extends Activity {
                             ":\n")
                     .append(
                             formatSortingSuggestionItemOrder(
-                                    suggested));
+                                    currentState
+                                            ? current
+                                            : suggested));
         }
 
         return result.toString();
