@@ -328,6 +328,7 @@ None found</string>
     <string name="backup_create">Create backup</string>
     <string name="backup_creating">Creating backup...</string>
     <string name="backup_verifying">Checking backup...</string>
+    <string name="backup_restoring">Restoring backup...</string>
     <string name="backup_restore">Restore backup</string>
     <string name="backup_description_intro">Create an encrypted backup of your AppStow configuration and restore it when needed.</string>
     <string name="backup_excluded_title">Not included</string>

@@ -238,6 +238,9 @@ public class MainActivity extends Activity {
     private TextView backupCreateButton;
     private View backupProgressContainer;
     private TextView backupProgressText;
+    private TextView backupRestoreButton;
+    private View backupRestoreProgressContainer;
+    private TextView backupRestoreProgressText;
     private TextView backupLastSuccessDate;
     private View backupLastSuccessDetails;
     private TextView backupSummaryCategories;
@@ -471,6 +474,14 @@ public class MainActivity extends Activity {
         backupProgressText =
                 findViewById(
                         R.id.backupProgressText);
+
+        backupRestoreProgressContainer =
+                findViewById(
+                        R.id.backupRestoreProgressContainer);
+
+        backupRestoreProgressText =
+                findViewById(
+                        R.id.backupRestoreProgressText);
 
         backupLastSuccessDate =
                 findViewById(
@@ -752,9 +763,12 @@ public class MainActivity extends Activity {
         backupCreateButton.setOnClickListener(v ->
                 createBackup());
 
-        findViewById(R.id.backupRestoreButton)
-                .setOnClickListener(v ->
-                        selectBackupForRestore());
+        backupRestoreButton =
+                findViewById(
+                        R.id.backupRestoreButton);
+
+        backupRestoreButton.setOnClickListener(v ->
+                selectBackupForRestore());
 
         appIconLoader =
                 new AppIconLoader(
@@ -8852,6 +8866,12 @@ public class MainActivity extends Activity {
                         KEY_RESTORE_RESULT_MESSAGE)
                 .apply();
 
+        backupRestoreButton.setEnabled(
+                true);
+
+        backupRestoreProgressContainer.setVisibility(
+                View.INVISIBLE);
+
         int resultMessage =
                 success
                         ? R.string.backup_restored
@@ -8888,6 +8908,15 @@ public class MainActivity extends Activity {
 
                                     clearPendingRestoreResult(
                                             appContext);
+
+                                    backupRestoreButton.setEnabled(
+                                            false);
+
+                                    backupRestoreProgressText.setText(
+                                            R.string.backup_restoring);
+
+                                    backupRestoreProgressContainer.setVisibility(
+                                            View.VISIBLE);
 
                                     backupExecutor.execute(() -> {
                                         boolean success;
@@ -9016,7 +9045,7 @@ public class MainActivity extends Activity {
                             true);
 
                     backupProgressContainer.setVisibility(
-                            View.GONE);
+                            View.INVISIBLE);
 
                     if (backupSucceeded) {
 
@@ -9037,6 +9066,15 @@ public class MainActivity extends Activity {
         if (requestCode
                 == REQUEST_RESTORE_BACKUP) {
 
+            backupRestoreButton.setEnabled(
+                    false);
+
+            backupRestoreProgressText.setText(
+                    R.string.backup_verifying);
+
+            backupRestoreProgressContainer.setVisibility(
+                    View.VISIBLE);
+
             backupExecutor.execute(() -> {
                 JSONObject backup;
 
@@ -9054,6 +9092,12 @@ public class MainActivity extends Activity {
 
                             return;
                         }
+
+                        backupRestoreButton.setEnabled(
+                                true);
+
+                        backupRestoreProgressContainer.setVisibility(
+                                View.INVISIBLE);
 
                         Toast.makeText(
                                 this,
@@ -9074,6 +9118,12 @@ public class MainActivity extends Activity {
 
                         return;
                     }
+
+                    backupRestoreButton.setEnabled(
+                            true);
+
+                    backupRestoreProgressContainer.setVisibility(
+                            View.INVISIBLE);
 
                     confirmBackupRestore(
                             validatedBackup);
