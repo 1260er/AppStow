@@ -6816,7 +6816,8 @@ public class MainActivity extends Activity {
                 favoriteOrderCurrentText,
                 formatSortingSuggestionItemOrder(
                         plan.favoriteOrderPreview(
-                                favoriteAssignment.isChecked())));
+                                favoriteAssignment.isChecked(),
+                                true)));
 
         configureSortingSuggestionBlock(
                 categories,
@@ -6863,11 +6864,10 @@ public class MainActivity extends Activity {
                                     : favoriteAssignmentCurrentText);
 
                     String favoriteOrderTarget =
-                            favoriteOrder.isChecked()
-                                    ? formatSortingSuggestionItemOrder(
-                                            plan.favoriteOrderPreview(
-                                                    isChecked))
-                                    : favoriteOrderCurrentText;
+                            formatSortingSuggestionItemOrder(
+                                    plan.favoriteOrderPreview(
+                                            isChecked,
+                                            favoriteOrder.isChecked()));
 
                     setSortingSuggestionComparisonTexts(
                             favoriteOrderCurrent,
@@ -6882,12 +6882,11 @@ public class MainActivity extends Activity {
                                 favoriteOrderCurrent,
                                 favoriteOrderPreview,
                                 favoriteOrderCurrentText,
-                                isChecked
-                                        ? formatSortingSuggestionItemOrder(
-                                                plan.favoriteOrderPreview(
-                                                        favoriteAssignment
-                                                                .isChecked()))
-                                        : favoriteOrderCurrentText));
+                                formatSortingSuggestionItemOrder(
+                                        plan.favoriteOrderPreview(
+                                                favoriteAssignment
+                                                        .isChecked(),
+                                                isChecked))));
 
         categories.setOnCheckedChangeListener(
                 (buttonView, isChecked) ->

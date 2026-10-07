@@ -98,13 +98,64 @@ final class SortingSuggestionEngine {
         }
 
         List<String> favoriteOrderPreview(
-                boolean applyFavoriteAssignment) {
+                boolean applyFavoriteAssignment,
+                boolean applyFavoriteOrder) {
 
-            return new ArrayList<>(
-                    applyFavoriteAssignment
-                            && favoriteAssignmentChanged()
-                            ? suggestedAssignedFavoriteOrder
-                            : suggestedFavoriteOrder);
+            if (!applyFavoriteAssignment) {
+
+                return new ArrayList<>(
+                        applyFavoriteOrder
+                                ? suggestedFavoriteOrder
+                                : currentFavoriteOrder);
+            }
+
+            if (applyFavoriteOrder) {
+
+                return new ArrayList<>(
+                        suggestedAssignedFavoriteOrder);
+            }
+
+            /*
+             * Neuzuordnung ohne Sortierung entspricht exakt
+             * der späteren Materialisierung:
+             *
+             * - verbleibende Favoriten behalten ihre
+             *   bisherige relative Reihenfolge
+             * - entfernte Favoriten verschwinden
+             * - neue Favoriten werden anschließend in der
+             *   vorgeschlagenen Reihenfolge angefügt
+             */
+            List<String> result =
+                    new ArrayList<>();
+
+            Set<String> added =
+                    new LinkedHashSet<>();
+
+            for (String itemId :
+                    currentFavoriteOrder) {
+
+                if (suggestedFavoriteIds.contains(
+                        itemId)
+                        && added.add(
+                                itemId)) {
+
+                    result.add(
+                            itemId);
+                }
+            }
+
+            for (String itemId :
+                    suggestedAssignedFavoriteOrder) {
+
+                if (added.add(
+                        itemId)) {
+
+                    result.add(
+                            itemId);
+                }
+            }
+
+            return result;
         }
 
         boolean favoriteOrderChanged() {

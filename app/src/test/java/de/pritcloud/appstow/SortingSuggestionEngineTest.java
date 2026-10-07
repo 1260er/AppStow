@@ -134,13 +134,15 @@ public class SortingSuggestionEngineTest {
                         "shortcut:y",
                         "app:a"),
                 plan.favoriteOrderPreview(
-                        false));
+                        false,
+                        true));
 
         assertEquals(
                 Arrays.asList(
                         "shortcut:x",
                         "app:b"),
                 plan.favoriteOrderPreview(
+                        true,
                         true));
 
         assertTrue(
@@ -157,6 +159,102 @@ public class SortingSuggestionEngineTest {
 
         assertTrue(
                 plan.hasAnyChange());
+    }
+
+    @Test
+    public void favoritePreviewCombinesAssignmentAndSortingIndependently() {
+
+        SortingSuggestionEngine.Plan plan =
+                SortingSuggestionEngine.build(
+                        List.of(
+                                "favorites"),
+                        Map.of(
+                                "favorites",
+                                Arrays.asList(
+                                        "app:a",
+                                        "app:b",
+                                        "app:c",
+                                        "app:d")),
+                        new HashSet<>(
+                                Arrays.asList(
+                                        "app:a",
+                                        "app:b",
+                                        "app:c",
+                                        "app:d")),
+                        Arrays.asList(
+                                "app:a",
+                                "app:b",
+                                "app:c",
+                                "app:d",
+                                "app:e",
+                                "app:f"),
+                        4,
+                        counts(
+                                "app:a", 80,
+                                "app:b", 100,
+                                "app:c", 10,
+                                "app:d", 5,
+                                "app:e", 90,
+                                "app:f", 70),
+                        new HashMap<>());
+
+        /*
+         * Weder Neuzuordnung noch Sortierung:
+         * Soll entspricht exakt Ist.
+         */
+        assertEquals(
+                Arrays.asList(
+                        "app:a",
+                        "app:b",
+                        "app:c",
+                        "app:d"),
+                plan.favoriteOrderPreview(
+                        false,
+                        false));
+
+        /*
+         * Nur Sortierung:
+         * aktuelle Favoritenmenge wird gerankt.
+         */
+        assertEquals(
+                Arrays.asList(
+                        "app:b",
+                        "app:a",
+                        "app:c",
+                        "app:d"),
+                plan.favoriteOrderPreview(
+                        false,
+                        true));
+
+        /*
+         * Nur Neuzuordnung:
+         * a und b bleiben in manueller Reihenfolge,
+         * c und d verschwinden,
+         * e und f werden hinten angefügt.
+         */
+        assertEquals(
+                Arrays.asList(
+                        "app:a",
+                        "app:b",
+                        "app:e",
+                        "app:f"),
+                plan.favoriteOrderPreview(
+                        true,
+                        false));
+
+        /*
+         * Neuzuordnung plus Sortierung:
+         * neue Favoritenmenge wird vollständig gerankt.
+         */
+        assertEquals(
+                Arrays.asList(
+                        "app:b",
+                        "app:e",
+                        "app:a",
+                        "app:f"),
+                plan.favoriteOrderPreview(
+                        true,
+                        true));
     }
 
     @Test
