@@ -27,9 +27,10 @@ import java.util.Set;
 final class BackupManager {
 
     private static final String FORMAT_ID =
-            "appstow-backup";
+            BackupCrypto.FORMAT_ID;
 
-    private static final int FORMAT_VERSION = 2;
+    private static final int FORMAT_VERSION =
+            BackupCrypto.FORMAT_VERSION;
 
     private static final String DISPLAY_PREFS =
             "overview_display";
@@ -56,8 +57,12 @@ final class BackupManager {
         JSONObject backup =
                 createBackup(context);
 
+        JSONObject envelope =
+                BackupCrypto.encrypt(
+                        backup);
+
         byte[] data =
-                backup.toString(2)
+                envelope.toString(2)
                         .getBytes(
                                 StandardCharsets.UTF_8);
 
@@ -140,43 +145,57 @@ final class BackupManager {
             Uri uri)
             throws IOException, JSONException {
 
-        IOException lastReadException =
+        /*
+         * WICHTIG: Diese Wiederholungen nicht entfernen.
+         * Einige Dokument-/Cloud-Provider stellen eine neu geschriebene
+         * Datei bereits bereit, obwohl deren Inhalt kurzzeitig noch leer
+         * oder unvollständig ist. Das war bereits bei Backup v2 relevant.
+         *
+         * Bei v3 kann ein unvollständiger Inhalt zusätzlich wie ungültiges
+         * JSON oder wie ein fehlgeschlagener GCM-Tag aussehen. Deshalb
+         * werden sowohl IO- als auch JSON-/Entschlüsselungsfehler in diesem
+         * kurzen Zeitfenster erneut versucht.
+         */
+        Exception lastReadException =
                 null;
 
         for (int attempt = 0;
              attempt < READ_EMPTY_ATTEMPTS;
              attempt++) {
 
-            byte[] data =
-                    null;
-
             try {
-                data =
+                byte[] data =
                         readBackupData(
                                 context,
                                 uri);
 
                 if (data.length == 0) {
-                    lastReadException =
-                            new IOException(
-                                    "Backup-Datei ist noch leer. "
-                                            + "Der Cloudspeicher hat sie möglicherweise "
-                                            + "noch nicht vollständig bereitgestellt.");
-                } else {
-                    JSONObject backup =
-                            new JSONObject(
-                                    new String(
-                                            data,
-                                            StandardCharsets.UTF_8));
 
-                    validateBackup(
-                            backup,
-                            true);
-
-                    return backup;
+                    throw new IOException(
+                            "Backup-Datei ist noch leer. "
+                                    + "Der Cloudspeicher hat sie möglicherweise "
+                                    + "noch nicht vollständig bereitgestellt.");
                 }
 
-            } catch (IOException exception) {
+                JSONObject envelope =
+                        new JSONObject(
+                                new String(
+                                        data,
+                                        StandardCharsets.UTF_8));
+
+                JSONObject backup =
+                        BackupCrypto.decrypt(
+                                envelope);
+
+                validateBackup(
+                        backup,
+                        true);
+
+                return backup;
+
+            } catch (IOException
+                     | JSONException exception) {
+
                 lastReadException =
                         exception;
             }
@@ -200,8 +219,18 @@ final class BackupManager {
             }
         }
 
-        if (lastReadException != null) {
-            throw lastReadException;
+        if (lastReadException
+                instanceof JSONException) {
+
+            throw (JSONException)
+                    lastReadException;
+        }
+
+        if (lastReadException
+                instanceof IOException) {
+
+            throw (IOException)
+                    lastReadException;
         }
 
         throw new IOException(

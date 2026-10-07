@@ -151,7 +151,7 @@ public class BackupManagerTest {
     }
 
     @Test
-    public void writtenBackupCanBeReadImmediatelyAndKeepsSymbolSetting()
+    public void writtenEncryptedBackupCanBeReadImmediatelyAndKeepsSymbolSetting()
             throws Exception {
 
         CategoryStore categoryStore =
@@ -180,6 +180,48 @@ public class BackupManagerTest {
             BackupManager.writeBackup(
                     context,
                     uri);
+
+            String rawFile;
+
+            try (java.io.FileInputStream input =
+                         new java.io.FileInputStream(
+                                 backupFile)) {
+
+                java.io.ByteArrayOutputStream output =
+                        new java.io.ByteArrayOutputStream();
+
+                byte[] buffer =
+                        new byte[4096];
+
+                int count;
+
+                while ((count =
+                        input.read(
+                                buffer)) != -1) {
+
+                    output.write(
+                            buffer,
+                            0,
+                            count);
+                }
+
+                rawFile =
+                        new String(
+                                output.toByteArray(),
+                                java.nio.charset.StandardCharsets.UTF_8);
+            }
+
+            assertTrue(
+                    rawFile.contains(
+                            "\"encryption\": \"AES-256-GCM\""));
+
+            assertTrue(
+                    !rawFile.contains(
+                            "\"categories\""));
+
+            assertTrue(
+                    !rawFile.contains(
+                            "\"categoryAssignments\""));
 
             JSONObject backup =
                     BackupManager.readBackup(
@@ -953,6 +995,20 @@ public class BackupManagerTest {
         }
     }
 
+    @Test
+    public void rejectsFormatVersionTwo()
+            throws Exception {
+
+        JSONObject backup =
+                validBackup()
+                        .put(
+                                "formatVersion",
+                                2);
+
+        assertInvalid(
+                backup);
+    }
+
     private void assertInvalid(
             JSONObject backup)
             throws Exception {
@@ -1054,7 +1110,7 @@ public class BackupManagerTest {
                         "appstow-backup")
                 .put(
                         "formatVersion",
-                        2)
+                        3)
                 .put(
                         "createdAt",
                         1L)
