@@ -163,8 +163,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq "versionName = "3.0.0"" app/build.gradle.kts
-          grep -Fq "applicationId = "de.pritcloud.appstow"" app/build.gradle.kts
+          grep -Fq 'versionName = "3.0.0"' app/build.gradle.kts
+          grep -Fq 'applicationId = "de.pritcloud.appstow"' app/build.gradle.kts
           test -n "$KEYSTORE_BASE64"
           test -n "$APPSTOW_KEYSTORE_PASSWORD"
           test -n "$APPSTOW_KEY_ALIAS"
