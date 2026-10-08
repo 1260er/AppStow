@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -225,7 +226,134 @@ public class SortingPageTest {
     }
 
     @Test
-    public void automaticControlsKeepSwitchBeforeValues() {
+    public void semiAutomaticUsesTwoRowsAndPersistsSelections() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(
+                             MainActivity.class)) {
+
+            scenario.onActivity(
+                    activity -> {
+
+                        activity.findViewById(
+                                        R.id.navSorting)
+                                .performClick();
+
+                        activity.findViewById(
+                                        R.id.sortingModeSemi)
+                                .performClick();
+
+                        ViewGroup group =
+                                activity.findViewById(
+                                        R.id.sortingSemiSettings);
+
+                        LinearLayout top =
+                                activity.findViewById(
+                                        R.id.sortingSemiTopRow);
+
+                        LinearLayout bottom =
+                                activity.findViewById(
+                                        R.id.sortingSemiBottomRow);
+
+                        assertEquals(3, group.getChildCount());
+                        assertEquals(1, group.indexOfChild(top));
+                        assertEquals(2, group.indexOfChild(bottom));
+
+                        assertEquals(2, top.getChildCount());
+                        assertEquals(2, bottom.getChildCount());
+
+                        assertEquals(
+                                LinearLayout.HORIZONTAL,
+                                top.getOrientation());
+
+                        assertEquals(
+                                LinearLayout.HORIZONTAL,
+                                bottom.getOrientation());
+
+                        int height =
+                                activity.getResources()
+                                        .getDimensionPixelSize(
+                                                R.dimen.icon_button_size);
+
+                        assertEquals(
+                                height,
+                                top.getLayoutParams().height);
+
+                        assertEquals(
+                                height,
+                                bottom.getLayoutParams().height);
+
+                        assertEquals(
+                                R.id.sortingSemiFavorites,
+                                top.getChildAt(0).getId());
+
+                        assertEquals(
+                                R.id.sortingSemiCategories,
+                                top.getChildAt(1).getId());
+
+                        assertEquals(
+                                R.id.sortingSemiShortcuts,
+                                bottom.getChildAt(0).getId());
+
+                        assertEquals(
+                                R.id.sortingSemiApps,
+                                bottom.getChildAt(1).getId());
+
+                        CheckBox shortcuts =
+                                activity.findViewById(
+                                        R.id.sortingSemiShortcuts);
+
+                        CheckBox apps =
+                                activity.findViewById(
+                                        R.id.sortingSemiApps);
+
+                        boolean originalShortcuts =
+                                shortcuts.isChecked();
+
+                        boolean originalApps =
+                                apps.isChecked();
+
+                        shortcuts.performClick();
+
+                        SortingSettingsStore.Settings settings =
+                                new SortingSettingsStore(activity)
+                                        .load();
+
+                        assertEquals(
+                                !originalShortcuts,
+                                settings.semiShortcuts);
+
+                        assertEquals(
+                                originalApps,
+                                settings.semiApps);
+                    });
+
+            scenario.recreate();
+
+            scenario.onActivity(
+                    activity -> {
+
+                        SortingSettingsStore.Settings settings =
+                                new SortingSettingsStore(activity)
+                                        .load();
+
+                        assertEquals(
+                                settings.semiShortcuts,
+                                ((CheckBox) activity.findViewById(
+                                        R.id.sortingSemiShortcuts))
+                                        .isChecked());
+
+                        assertEquals(
+                                settings.semiApps,
+                                ((CheckBox) activity.findViewById(
+                                        R.id.sortingSemiApps))
+                                        .isChecked());
+                    });
+        }
+    }
+
+    @Test
+    public void automaticFavoriteCountPrecedesTimeProfile() {
 
         try (ActivityScenario<MainActivity> scenario =
                      ActivityScenario.launch(
@@ -242,9 +370,17 @@ public class SortingPageTest {
                                         R.id.sortingModeAutomatic)
                                 .performClick();
 
+                        ViewGroup automaticGroup =
+                                activity.findViewById(
+                                        R.id.sortingAutomaticSettings);
+
                         ViewGroup timeGroup =
                                 activity.findViewById(
                                         R.id.sortingTimeSettings);
+
+                        View timeProfileBrief =
+                                activity.findViewById(
+                                        R.id.sortingTimeProfileBrief);
 
                         View timeProfileRow =
                                 activity.findViewById(
@@ -262,16 +398,28 @@ public class SortingPageTest {
                                 View.VISIBLE,
                                 favoriteCount.getVisibility());
 
-                        assertTrue(
-                                timeGroup.indexOfChild(
-                                        timeProfileRow)
-                                        < timeGroup.indexOfChild(
+                        assertEquals(
+                                1,
+                                automaticGroup.indexOfChild(
                                         favoriteCount));
 
-                        assertTrue(
+                        assertEquals(
+                                3,
+                                timeGroup.getChildCount());
+
+                        assertEquals(
+                                0,
                                 timeGroup.indexOfChild(
-                                        favoriteCount)
-                                        < timeGroup.indexOfChild(
+                                        timeProfileBrief));
+
+                        assertEquals(
+                                1,
+                                timeGroup.indexOfChild(
+                                        timeProfileRow));
+
+                        assertEquals(
+                                2,
+                                timeGroup.indexOfChild(
                                         timeDetails));
 
                         activity.findViewById(
@@ -323,7 +471,7 @@ public class SortingPageTest {
                                 activity.findViewById(
                                         R.id.sortingTimeProfileHelp);
 
-                        assertEquals(4, group.getChildCount());
+                        assertEquals(3, group.getChildCount());
                         assertEquals(0, group.indexOfChild(brief));
                         assertEquals(1, group.indexOfChild(row));
                         assertEquals(2, row.getChildCount());
