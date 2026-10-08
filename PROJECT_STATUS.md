@@ -76,6 +76,15 @@ Die Anmeldung mit 2FA funktioniert.
 Andere Herstellergeräte und WebView-Versionen
 wurden nicht vollständig getestet.
 
+## Verbindliche Arbeitsweise
+
+- UI-Änderungen werden zuerst gemeinsam abgestimmt und erst nach ausdrücklicher Zustimmung umgesetzt.
+- Einstellungsseiten bleiben kompakt und sollen ohne unnötiges Scrollen bedienbar sein.
+- Kurze Erklärungen stehen vor der zugehörigen Option; ausführliche Erklärungen gehören in die Hilfe.
+- Fragezeichen führen direkt zum passenden Hilfeabschnitt.
+- Ein vollständiger Fish-kompatibler Abschlussblock prüft den Arbeitsbaum, führt Tests, Lint und Builds aus, erstellt Commit und Push, startet bei Bedarf den signierten GitHub-Testbuild und prüft dessen Ergebnis.
+- APKs werden bei Bedarf direkt über GitHub heruntergeladen; ein Stable-Release erfolgt nur nach ausdrücklicher Freigabe.
+
 ## Nächster Schritt
 
 Phase 9 abschließen: Dokumentation prüfen, 3.0.0-Versionierung

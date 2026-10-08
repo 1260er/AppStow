@@ -194,21 +194,42 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <CheckBox
-                android:id="@+id/sortingTimeProfileEnabled"
-                style="@style/UiBodyText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:text="@string/sorting_time_profile" />
-
             <TextView
+                android:id="@+id/sortingTimeProfileBrief"
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:text="@string/sorting_time_profile_hint"
+                android:text="@string/sorting_time_profile_brief"
                 android:textColor="@color/ui_text_secondary" />
+
+            <LinearLayout
+                android:id="@+id/sortingTimeProfileRow"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/icon_button_size"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/sortingTimeProfileEnabled"
+                    style="@style/UiBodyText"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:minHeight="48dp"
+                    android:text="@string/sorting_time_profile" />
+
+                <ImageButton
+                    android:id="@+id/sortingTimeProfileHelp"
+                    android:layout_width="@dimen/icon_button_size"
+                    android:layout_height="@dimen/icon_button_size"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/sorting_time_profile_help_action"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_help_circle"
+                    android:tooltipText="@string/sorting_time_profile_help_action" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/sortingFavoriteCount"

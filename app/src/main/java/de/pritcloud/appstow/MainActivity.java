@@ -12,6 +12,7 @@ import android.content.res.ColorStateList;
 import android.content.pm.ChangedPackages;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -211,6 +212,7 @@ public class MainActivity extends Activity {
     private CheckBox sortingSemiApps;
     private CheckBox sortingSemiShortcuts;
     private CheckBox sortingTimeProfileEnabled;
+    private ImageButton sortingTimeProfileHelp;
     private CheckBox sortingSuggestionsEnabled;
     private TextView sortingSuggestionInterval;
     private TextView sortingSuggestionFavoriteCount;
@@ -6383,6 +6385,10 @@ public class MainActivity extends Activity {
                 sortingManagement.findViewById(
                         R.id.sortingTimeProfileEnabled);
 
+        sortingTimeProfileHelp =
+                sortingManagement.findViewById(
+                        R.id.sortingTimeProfileHelp);
+
         sortingSuggestionsEnabled =
                 sortingManagement.findViewById(
                         R.id.sortingSuggestionsEnabled);
@@ -6458,6 +6464,9 @@ public class MainActivity extends Activity {
                         saveSortingSettingsFromControls();
                     }
                 });
+
+        sortingTimeProfileHelp.setOnClickListener(
+                view -> showHelp(false, true));
 
         sortingSuggestionsEnabled.setOnCheckedChangeListener(
                 (button, checked) -> {
@@ -8469,6 +8478,13 @@ public class MainActivity extends Activity {
     private void showHelp(
             boolean jumpToShortcuts) {
 
+        showHelp(jumpToShortcuts, false);
+    }
+
+    private void showHelp(
+            boolean jumpToShortcuts,
+            boolean jumpToTimeProfiles) {
+
         currentPage = PAGE_HELP;
         setTopNavigation(false);
 
@@ -8516,7 +8532,25 @@ public class MainActivity extends Activity {
                 getNavigationDrawerGravity());
 
         helpManagement.post(() -> {
-            if (jumpToShortcuts) {
+            if (jumpToTimeProfiles) {
+                helpManagement.scrollTo(0, 0);
+
+                View target =
+                        helpManagement.findViewById(
+                                R.id.helpTimeProfileSection);
+
+                Rect bounds = new Rect();
+                target.getDrawingRect(bounds);
+
+                helpManagement.offsetDescendantRectToMyCoords(
+                        target,
+                        bounds);
+
+                helpManagement.scrollTo(
+                        0,
+                        bounds.top);
+
+            } else if (jumpToShortcuts) {
                 helpManagement.smoothScrollTo(
                         0,
                         helpShortcutSection.getTop());

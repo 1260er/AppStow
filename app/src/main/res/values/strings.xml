@@ -21,7 +21,9 @@
     <string name="sorting_area_categories">Categories</string>
     <string name="sorting_area_apps">Apps</string>
     <string name="sorting_area_shortcuts">Custom shortcuts</string>
-    <string name="sorting_time_profile">Use day and evening/night profiles</string>
+    <string name="sorting_time_profile">Use day/evening profiles</string>
+    <string name="sorting_time_profile_brief">Sorting considers daytime and evening usage separately.</string>
+    <string name="sorting_time_profile_help_action">Help with time profiles</string>
     <string name="sorting_time_profile_hint">Time profiles consider which apps and shortcuts you use more often during the day or evening. For example, everyday apps may appear higher during the day, while games or leisure apps move up in the evening. You choose when each period starts.</string>
     <string name="sorting_day_start_value">Start of day: %1$s</string>
     <string name="sorting_evening_start_value">Start of evening/night: %1$s</string>
@@ -301,6 +303,8 @@ None found</string>
     <string name="help_sort_items_text">Tap the sort icon inside a section. Drag entries using their handles. In grid view, tiles can be moved in all four directions using the handles at the upper right.</string>
     <string name="help_sort_finish_title">Save the order</string>
     <string name="help_sort_finish_text">Tap the check mark to finish sorting. The new order is saved.</string>
+    <string name="help_sort_time_profile_title">Time profiles</string>
+    <string name="help_sort_time_profile_text">In semi-automatic and fully automatic sorting, you can enable separate day and evening/night profiles. AppStow considers which apps and shortcuts you launch more often through AppStow at each time of day. Everyday apps may appear higher during the day, while games or leisure apps used more often in the evening may move up. You choose when the day and evening/night periods start. Time profiles are not active in manual sorting mode.</string>
     <string name="help_backup_title">Backup &amp; Restore</string>
 
     <string name="help_backup_create_title">Create a backup</string>
