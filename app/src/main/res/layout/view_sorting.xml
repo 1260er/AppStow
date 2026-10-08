@@ -203,6 +203,14 @@
                 android:text="@string/sorting_time_profile" />
 
             <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:text="@string/sorting_time_profile_hint"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
                 android:id="@+id/sortingFavoriteCount"
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"

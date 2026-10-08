@@ -22,6 +22,8 @@ Funktionen:
 • Helles und dunkles Systemdesign
 • Darstellung, Bedienseite und Startverhalten anpassen
 
+Zeitprofile berücksichtigen unterschiedliche Nutzungsgewohnheiten am Tag und am Abend. Alltags-Apps können tagsüber und Spiele oder Freizeit-Apps abends weiter oben erscheinen. Die Startzeiten sind frei einstellbar.
+
 AppStow benötigt kein Benutzerkonto. Der Netzwerkzugriff wird für konfigurierte Webseiten und Web-Apps verwendet.
 
 Die Nutzungsstatistik erfasst nur Starts über AppStow und bleibt lokal auf dem Gerät.

@@ -105,7 +105,10 @@ reset independently of the display settings.
 Sorting supports manual, semi-automatic, and fully automatic modes.
 Semi-automatic mode lets users select which areas AppStow manages.
 Optional usage-based suggestions and day/evening profiles are available.
-Manual mode remains the default.
+Time profiles help automatic sorting reflect different usage patterns
+during the day and evening. Everyday apps can appear higher during
+the day, while games and leisure apps may move up in the evening.
+Users choose when each period starts. Manual mode remains the default.
 
 ## Backup and restore (3.0.0, in development)
 

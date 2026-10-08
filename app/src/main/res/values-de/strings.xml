@@ -22,6 +22,7 @@
     <string name="sorting_area_apps">Apps</string>
     <string name="sorting_area_shortcuts">Eigene Shortcuts</string>
     <string name="sorting_time_profile">Tag- und Abend-/Nachtprofil verwenden</string>
+    <string name="sorting_time_profile_hint">Zeitprofile berücksichtigen, welche Apps und Shortcuts du tagsüber oder abends häufiger nutzt. So können beispielsweise Alltags-Apps am Tag und Spiele oder Freizeit-Apps am Abend weiter oben erscheinen. Die Startzeiten legst du selbst fest.</string>
     <string name="sorting_day_start_value">Beginn Tag: %1$s</string>
     <string name="sorting_evening_start_value">Beginn Abend/Nacht: %1$s</string>
     <string name="sorting_day_start_title">Beginn Tag</string>

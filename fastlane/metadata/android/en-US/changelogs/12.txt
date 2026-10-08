@@ -1,0 +1,8 @@
+New in AppStow 3.0.0:
+- Local usage statistics for apps and shortcuts.
+- Manual, semi-automatic and automatic sorting.
+- Sorting suggestions and optional time profiles.
+- Expanded appearance and control settings.
+- New encrypted backup format v3.
+
+Regular updates preserve app configuration. Old 2.x backup files cannot be imported into 3.0.
