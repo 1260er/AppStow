@@ -60,14 +60,14 @@ android {
         versionCode = if (devReleaseBuild) {
             providers.environmentVariable("APPSTOW_VERSION_CODE")
                 .orNull?.toIntOrNull()
-                ?.takeIf { it > 11 }
+                ?.takeIf { it > 12 }
                 ?: throw GradleException(
-                    "Dev release requires APPSTOW_VERSION_CODE > 11."
+                    "Dev release requires APPSTOW_VERSION_CODE > 12."
                 )
         } else {
-            11
+            12
         }
-        versionName = "2.0.1"
+        versionName = "3.0.0"
     }
 
     signingConfigs {
