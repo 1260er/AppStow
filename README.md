@@ -16,6 +16,10 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 - Assign categories by tapping an app
 - Reorder overview sections and their contents
 - Replace favorite stars with drag handles while sorting
+- View local usage statistics for launches started through AppStow
+- Use manual, semi-automatic, or fully automatic sorting
+- Configure sorting suggestions and optional day/evening profiles
+- Customize appearance, controls, and start behavior
 - Create encrypted backups and restore the AppStow configuration
 - German and English interface
 - Light and dark system themes
@@ -92,9 +96,20 @@ Integrated web apps require a validated network connection.
 Local-only networks without validated internet access
 may therefore be rejected.
 
-## Backup and restore
+## Statistics and sorting (3.0.0, in development)
 
-AppStow 3.0 uses encrypted backup format v3. Backups include:
+AppStow records only launches started through AppStow. Usage statistics
+remain on the device, are retained for at most one year, and can be
+reset independently of the display settings.
+
+Sorting supports manual, semi-automatic, and fully automatic modes.
+Semi-automatic mode lets users select which areas AppStow manages.
+Optional usage-based suggestions and day/evening profiles are available.
+Manual mode remains the default.
+
+## Backup and restore (3.0.0, in development)
+
+AppStow 3.0.0 will use encrypted backup format v3. Backups include:
 
 - categories, symbols, assignments, and favorites
 - custom shortcuts
@@ -112,10 +127,22 @@ A successful restore resets usage statistics. References to apps that are no lon
 >
 > **Wichtiger Hinweis zu AppStow 3.0:** Mit Version 3.0 wird das Sicherungsformat von AppStow grundlegend überarbeitet. Sicherungen aus AppStow 2.x können in AppStow 3.0 nicht wiederhergestellt werden. Ebenso sind mit AppStow 3.0 erstellte Sicherungen nicht mit älteren AppStow-Versionen kompatibel.
 
+## Upgrading from 2.0.1 to 3.0.0
+
+AppStow 3.0.0 is intended to support an in-place Android update from
+2.0.1 while preserving existing on-device configuration such as
+categories, favorites, shortcuts, and manual ordering. This update
+does not require importing a backup file.
+
+Backup files created with AppStow 2.x cannot be imported into 3.0.0.
+Likewise, backups created with 3.0.0 cannot be imported into 2.x.
+The on-device APK upgrade test remains a release requirement.
+
 ## Privacy
 
 AppStow does not require an account.
 Network access is used for configured websites and web apps.
+Usage statistics remain local and are not uploaded by AppStow.
 
 ## Development
 

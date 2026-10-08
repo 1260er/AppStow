@@ -14,11 +14,19 @@ Funktionen:
 • Zwischen Listen- und Kachelansicht wechseln
 • Kachelansichten mit 3, 4 oder 5 Spalten konfigurieren
 • Bereiche und Einträge manuell sortieren
+• Nutzungsstatistik mit Zeiträumen, meistgenutzten und nicht gestarteten Apps
+• Manuelle, halbautomatische oder vollautomatische Sortierung
+• Optionale nutzungsbasierte Sortiervorschläge und Tag-/Abendprofile
 • Konfiguration verschlüsselt sichern und wiederherstellen
 • Deutsche und englische Benutzeroberfläche
 • Helles und dunkles Systemdesign
+• Darstellung, Bedienseite und Startverhalten anpassen
 
 AppStow benötigt kein Benutzerkonto. Der Netzwerkzugriff wird für konfigurierte Webseiten und Web-Apps verwendet.
+
+Die Nutzungsstatistik erfasst nur Starts über AppStow und bleibt lokal auf dem Gerät.
+
+Hinweis zu AppStow 3.0: Sicherungen aus Version 2.x können nicht in 3.0 importiert werden. Ein normales App-Update ist kein Backup-Import und benötigt keine Sicherungsdatei.
 
 AppStow benötigt Android 13 oder neuer.
 

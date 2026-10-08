@@ -2,6 +2,14 @@
 
 ## 3.0.0 – In Entwicklung
 
+- Neue lokale Nutzungsstatistik für über AppStow gestartete Apps und Shortcuts.
+- Auswertungen nach Zeitraum, meistgenutzten und nicht gestarteten Apps sowie Nutzung von Kategorien.
+- Statistikdaten bleiben lokal, werden höchstens ein Jahr gespeichert und können separat zurückgesetzt werden.
+- Neue manuelle, halbautomatische und vollautomatische Sortierung.
+- Optionale nutzungsbasierte Sortiervorschläge und Tag-/Abendprofile.
+- Neue Einstellungen für Darstellung, Bedienseite, Startverhalten und Design.
+- Der reguläre Upgradepfad von 2.0.1 auf 3.0.0 soll bestehende lokale Konfigurationen erhalten; der abschließende APK-Test steht noch aus.
+- Baseline Profiles für den aktuellen Entwicklungsstand neu generiert.
 - Neues verschlüsseltes Backupformat v3 für die AppStow-Konfiguration.
 - Sortier-, Anzeige-, Bedienungs-, Sprach- und Statistik-Anzeigeeinstellungen werden mitgesichert.
 - Nutzungsstatistiken selbst werden nicht gesichert und nach erfolgreicher Wiederherstellung zurückgesetzt.

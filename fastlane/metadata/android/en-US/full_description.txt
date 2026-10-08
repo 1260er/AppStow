@@ -14,11 +14,19 @@ Features:
 • Switch between list and grid views
 • Configure grid layouts with 3, 4 or 5 columns
 • Arrange sections and entries manually
+• Local usage statistics for frequently used and unlaunched apps
+• Manual, semi-automatic or fully automatic sorting
+• Optional usage-based suggestions and day/evening profiles
 • Create encrypted backups and restore your configuration
 • English and German interface
 • Light and dark system themes
+• Customizable appearance, control side and start behavior
 
 AppStow does not require an account. Network access is used for configured websites and web apps.
+
+Usage statistics record only launches through AppStow and remain on the device.
+
+Note for AppStow 3.0: Backup files from version 2.x cannot be imported into 3.0. A regular app update is not a backup import and does not require a backup file.
 
 AppStow requires Android 13 or newer.
 

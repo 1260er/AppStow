@@ -1,14 +1,26 @@
 # AppStow – Projektstatus
 
-Stand: 7. Oktober 2026
+Stand: 8. Oktober 2026
 
 ## Aktuelle Entwicklung – AppStow 3.0
 
-- Entwicklungsbranch: `dev/automatic-sorting`.
+- Entwicklungsbranch: `dev/phase9`, abgezweigt von `dev/automatic-sorting` bei `dev-208`.
 - Der stabile Release `v2.0.1` bleibt unverändert.
 - Statistik, automatische Sortierung sowie Darstellung & Bedienung sind umgesetzt.
 - Phase 8 – Backup v3 ist abgeschlossen.
-- Nächster Entwicklungsschritt ist Phase 9 – Hardening.
+- Phase 9 – Hardening ist aktiv.
+
+## Phase 9 – Hardening
+
+- Nicht verwendetes Statistik-Reset-Icon entfernt.
+- Regressionstests für gespeicherte Konfigurationen aus Stable 2.0.1 ergänzt.
+- Kategorien, Favoriten, Shortcuts und manuelle Reihenfolgen werden mit den aktuellen Speicherklassen erfolgreich gelesen.
+- Neue Sortier- und UI-Einstellungen besitzen sichere Standardwerte.
+- Vollständige Unit-Tests, Android Lint sowie Debug- und Release-Builds waren erfolgreich.
+- Baseline- und Startup-Profile mit dem Pixel-6-API-33-Managed-Device neu generiert.
+- Die lokale Release-APK enthält das eingebettete Baseline Profile.
+- Der tatsächliche In-place-APK-Upgrade-Test von 2.0.1 auf 3.0.0 steht noch aus.
+- Neue 3.0.0-Release-Dokumentation ist in Vorbereitung.
 
 ## Phase 8 – Backup v3
 
@@ -37,6 +49,8 @@ Stand: 7. Oktober 2026
 - Release-Commit: `56c9ffa489980506ce9266d3bdfea702bc75f2a7`.
 - Der stabile Tag und der stabile Release werden durch die 3.0-Entwicklung nicht verändert.
 - Deutsche und englische F-Droid-Metadaten sind vorhanden.
+- Der F-Droid-Aufnahme-MR !51175 wurde am 8. Oktober 2026 als gemergt gemeldet.
+- Der öffentliche F-Droid-Paketstatus ist damit noch nicht separat bestätigt.
 
 ## Qualitätssicherung
 
@@ -60,4 +74,7 @@ wurden nicht vollständig getestet.
 
 ## Nächster Schritt
 
-Phase 9 – Hardening: abschließende Robustheits-, Sicherheits- und Regressionstests für AppStow 3.0.
+Phase 9 abschließen: Dokumentation prüfen, 3.0.0-Versionierung
+vorbereiten, Upgrade von einer bestehenden signierten 2.0.1-Installation
+testen, finalen Dev-Release-Kandidaten prüfen und erst nach expliziter
+Freigabe den stabilen Release veröffentlichen.
