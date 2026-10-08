@@ -19,8 +19,11 @@ Stand: 8. Oktober 2026
 - Vollständige Unit-Tests, Android Lint sowie Debug- und Release-Builds waren erfolgreich.
 - Baseline- und Startup-Profile mit dem Pixel-6-API-33-Managed-Device neu generiert.
 - Die lokale Release-APK enthält das eingebettete Baseline Profile.
-- Der tatsächliche In-place-APK-Upgrade-Test von 2.0.1 auf 3.0.0 steht noch aus.
-- Neue 3.0.0-Release-Dokumentation ist in Vorbereitung.
+- Der direkte APK-Upgrade-Test von Stable 2.0.1 auf 3.0.0 wurde am 8. Oktober 2026 auf einem physischen Smartphone erfolgreich durchgeführt.
+- Android akzeptierte das Update ohne vorherige Deinstallation.
+- Kategorien, Favoriten, Shortcuts, Zuordnungen, Reihenfolgen und Einstellungen blieben laut Geräteprüfung erhalten.
+- GitHub Actions Run 37773022513 bestätigte Build, Versionsfolge und identische Signaturzertifikate.
+- Die Release-Dokumentation wurde für 3.0.0 aktualisiert.
 
 ## Phase 8 – Backup v3
 
