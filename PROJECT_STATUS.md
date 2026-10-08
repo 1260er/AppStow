@@ -23,6 +23,7 @@ Stand: 8. Oktober 2026
 - Android akzeptierte das Update ohne vorherige Deinstallation.
 - Kategorien, Favoriten, Shortcuts, Zuordnungen, Reihenfolgen und Einstellungen blieben laut Geräteprüfung erhalten.
 - GitHub Actions Run 37773022513 bestätigte Build, Versionsfolge und identische Signaturzertifikate.
+- Für den finalen Release 3.0.0 ist Versionscode 13 vorgesehen, damit auch bereits installierte Testversionen mit Code 12 aktualisiert werden können.
 - Die Release-Dokumentation wurde für 3.0.0 aktualisiert.
 
 ## Phase 8 – Backup v3

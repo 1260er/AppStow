@@ -253,7 +253,7 @@ jobs:
 
           grep -Eq             "^package: name=.de[.]pritcloud[.]appstow. versionCode=.11. versionName=.2[.]0[.]1."             "$DIR/stable-badging.txt"
 
-          grep -Eq             "^package: name=.de[.]pritcloud[.]appstow. versionCode=.12. versionName=.3[.]0[.]0."             "$DIR/candidate-badging.txt"
+          grep -Eq             "^package: name=.de[.]pritcloud[.]appstow. versionCode=.13. versionName=.3[.]0[.]0."             "$DIR/candidate-badging.txt"
 
           if grep -q "application-debuggable" "$DIR/candidate-badging.txt"
           then
