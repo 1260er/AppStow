@@ -2,6 +2,12 @@ name: Dev release
 
 on:
   workflow_dispatch:
+    inputs:
+      upgrade_test:
+        description: "Build a signed 3.0.0 upgrade-test APK without a release"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -12,6 +18,7 @@ concurrency:
 
 jobs:
   dev-release:
+    if: ${{ !inputs.upgrade_test }}
     runs-on: ubuntu-24.04
 
     env:
@@ -124,6 +131,160 @@ jobs:
           gh release create "$TAG"             "$APK_FILE" "$APK_FILE.sha256"             --target "$GITHUB_SHA"             --title "AppStow Dev ${GITHUB_RUN_NUMBER}"             --notes "R8-optimierter Test-Build aus Ref ${GITHUB_REF_NAME}."             --prerelease             --latest=false
 
       - name: Remove restored keystore
+        if: always()
+        shell: bash
+        run: rm -f "$KEYSTORE_PATH"
+
+  upgrade-test:
+    if: ${{ inputs.upgrade_test }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+
+    env:
+      KEYSTORE_PATH: /tmp/appstow-release.p12
+      APPSTOW_KEYSTORE_PASSWORD: ${{ secrets.APPSTOW_KEYSTORE_PASSWORD }}
+      APPSTOW_KEY_ALIAS: ${{ secrets.APPSTOW_KEY_ALIAS }}
+      APPSTOW_KEY_PASSWORD: ${{ secrets.APPSTOW_KEY_PASSWORD }}
+
+    steps:
+      - name: Require phase9 development branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/dev/phase9"
+
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Validate version and signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.APPSTOW_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "versionName = "3.0.0"" app/build.gradle.kts
+          grep -Fq "applicationId = "de.pritcloud.appstow"" app/build.gradle.kts
+          test -n "$KEYSTORE_BASE64"
+          test -n "$APPSTOW_KEYSTORE_PASSWORD"
+          test -n "$APPSTOW_KEY_ALIAS"
+          test -n "$APPSTOW_KEY_PASSWORD"
+
+      - name: Restore signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.APPSTOW_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf "%s" "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+          chmod 600 "$KEYSTORE_PATH"
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set +o pipefail
+          yes | sdkmanager --licenses >/dev/null
+          set -o pipefail
+          sdkmanager "platforms;android-36" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: "8.11.1"
+
+      - name: Build signed 3.0.0 upgrade candidate
+        env:
+          APPSTOW_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
+          APPSTOW_REQUIRE_RELEASE_SIGNING: "true"
+        run: ./gradlew --no-daemon clean testDebugUnitTest testReleaseUnitTest lintRelease assembleRelease
+
+      - name: Compare signed 2.0.1 and 3.0.0 APKs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DIR="$RUNNER_TEMP/appstow-upgrade"
+          APK="app/build/outputs/apk/release/app-release.apk"
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+
+          mkdir -p "$DIR"
+          test -s "$APK"
+          test -s app/build/outputs/mapping/release/mapping.txt
+
+          gh release download v2.0.1             --repo "$GITHUB_REPOSITORY"             --pattern "AppStow-2.0.1.apk*"             --dir "$DIR"
+
+          test -s "$DIR/AppStow-2.0.1.apk"
+          test -s "$DIR/AppStow-2.0.1.apk.sha256"
+
+          (
+            cd "$DIR"
+            sha256sum --check AppStow-2.0.1.apk.sha256
+          )
+
+          "$APKSIGNER" verify --verbose --print-certs             "$DIR/AppStow-2.0.1.apk" > "$DIR/stable-certificate.txt"
+
+          "$APKSIGNER" verify --verbose --print-certs             "$APK" > "$DIR/candidate-certificate.txt"
+
+          STABLE_CERT=$(sed -n             "s/^Signer #1 certificate SHA-256 digest: //p"             "$DIR/stable-certificate.txt" | head -n 1)
+
+          CANDIDATE_CERT=$(sed -n             "s/^Signer #1 certificate SHA-256 digest: //p"             "$DIR/candidate-certificate.txt" | head -n 1)
+
+          test -n "$STABLE_CERT"
+          test -n "$CANDIDATE_CERT"
+          test "$STABLE_CERT" = "$CANDIDATE_CERT"
+
+          echo "Signaturzertifikate stimmen überein."
+
+          "$AAPT" dump badging "$DIR/AppStow-2.0.1.apk"             > "$DIR/stable-badging.txt"
+
+          "$AAPT" dump badging "$APK"             > "$DIR/candidate-badging.txt"
+
+          grep -Eq             "^package: name=.de[.]pritcloud[.]appstow. versionCode=.11. versionName=.2[.]0[.]1."             "$DIR/stable-badging.txt"
+
+          grep -Eq             "^package: name=.de[.]pritcloud[.]appstow. versionCode=.12. versionName=.3[.]0[.]0."             "$DIR/candidate-badging.txt"
+
+          if grep -q "application-debuggable" "$DIR/candidate-badging.txt"
+          then
+            echo "FEHLER: Testkandidat ist debuggable."
+            exit 1
+          fi
+
+          unzip -Z1 "$APK" > "$DIR/candidate-files.txt"
+          grep -Fxq "assets/dexopt/baseline.prof"             "$DIR/candidate-files.txt"
+
+          cp "$APK" "$DIR/AppStow-3.0.0-upgrade-test.apk"
+
+          (
+            cd "$DIR"
+            sha256sum               AppStow-2.0.1.apk               AppStow-3.0.0-upgrade-test.apk               > SHA256SUMS.txt
+          )
+
+          echo "=== SIGNATUR UND VERSIONSFOLGE GEPRÜFT ==="
+
+      - name: Upload upgrade-test APKs
+        uses: actions/upload-artifact@v6
+        with:
+          name: AppStow-3.0.0-upgrade-test
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/appstow-upgrade/AppStow-2.0.1.apk
+            ${{ runner.temp }}/appstow-upgrade/AppStow-3.0.0-upgrade-test.apk
+            ${{ runner.temp }}/appstow-upgrade/SHA256SUMS.txt
+
+      - name: Remove signing keystore
         if: always()
         shell: bash
         run: rm -f "$KEYSTORE_PATH"
