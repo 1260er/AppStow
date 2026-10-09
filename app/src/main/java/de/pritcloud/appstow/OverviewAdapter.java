@@ -115,7 +115,7 @@ final class OverviewAdapter
 
     private boolean automaticFavorites;
     private boolean automaticCategories;
-    private boolean automaticApps;
+    private boolean automaticCategoryContents;
     private boolean automaticShortcuts;
 
     private final Map<String, Integer>
@@ -171,7 +171,7 @@ final class OverviewAdapter
             boolean enabled,
             boolean favorites,
             boolean categories,
-            boolean apps,
+            boolean categoryContents,
             boolean shortcuts,
             Map<String, Integer> overallScores,
             Map<String, Integer> profileScores,
@@ -194,9 +194,9 @@ final class OverviewAdapter
                 enabled
                         && categories;
 
-        automaticApps =
+        automaticCategoryContents =
                 enabled
-                        && apps;
+                        && categoryContents;
 
         automaticShortcuts =
                 enabled
@@ -260,7 +260,7 @@ final class OverviewAdapter
         automaticCategories =
                 true;
 
-        automaticApps =
+        automaticCategoryContents =
                 true;
 
         automaticShortcuts =
@@ -845,94 +845,15 @@ final class OverviewAdapter
             OverviewSection section,
             List<String> itemIds) {
 
-        Set<String> result =
-                new HashSet<>();
+        if (itemIds == null
+                || !isSectionItemsFullyAutomatic(section)) {
 
-        if ((!semiAutomaticSorting
-                && !fullAutomaticSorting)
-                || section == null
-                || itemIds == null) {
-
-            return result;
+            return new HashSet<>();
         }
 
-        if (fullAutomaticSorting) {
-
-            result.addAll(
-                    itemIds);
-
-            return result;
-        }
-
-        if ("favorites".equals(
-                section.id)) {
-
-            if (!automaticFavorites) {
-                return result;
-            }
-
-            for (String id :
-                    itemIds) {
-
-                if (automaticApps
-                        && id.startsWith(
-                        "app:")) {
-
-                    result.add(id);
-
-                } else if (automaticShortcuts
-                        && id.startsWith(
-                        "shortcut:")) {
-
-                    result.add(id);
-                }
-            }
-
-            return result;
-        }
-
-        if ("shortcuts".equals(
-                section.id)) {
-
-            if (automaticShortcuts) {
-                for (String id :
-                        itemIds) {
-
-                    if (id.startsWith(
-                            "shortcut:")) {
-
-                        result.add(id);
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        if (!section.id.startsWith(
-                CATEGORY_PREFIX)) {
-
-            return result;
-        }
-
-        for (String id :
-                itemIds) {
-
-            if (automaticApps
-                    && id.startsWith(
-                    "app:")) {
-
-                result.add(id);
-
-            } else if (automaticShortcuts
-                    && id.startsWith(
-                    "shortcut:")) {
-
-                result.add(id);
-            }
-        }
-
-        return result;
+        // Immer alle Eintraege eines gewaehlten Bereichs:
+        // Apps und Shortcuts werden gleich behandelt.
+        return new HashSet<>(itemIds);
     }
 
     private boolean isItemAutomatic(
@@ -977,24 +898,16 @@ final class OverviewAdapter
             return false;
         }
 
-        if ("favorites".equals(
-                section.id)) {
-
-            return automaticFavorites
-                    && automaticApps
-                    && automaticShortcuts;
+        if ("favorites".equals(section.id)) {
+            return automaticFavorites;
         }
 
-        if ("shortcuts".equals(
-                section.id)) {
-
+        if ("shortcuts".equals(section.id)) {
             return automaticShortcuts;
         }
 
-        return section.id.startsWith(
-                CATEGORY_PREFIX)
-                && automaticApps
-                && automaticShortcuts;
+        return section.id.startsWith(CATEGORY_PREFIX)
+                && automaticCategoryContents;
     }
 
     private OverviewSection findSection(

@@ -19,7 +19,7 @@
     <string name="sorting_automatic_description">AppStow verwaltet die gesamte Reihenfolge und die automatischen Favoriten.</string>
     <string name="sorting_area_favorites">Favoriten</string>
     <string name="sorting_area_categories">Kategorien</string>
-    <string name="sorting_area_apps">Apps</string>
+    <string name="sorting_area_apps">Kategorieinhalte</string>
     <string name="sorting_area_shortcuts">Eigene Shortcuts</string>
     <string name="sorting_time_profile">Tag-/Abendprofil verwenden</string>
     <string name="sorting_time_profile_brief">Die Sortierung berücksichtigt deine Nutzung tagsüber und am Abend getrennt.</string>
