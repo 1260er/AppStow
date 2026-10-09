@@ -173,8 +173,10 @@
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1.3"
+                    android:layout_weight="1"
                     android:minHeight="48dp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
                     android:text="@string/sorting_area_shortcuts" />
 
                 <CheckBox
@@ -182,8 +184,10 @@
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="0.7"
+                    android:layout_weight="1"
                     android:minHeight="48dp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
                     android:text="@string/sorting_area_apps" />
 
             </LinearLayout>

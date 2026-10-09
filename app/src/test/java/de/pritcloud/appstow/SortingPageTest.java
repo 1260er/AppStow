@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -299,6 +298,38 @@ public class SortingPageTest {
                                 R.id.sortingSemiApps,
                                 bottom.getChildAt(1).getId());
 
+                        for (LinearLayout row :
+                                new LinearLayout[]{top, bottom}) {
+
+                            for (int i = 0; i < 2; i++) {
+
+                                LinearLayout.LayoutParams params =
+                                        (LinearLayout.LayoutParams)
+                                                row.getChildAt(i)
+                                                        .getLayoutParams();
+
+                                assertEquals(0, params.width);
+                                assertEquals(1f, params.weight, 0f);
+                            }
+                        }
+
+                        CheckBox truncatedShortcuts =
+                                activity.findViewById(
+                                        R.id.sortingSemiShortcuts);
+
+                        assertEquals(
+                                android.text.TextUtils.TruncateAt.END,
+                                truncatedShortcuts.getEllipsize());
+
+                        assertEquals(
+                                1,
+                                truncatedShortcuts.getMaxLines());
+
+                        assertEquals(
+                                activity.getString(
+                                        R.string.sorting_area_shortcuts),
+                                truncatedShortcuts.getText().toString());
+
                         CheckBox shortcuts =
                                 activity.findViewById(
                                         R.id.sortingSemiShortcuts);
@@ -349,6 +380,112 @@ public class SortingPageTest {
                                         R.id.sortingSemiApps))
                                         .isChecked());
                     });
+        }
+    }
+
+    @Test
+    public void semiCheckboxesStayIndependentAcrossModeChanges() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                activity.findViewById(
+                        R.id.navSorting).performClick();
+
+                activity.findViewById(
+                        R.id.sortingModeSemi).performClick();
+
+                int[] ids = {
+                        R.id.sortingSemiFavorites,
+                        R.id.sortingSemiCategories,
+                        R.id.sortingSemiShortcuts,
+                        R.id.sortingSemiApps
+                };
+
+                boolean[] expected = {
+                        true, true, true, true
+                };
+
+                for (int i = 0; i < ids.length; i++) {
+
+                    CheckBox checkBox =
+                            activity.findViewById(ids[i]);
+
+                    assertTrue(checkBox.isChecked());
+                    checkBox.performClick();
+                    expected[i] = false;
+
+                    SortingSettingsStore.Settings settings =
+                            new SortingSettingsStore(activity).load();
+
+                    assertEquals(expected[0], settings.semiFavorites);
+                    assertEquals(expected[1], settings.semiCategories);
+                    assertEquals(expected[2], settings.semiShortcuts);
+                    assertEquals(expected[3], settings.semiApps);
+                }
+
+                CheckBox apps =
+                        activity.findViewById(
+                                R.id.sortingSemiApps);
+
+                apps.performClick();
+
+                SortingSettingsStore.Settings settings =
+                        new SortingSettingsStore(activity).load();
+
+                assertFalse(settings.semiFavorites);
+                assertFalse(settings.semiCategories);
+                assertFalse(settings.semiShortcuts);
+                assertTrue(settings.semiApps);
+
+                activity.findViewById(
+                        R.id.sortingModeManual).performClick();
+
+                assertEquals(
+                        SortingSettingsStore.Mode.MANUAL,
+                        new SortingSettingsStore(activity).load().mode);
+
+                activity.findViewById(
+                        R.id.sortingModeSemi).performClick();
+
+                settings =
+                        new SortingSettingsStore(activity).load();
+
+                assertFalse(settings.semiFavorites);
+                assertFalse(settings.semiCategories);
+                assertFalse(settings.semiShortcuts);
+                assertTrue(settings.semiApps);
+            });
+
+            scenario.recreate();
+
+            scenario.onActivity(activity -> {
+
+                SortingSettingsStore.Settings settings =
+                        new SortingSettingsStore(activity).load();
+
+                assertEquals(
+                        SortingSettingsStore.Mode.SEMI_AUTOMATIC,
+                        settings.mode);
+
+                assertFalse(
+                        ((CheckBox) activity.findViewById(
+                                R.id.sortingSemiFavorites)).isChecked());
+
+                assertFalse(
+                        ((CheckBox) activity.findViewById(
+                                R.id.sortingSemiCategories)).isChecked());
+
+                assertFalse(
+                        ((CheckBox) activity.findViewById(
+                                R.id.sortingSemiShortcuts)).isChecked());
+
+                assertTrue(
+                        ((CheckBox) activity.findViewById(
+                                R.id.sortingSemiApps)).isChecked());
+            });
         }
     }
 
