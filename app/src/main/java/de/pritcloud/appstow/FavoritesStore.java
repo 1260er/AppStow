@@ -30,6 +30,10 @@ final class FavoritesStore {
         return favorites.contains(packageName);
     }
 
+    Set<String> getFavoritePackages() {
+        return new HashSet<>(favorites);
+    }
+
     void replaceAll(
             Set<String> packageNames) {
 

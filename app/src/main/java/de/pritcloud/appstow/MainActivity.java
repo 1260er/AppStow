@@ -1881,8 +1881,57 @@ public class MainActivity extends Activity {
                                         sorting.getProfileLaunches()),
                                 settings.timeProfileEnabled);
 
+        boolean restoredFallback =
+                sortingSettingsStore
+                        .hasRestoredAutomaticFavorites();
+
+        List<String> savedFavorites =
+                new ArrayList<>();
+
+        if (restoredFallback
+                && ranked.isEmpty()) {
+
+            for (String packageName :
+                    favoritesStore.getFavoritePackages()) {
+
+                savedFavorites.add(
+                        SectionItemOrderStore
+                                .appItemId(packageName));
+            }
+
+            for (ShortcutEntry shortcut :
+                    shortcutStore.getShortcuts()) {
+
+                if (shortcut.favorite) {
+
+                    savedFavorites.add(
+                            SectionItemOrderStore
+                                    .shortcutItemId(shortcut.id));
+                }
+            }
+
+            savedFavorites =
+                    sectionItemOrderStore.getOrderedIds(
+                            "favorites",
+                            savedFavorites);
+        }
+
+        List<String> resolved =
+                AutomaticSortingPlanner
+                        .preserveRestoredFavoritesWithoutUsage(
+                                ranked,
+                                savedFavorites,
+                                restoredFallback);
+
+        if (restoredFallback
+                && !ranked.isEmpty()) {
+
+            sortingSettingsStore
+                    .clearRestoredAutomaticFavorites();
+        }
+
         return new HashSet<>(
-                ranked);
+                resolved);
     }
 
     private void applyAutomaticSectionOrder(
@@ -9070,6 +9119,31 @@ public class MainActivity extends Activity {
         if (requestCode
                 == REQUEST_CREATE_BACKUP) {
 
+            List<String> automaticFavoriteSnapshot =
+                    null;
+
+            if (sortingSettingsStore.load().mode
+                    == SortingSettingsStore.Mode.AUTOMATIC) {
+
+                if (!appsLoaded
+                        || overviewAdapter == null) {
+
+                    Toast.makeText(
+                            this,
+                            R.string.backup_failed,
+                            Toast.LENGTH_LONG).show();
+
+                    return;
+                }
+
+                automaticFavoriteSnapshot =
+                        overviewAdapter
+                                .snapshotVisibleAutomaticFavorites();
+            }
+
+            final List<String> favoritesForBackup =
+                    automaticFavoriteSnapshot;
+
             backupCreateButton.setEnabled(
                     false);
 
@@ -9100,7 +9174,8 @@ public class MainActivity extends Activity {
 
                                         backupProgressText.setText(
                                                 R.string.backup_verifying);
-                                    }));
+                                    }),
+                                    favoritesForBackup);
 
                     saveLastBackupSummary(
                             summary);

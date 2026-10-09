@@ -587,6 +587,28 @@ final class OverviewAdapter
         }
     }
 
+    List<String> snapshotVisibleAutomaticFavorites() {
+
+        if (!fullAutomaticSorting) {
+            throw new IllegalStateException(
+                    "Vollautomatik ist nicht aktiv.");
+        }
+
+        for (OverviewSection section : sections) {
+
+            if ("favorites".equals(section.id)) {
+
+                return new ArrayList<>(
+                        getRankedItemIds(
+                                section,
+                                getCurrentItemIds(section)));
+            }
+        }
+
+        throw new IllegalStateException(
+                "Favoritenbereich fehlt.");
+    }
+
     void materializeFullAutomaticOrders() {
 
         if (!fullAutomaticSorting) {

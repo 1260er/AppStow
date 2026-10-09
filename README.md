@@ -150,6 +150,13 @@ AppStow 3.0.0 will use encrypted backup format v3. Backups include:
 
 Usage statistics themselves, web-app sessions, and cookies are not included.
 
+Backups created in fully automatic mode capture the currently visible
+automatic favorites, including their combined app/shortcut order.
+After restore, these favorites remain available even though usage
+statistics are reset. New usage data can subsequently change the
+automatic selection. Switching to Manual before that retains the
+restored favorite selection and order.
+
 **Backup security:** Backup v3 uses AES-256-GCM with a random salt and IV. No user password is required. The key is derived from a fixed value embedded in the open-source application. The encryption prevents casual reading and detects accidental corruption, but it does not provide strong confidentiality or tamper protection against someone who can inspect the published source code. Keep backup files in a trusted, private location.
 
 A successful restore resets usage statistics. References to apps that are no longer installed are removed from favorites, category assignments, and app orders. Categories and custom shortcuts remain.

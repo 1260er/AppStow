@@ -10,6 +10,9 @@ final class SortingSettingsStore {
 
     private static final String KEY_MODE =
             "mode";
+
+    private static final String KEY_RESTORED_AUTO_FAVORITES =
+            "restored_auto_favorites_pending";
     private static final String KEY_SEMI_FAVORITES =
             "semi_favorites";
     private static final String KEY_SEMI_CATEGORIES =
@@ -243,10 +246,17 @@ final class SortingSettingsStore {
         validate(
                 settings);
 
+        boolean restoredFallback =
+                settings.mode == Mode.AUTOMATIC
+                        && hasRestoredAutomaticFavorites();
+
         preferences.edit()
                 .putString(
                         KEY_MODE,
                         settings.mode.name())
+                .putBoolean(
+                        KEY_RESTORED_AUTO_FAVORITES,
+                        restoredFallback)
                 .putBoolean(
                         KEY_SEMI_FAVORITES,
                         settings.semiFavorites)
@@ -280,6 +290,21 @@ final class SortingSettingsStore {
                 .putInt(
                         KEY_SUGGESTION_INTERVAL_DAYS,
                         settings.suggestionIntervalDays)
+                .apply();
+    }
+
+    boolean hasRestoredAutomaticFavorites() {
+
+        return preferences.getBoolean(
+                KEY_RESTORED_AUTO_FAVORITES,
+                false);
+    }
+
+    void clearRestoredAutomaticFavorites() {
+
+        preferences.edit()
+                .remove(
+                        KEY_RESTORED_AUTO_FAVORITES)
                 .apply();
     }
 

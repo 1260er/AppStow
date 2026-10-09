@@ -60,6 +60,39 @@ final class AutomaticSortingPlanner {
         return result;
     }
 
+    static List<String> preserveRestoredFavoritesWithoutUsage(
+            List<String> ranked,
+            List<String> restored,
+            boolean fallbackEnabled) {
+
+        List<String> result =
+                ranked == null
+                        ? new ArrayList<>()
+                        : new ArrayList<>(ranked);
+
+        if (!fallbackEnabled
+                || !result.isEmpty()) {
+
+            return result;
+        }
+
+        if (restored == null) {
+            return result;
+        }
+
+        for (String id : restored) {
+
+            if (id != null
+                    && !id.isBlank()
+                    && !result.contains(id)) {
+
+                result.add(id);
+            }
+        }
+
+        return result;
+    }
+
     static List<String> rankSections(
             List<String> baselineOrder,
             Map<String, Integer> overallWeighted,

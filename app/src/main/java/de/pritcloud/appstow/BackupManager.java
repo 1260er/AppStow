@@ -126,8 +126,24 @@ final class BackupManager {
             Runnable onVerificationStarted)
             throws IOException, JSONException {
 
+        return writeBackup(
+                context,
+                uri,
+                onVerificationStarted,
+                null);
+    }
+
+    static BackupSummary writeBackup(
+            Context context,
+            Uri uri,
+            Runnable onVerificationStarted,
+            List<String> visibleAutomaticFavorites)
+            throws IOException, JSONException {
+
         JSONObject backup =
-                createBackup(context);
+                createBackup(
+                        context,
+                        visibleAutomaticFavorites);
 
         JSONObject envelope =
                 BackupCrypto.encrypt(
@@ -1041,7 +1057,8 @@ final class BackupManager {
     }
 
     private static JSONObject createBackup(
-            Context context)
+            Context context,
+            List<String> visibleAutomaticFavorites)
             throws JSONException {
 
         SharedPreferences categoryPrefs =
@@ -1242,11 +1259,107 @@ final class BackupManager {
                 BackupV3Configuration.create(
                         context));
 
+        if (visibleAutomaticFavorites != null
+                && new SortingSettingsStore(context)
+                        .load().mode
+                == SortingSettingsStore.Mode.AUTOMATIC) {
+
+            applyVisibleAutomaticFavorites(
+                    backup,
+                    visibleAutomaticFavorites);
+        }
+
         validateBackup(
                 backup,
                 true);
 
         return backup;
+    }
+
+    private static void applyVisibleAutomaticFavorites(
+            JSONObject backup,
+            List<String> visibleIds)
+            throws JSONException {
+
+        Set<String> selected =
+                new HashSet<>();
+
+        JSONArray shortcuts =
+                backup.getJSONArray(
+                        "shortcuts");
+
+        Set<String> knownShortcuts =
+                new HashSet<>();
+
+        for (int index = 0;
+             index < shortcuts.length();
+             index++) {
+
+            knownShortcuts.add(
+                    shortcuts.getJSONObject(index)
+                            .getString("id"));
+        }
+
+        JSONArray favoritePackages =
+                new JSONArray();
+
+        JSONArray favoriteOrder =
+                new JSONArray();
+
+        for (String itemId : visibleIds) {
+
+            if (itemId == null
+                    || !selected.add(itemId)) {
+
+                throw new JSONException(
+                        "Ungültiger automatischer Favorit.");
+            }
+
+            if (itemId.startsWith("app:")
+                    && itemId.length() > 4) {
+
+                favoritePackages.put(
+                        itemId.substring(4));
+
+            } else if (itemId.startsWith("shortcut:")
+                    && knownShortcuts.contains(
+                            itemId.substring(
+                                    "shortcut:".length()))) {
+
+                // Shortcut-Favoritenstatus unten aktualisieren.
+
+            } else {
+
+                throw new JSONException(
+                        "Unbekannter automatischer Favorit.");
+            }
+
+            favoriteOrder.put(itemId);
+        }
+
+        for (int index = 0;
+             index < shortcuts.length();
+             index++) {
+
+            JSONObject shortcut =
+                    shortcuts.getJSONObject(index);
+
+            shortcut.put(
+                    "favorite",
+                    selected.contains(
+                            "shortcut:"
+                                    + shortcut.getString("id")));
+        }
+
+        backup.put(
+                "favoritePackages",
+                favoritePackages);
+
+        backup.getJSONObject(
+                        "sectionItemOrder")
+                .put(
+                        "favorites",
+                        favoriteOrder);
     }
 
     private static boolean isKnownShortcutType(

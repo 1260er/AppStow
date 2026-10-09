@@ -486,6 +486,10 @@ final class BackupV3Configuration {
                                 "mode",
                                 sorting.mode.name())
                         .putBoolean(
+                                "restored_auto_favorites_pending",
+                                sorting.mode
+                                        == SortingSettingsStore.Mode.AUTOMATIC)
+                        .putBoolean(
                                 "semi_favorites",
                                 sorting.semiFavorites)
                         .putBoolean(

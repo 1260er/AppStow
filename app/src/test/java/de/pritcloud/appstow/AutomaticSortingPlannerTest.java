@@ -100,6 +100,39 @@ public class AutomaticSortingPlannerTest {
                 sections);
     }
 
+    @Test
+    public void restoredAutomaticFavoritesRemainUntilNewUsage() {
+
+        List<String> saved =
+                Arrays.asList(
+                        "shortcut:site",
+                        "app:com.saved.app");
+
+        assertEquals(
+                saved,
+                AutomaticSortingPlanner
+                        .preserveRestoredFavoritesWithoutUsage(
+                                List.of(),
+                                saved,
+                                true));
+
+        assertEquals(
+                List.of(),
+                AutomaticSortingPlanner
+                        .preserveRestoredFavoritesWithoutUsage(
+                                List.of(),
+                                saved,
+                                false));
+
+        assertEquals(
+                List.of("app:newly.used"),
+                AutomaticSortingPlanner
+                        .preserveRestoredFavoritesWithoutUsage(
+                                List.of("app:newly.used"),
+                                saved,
+                                true));
+    }
+
     private static Map<String, Integer> counts(
             Object... values) {
 
