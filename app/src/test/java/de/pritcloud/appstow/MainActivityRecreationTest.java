@@ -1155,6 +1155,216 @@ public class MainActivityRecreationTest {
     }
 
     @Test
+    public void savingAssignmentOnOverviewDoesNotShowAppList() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                CategoryStore store = getPrivateField(
+                        activity, "categoryStore", CategoryStore.class);
+
+                assertTrue(store.addCategory("Overlay test", "T"));
+
+                String categoryId =
+                        store.getCategories().get(0).id;
+
+                addFakeAssignmentApp(activity);
+
+                View appList =
+                        getPrivateField(activity, "appList", View.class);
+
+                View overviewList =
+                        getPrivateField(activity, "overviewList", View.class);
+
+                View searchContainer =
+                        getPrivateField(activity, "appSearchContainer", View.class);
+
+                assertEquals(View.VISIBLE, searchContainer.getVisibility());
+                assertEquals(View.VISIBLE, overviewList.getVisibility());
+                assertEquals(View.GONE, appList.getVisibility());
+
+                showAppCategoryAssignment(
+                        activity, "com.example.overlay.test");
+
+                AlertDialog dialog = latestDialog();
+
+                ListView list = dialog.getListView();
+
+                list.performItemClick(
+                        null, 0, list.getAdapter().getItemId(0));
+
+                Bundle selectedDraft =
+                        getPrivateField(
+                                activity,
+                                "appAssignmentDraft",
+                                Bundle.class);
+
+                assertNotNull(selectedDraft);
+
+                ArrayList<String> selectedCategories =
+                        selectedDraft.getStringArrayList(
+                                "app_assignment_categories");
+
+                assertNotNull(selectedCategories);
+
+                assertTrue(
+                        selectedCategories.contains(categoryId));
+
+                dialog.getButton(
+                        android.content.DialogInterface.BUTTON_POSITIVE)
+                        .performClick();
+
+                Shadows.shadowOf(
+                        Looper.getMainLooper())
+                        .idle();
+
+                assertEquals(
+                        java.util.Set.of(categoryId),
+                        store.getAssignedCategoryIds(
+                                "com.example.overlay.test"));
+
+                assertEquals(View.VISIBLE, overviewList.getVisibility());
+                assertEquals(View.GONE, appList.getVisibility());
+            });
+        }
+    }
+
+    @Test
+    public void savingAssignmentOnAppsPageKeepsAppListVisible() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                CategoryStore store = getPrivateField(
+                        activity, "categoryStore", CategoryStore.class);
+
+                assertTrue(store.addCategory("Apps page test", "T"));
+
+                String categoryId =
+                        store.getCategories().get(0).id;
+
+                addFakeAssignmentApp(activity);
+
+                activity.findViewById(R.id.navApps).performClick();
+
+                View appList =
+                        getPrivateField(activity, "appList", View.class);
+
+                View overviewList =
+                        getPrivateField(activity, "overviewList", View.class);
+
+                assertEquals(View.VISIBLE, appList.getVisibility());
+                assertEquals(View.GONE, overviewList.getVisibility());
+
+                showAppCategoryAssignment(
+                        activity, "com.example.overlay.test");
+
+                AlertDialog dialog = latestDialog();
+
+                ListView list = dialog.getListView();
+
+                list.performItemClick(
+                        null, 0, list.getAdapter().getItemId(0));
+
+                Bundle selectedDraft =
+                        getPrivateField(
+                                activity,
+                                "appAssignmentDraft",
+                                Bundle.class);
+
+                assertNotNull(selectedDraft);
+
+                ArrayList<String> selectedCategories =
+                        selectedDraft.getStringArrayList(
+                                "app_assignment_categories");
+
+                assertNotNull(selectedCategories);
+
+                assertTrue(
+                        selectedCategories.contains(categoryId));
+
+                dialog.getButton(
+                        android.content.DialogInterface.BUTTON_POSITIVE)
+                        .performClick();
+
+                Shadows.shadowOf(
+                        Looper.getMainLooper())
+                        .idle();
+
+                assertEquals(
+                        java.util.Set.of(categoryId),
+                        store.getAssignedCategoryIds(
+                                "com.example.overlay.test"));
+
+                assertEquals(
+                        "apps",
+                        getPrivateField(
+                                activity,
+                                "currentPage",
+                                String.class));
+
+                assertEquals(
+                        View.GONE,
+                        overviewList.getVisibility());
+
+                View pageMessage =
+                        getPrivateField(
+                                activity,
+                                "pageMessage",
+                                View.class);
+
+                boolean listVisible =
+                        appList.getVisibility() == View.VISIBLE;
+
+                boolean messageVisible =
+                        pageMessage.getVisibility() == View.VISIBLE;
+
+                // A completed assignment may remove the last
+                // matching app or a background reload may
+                // replace the synthetic test app. The page
+                // must display exactly one valid state.
+                assertTrue(
+                        "Apps page must show either the list "
+                                + "or its loading/empty message.",
+                        listVisible != messageVisible);
+            });
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addFakeAssignmentApp(
+            MainActivity activity) {
+
+        ResolveInfo info = new ResolveInfo();
+        info.activityInfo = new ActivityInfo();
+        info.activityInfo.name = "ExampleActivity";
+        info.activityInfo.packageName =
+                "com.example.overlay.test";
+
+        info.activityInfo.applicationInfo =
+                new ApplicationInfo();
+
+        info.activityInfo.applicationInfo.packageName =
+                "com.example.overlay.test";
+
+        AppEntry entry = new AppEntry(
+                "Overlay test app",
+                "com.example.overlay.test",
+                info,
+                null,
+                1);
+
+        List<AppEntry> apps = (List<AppEntry>)
+                getPrivateField(activity, "apps", List.class);
+
+        apps.add(entry);
+    }
+
+    @Test
     public void categoryDraftSurvivesRecreation() {
 
         try (ActivityScenario<MainActivity> scenario =

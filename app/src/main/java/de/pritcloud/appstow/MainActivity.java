@@ -5329,9 +5329,8 @@ public class MainActivity extends Activity {
                                                     packageName,
                                                     selectedIds);
 
-                                    if (appSearchContainer
-                                            .getVisibility()
-                                            == View.VISIBLE) {
+                                    if (PAGE_APPS.equals(
+                                            currentPage)) {
 
                                         renderApps(
                                                 appSearch
