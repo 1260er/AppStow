@@ -27,8 +27,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 final class WebAppBlobDownloadBridge
         implements AutoCloseable {
@@ -39,16 +41,37 @@ final class WebAppBlobDownloadBridge
     private static final int MAX_CHUNK =
             64 * 1024;
 
+    private static final int MAX_QUEUED_MESSAGES = 8;
+
     private static final long MAX_FILE_SIZE =
             512L * 1024 * 1024;
 
+    private static final long PENDING_FILE_LIFETIME_SECONDS =
+            24L * 60L * 60L;
+
     private final Activity activity;
     private final Uri allowedOrigin;
-    private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
+    private final ThreadPoolExecutor executor =
+            createDownloadExecutor();
 
     private volatile boolean closed;
-    private Session session;
+    private volatile Session session;
+
+    static ThreadPoolExecutor createDownloadExecutor() {
+        return new ThreadPoolExecutor(
+                1,
+                1,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(
+                        MAX_QUEUED_MESSAGES));
+    }
+
+    static boolean isAcceptedChunk(byte[] data) {
+        return data != null
+                && data.length > 0
+                && data.length <= MAX_CHUNK;
+    }
 
     private WebAppBlobDownloadBridge(
             Activity activity,
@@ -399,10 +422,27 @@ final class WebAppBlobDownloadBridge
             byte[] data =
                     message.getArrayBuffer();
 
-            submit(() ->
+            if (!isAcceptedChunk(data)) {
+                Session active = session;
+                if (active != null) {
+                    reply(replyProxy, "error", active.id);
+                }
+                submit(this::abortSession);
+                return;
+            }
+
+            Session active = session;
+
+            if (!submit(() ->
                     writeChunk(
                             data,
-                            replyProxy));
+                            replyProxy))) {
+
+                if (active != null) {
+                    reply(replyProxy, "error", active.id);
+                }
+                showFailure();
+            }
 
             return;
         }
@@ -449,19 +489,27 @@ final class WebAppBlobDownloadBridge
                                         "mimeType",
                                         ""));
 
-                submit(() ->
+                if (!submit(() ->
                         startDownload(
                                 id,
                                 name,
                                 mime,
-                                replyProxy));
+                                replyProxy))) {
+
+                    reply(replyProxy, "error", id);
+                    showFailure();
+                }
 
             } else if ("end".equals(kind)) {
 
-                submit(() ->
+                if (!submit(() ->
                         finishDownload(
                                 id,
-                                replyProxy));
+                                replyProxy))) {
+
+                    reply(replyProxy, "error", id);
+                    showFailure();
+                }
 
             } else if ("abort".equals(kind)) {
 
@@ -473,15 +521,18 @@ final class WebAppBlobDownloadBridge
         }
     }
 
-    private void submit(Runnable task) {
+    private boolean submit(Runnable task) {
 
         if (closed) {
-            return;
+            return false;
         }
 
         try {
             executor.execute(task);
-        } catch (RuntimeException ignored) {
+            return true;
+
+        } catch (RejectedExecutionException ignored) {
+            return false;
         }
     }
 
@@ -520,6 +571,11 @@ final class WebAppBlobDownloadBridge
             values.put(
                     MediaStore.MediaColumns.IS_PENDING,
                     1);
+
+            values.put(
+                    MediaStore.MediaColumns.DATE_EXPIRES,
+                    System.currentTimeMillis() / 1000L
+                            + PENDING_FILE_LIFETIME_SECONDS);
 
             uri = resolver.insert(
                     MediaStore.Downloads.EXTERNAL_CONTENT_URI,
@@ -563,9 +619,7 @@ final class WebAppBlobDownloadBridge
             return;
         }
 
-        if (data == null
-                || data.length == 0
-                || data.length > MAX_CHUNK
+        if (!isAcceptedChunk(data)
                 || current.bytes > MAX_FILE_SIZE - data.length) {
 
             long id = current.id;
@@ -622,6 +676,9 @@ final class WebAppBlobDownloadBridge
             values.put(
                     MediaStore.MediaColumns.IS_PENDING,
                     0);
+
+            values.putNull(
+                    MediaStore.MediaColumns.DATE_EXPIRES);
 
             int updated =
                     activity.getContentResolver().update(
@@ -762,8 +819,16 @@ final class WebAppBlobDownloadBridge
 
         closed = true;
 
-        executor.execute(
-                this::abortSession);
+        // Bei ueberfuellter Queue zuerst wartende
+        // Nachrichten verwerfen, dann sauber abbrechen.
+        executor.getQueue().clear();
+
+        try {
+            executor.execute(this::abortSession);
+        } catch (RejectedExecutionException ignored) {
+            // Der laufende Worker kann noch blockiert sein.
+            // Die Pending-Datei besitzt ein Ablaufdatum.
+        }
 
         executor.shutdown();
     }
