@@ -6,6 +6,8 @@
 - Auswertungen nach Zeitraum, meistgenutzten und nicht gestarteten Apps sowie Nutzung von Kategorien.
 - Statistikdaten bleiben lokal, werden höchstens ein Jahr gespeichert und können separat zurückgesetzt werden.
 - Neue manuelle, halbautomatische und vollautomatische Sortierung.
+- Halbautomatik steuert Favoriten, Kategorien, Kategorieinhalte und eigene Shortcuts unabhängig; Apps und Shortcuts werden innerhalb eines Bereichs gemeinsam behandelt.
+- Sortiervorschläge lassen sich bereichsweise übernehmen.
 - Optionale nutzungsbasierte Sortiervorschläge und Tag-/Abendprofile.
 - Neue Einstellungen für Darstellung, Bedienseite, Startverhalten und Design.
 - Der direkte APK-Upgrade-Test von Stable 2.0.1 auf 3.0.0 wurde auf einem physischen Smartphone erfolgreich durchgeführt; die bestehende Konfiguration blieb erhalten.

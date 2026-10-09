@@ -564,6 +564,60 @@
                 android:textColor="@color/ui_text_secondary" />
 
             <TextView
+                android:id="@+id/helpSortModesTitle"
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_sort_modes_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_sort_modes_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                android:id="@+id/helpSortSuggestionsTitle"
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_sort_suggestions_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_sort_suggestions_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
+                android:id="@+id/helpSortAutomaticTitle"
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/help_sort_automatic_title"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/UiBodyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/help_sort_automatic_text"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ui_text_secondary" />
+
+            <TextView
                 android:id="@+id/helpTimeProfileSection"
                 style="@style/UiBodyText"
                 android:layout_width="match_parent"

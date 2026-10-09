@@ -10,7 +10,7 @@
     <string name="nav_statistics">Statistics</string>
     <string name="nav_sorting">Sorting</string>
 
-    <string name="sorting_description">Choose how AppStow manages the order of favorites, categories, apps and custom shortcuts.</string>
+    <string name="sorting_description">Choose how AppStow sorts Favorites, Categories, Category contents and Custom shortcuts.</string>
     <string name="sorting_mode_manual">Manual</string>
     <string name="sorting_mode_semi">Semi-automatic</string>
     <string name="sorting_mode_automatic">Automatic</string>
@@ -59,7 +59,7 @@
     <string name="sorting_suggestion_favorites_order">Sort favorites</string>
     <string name="sorting_suggestion_favorites_assignment">Reassign favorites</string>
     <string name="sorting_suggestion_categories_order">Sort categories</string>
-    <string name="sorting_suggestion_apps_order">Sort apps in categories</string>
+    <string name="sorting_suggestion_apps_order">Sort category contents</string>
     <string name="sorting_suggestion_shortcuts_order">Sort custom shortcuts</string>
     <string name="sorting_suggestion_apply">Apply</string>
     <string name="sorting_suggestion_none_selected">Select at least one suggestion.</string>
@@ -305,6 +305,12 @@ None found</string>
     <string name="help_sort_items_text">Tap the sort icon inside a section. Drag entries using their handles. In grid view, tiles can be moved in all four directions using the handles at the upper right.</string>
     <string name="help_sort_finish_title">Save the order</string>
     <string name="help_sort_finish_text">Tap the check mark to finish sorting. The new order is saved.</string>
+    <string name="help_sort_modes_title">Semi-automatic sorting</string>
+    <string name="help_sort_modes_text">Four switches control independent areas: Favorites sorts all items in Favorites; Categories sorts the category sections only; Category contents sorts every app and shortcut within each category; Custom shortcuts sorts the separate shortcut section. When content sorting is automatic, every item in that area is excluded from manual reordering. Otherwise every item can be moved manually. Automatically calculated orders become the new baseline and are not automatically undone when switching back to Manual.</string>
+    <string name="help_sort_suggestions_title">Sorting suggestions</string>
+    <string name="help_sort_suggestions_text">In Manual mode, usage-based suggestions can be reviewed and applied individually. Reassign favorites changes favorite membership, while Sort favorites changes the order. Categories, Category contents and Custom shortcuts can be applied separately. Category contents includes apps and shortcuts together. Unselected suggestions are not applied.</string>
+    <string name="help_sort_automatic_title">Fully automatic sorting</string>
+    <string name="help_sort_automatic_text">AppStow calculates the order of categories and their contents and selects favorites using usage data. Manual ordering and favorite editing are disabled in this mode. Leaving fully automatic mode saves the visible automatic state as the new manual baseline.</string>
     <string name="help_sort_time_profile_title">Time profiles</string>
     <string name="help_sort_time_profile_text">In semi-automatic and fully automatic sorting, you can enable separate day and evening/night profiles. AppStow considers which apps and shortcuts you launch more often through AppStow at each time of day. Everyday apps may appear higher during the day, while games or leisure apps used more often in the evening may move up. You choose when the day and evening/night periods start. Time profiles are not active in manual sorting mode.</string>
     <string name="help_backup_title">Backup &amp; Restore</string>

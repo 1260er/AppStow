@@ -821,6 +821,110 @@ public class SortingPageTest {
     }
 
     @Test
+    public void categoryContentsDocumentationAndPreviewAreConsistent() {
+
+        Context base =
+                ApplicationProvider.getApplicationContext();
+
+        for (java.util.Locale language :
+                new java.util.Locale[]{
+                        java.util.Locale.GERMAN,
+                        java.util.Locale.ENGLISH}) {
+
+            android.content.res.Configuration configuration =
+                    new android.content.res.Configuration(
+                            base.getResources().getConfiguration());
+
+            configuration.setLocale(language);
+
+            Context localized =
+                    base.createConfigurationContext(configuration);
+
+            String label =
+                    localized.getString(R.string.sorting_area_apps);
+
+            assertEquals(
+                    language.getLanguage().equals("de")
+                            ? "Kategorieinhalte"
+                            : "Category contents",
+                    label);
+
+            assertTrue(
+                    localized.getString(R.string.sorting_description)
+                            .contains(label));
+
+            assertTrue(
+                    localized.getString(
+                            R.string.sorting_suggestion_apps_order)
+                            .toLowerCase(java.util.Locale.ROOT)
+                            .contains(
+                                    label.toLowerCase(
+                                            java.util.Locale.ROOT)));
+
+            assertTrue(
+                    localized.getString(R.string.help_sort_modes_text)
+                            .contains(label));
+
+            assertTrue(
+                    localized.getString(
+                            R.string.help_sort_suggestions_text)
+                            .contains(label));
+
+            assertTrue(
+                    !localized.getString(
+                            R.string.help_sort_automatic_text)
+                            .isEmpty());
+        }
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                activity.findViewById(R.id.navHelp).performClick();
+
+                assertEquals(
+                        activity.getString(
+                                R.string.help_sort_modes_title),
+                        ((TextView) activity.findViewById(
+                                R.id.helpSortModesTitle))
+                                .getText().toString());
+
+                assertEquals(
+                        activity.getString(
+                                R.string.help_sort_suggestions_title),
+                        ((TextView) activity.findViewById(
+                                R.id.helpSortSuggestionsTitle))
+                                .getText().toString());
+
+                assertEquals(
+                        activity.getString(
+                                R.string.help_sort_automatic_title),
+                        ((TextView) activity.findViewById(
+                                R.id.helpSortAutomaticTitle))
+                                .getText().toString());
+
+                activity.findViewById(R.id.navSorting).performClick();
+
+                View dialogContent =
+                        activity.getLayoutInflater().inflate(
+                                R.layout.dialog_sorting_suggestions,
+                                null,
+                                false);
+
+                CheckBox categoryContents =
+                        dialogContent.findViewById(
+                                R.id.suggestionApplyApps);
+
+                assertEquals(
+                        activity.getString(
+                                R.string.sorting_suggestion_apps_order),
+                        categoryContents.getText().toString());
+            });
+        }
+    }
+
+    @Test
     public void automaticModePersistsSortingOptions() {
 
         try (ActivityScenario<MainActivity> scenario =

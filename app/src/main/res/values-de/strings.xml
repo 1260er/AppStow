@@ -10,7 +10,7 @@
     <string name="nav_statistics">Statistik</string>
     <string name="nav_sorting">Sortierung</string>
 
-    <string name="sorting_description">Lege fest, wie AppStow Favoriten, Kategorien, Apps und eigene Shortcuts sortiert.</string>
+    <string name="sorting_description">Lege fest, wie AppStow Favoriten, Kategorien, Kategorieinhalte und eigene Shortcuts sortiert.</string>
     <string name="sorting_mode_manual">Manuell</string>
     <string name="sorting_mode_semi">Halbautomatisch</string>
     <string name="sorting_mode_automatic">Vollautomatisch</string>
@@ -59,7 +59,7 @@
     <string name="sorting_suggestion_favorites_order">Favoriten sortieren</string>
     <string name="sorting_suggestion_favorites_assignment">Favoriten neu zuordnen</string>
     <string name="sorting_suggestion_categories_order">Kategorien sortieren</string>
-    <string name="sorting_suggestion_apps_order">Apps in Kategorien sortieren</string>
+    <string name="sorting_suggestion_apps_order">Kategorieinhalte sortieren</string>
     <string name="sorting_suggestion_shortcuts_order">Eigene Shortcuts sortieren</string>
     <string name="sorting_suggestion_apply">Übernehmen</string>
     <string name="sorting_suggestion_none_selected">Wähle mindestens einen Vorschlag aus.</string>
@@ -305,6 +305,12 @@ Keines gefunden</string>
     <string name="help_sort_items_text">Tippe auf das Sortiersymbol innerhalb eines Bereichs. Ziehe Apps und eigene Shortcuts an ihren Anfassern an die gewünschte Position. In der Kachelansicht kannst du die Kacheln über die Anfasser rechts oben in alle vier Richtungen verschieben.</string>
     <string name="help_sort_finish_title">Reihenfolge speichern</string>
     <string name="help_sort_finish_text">Tippe auf das Häkchen, um die Sortierung zu beenden. Die neue Reihenfolge wird gespeichert.</string>
+    <string name="help_sort_modes_title">Halbautomatische Sortierung</string>
+    <string name="help_sort_modes_text">Vier Schalter steuern unabhängig voneinander: Favoriten sortiert alle Einträge im Favoritenbereich; Kategorien sortiert nur die Kategorien selbst; Kategorieinhalte sortiert alle Apps und Shortcuts innerhalb jeder Kategorie; Eigene Shortcuts sortiert den separaten Shortcut-Bereich. Ist ein Inhaltsbereich automatisch, sind alle seine Einträge von der manuellen Sortierung ausgeschlossen. Andernfalls sind alle manuell sortierbar. Automatisch berechnete Reihenfolgen werden zur neuen Grundlage und beim Zurückschalten auf Manuell nicht automatisch rückgängig gemacht.</string>
+    <string name="help_sort_suggestions_title">Sortiervorschläge</string>
+    <string name="help_sort_suggestions_text">Im Modus Manuell kannst du Vorschläge auf Basis deiner Nutzung prüfen und einzeln übernehmen. Favoriten neu zuordnen ändert die Favoritenauswahl; Favoriten sortieren ändert die Reihenfolge. Kategorien, Kategorieinhalte und Eigene Shortcuts lassen sich separat übernehmen. Kategorieinhalte umfasst Apps und Shortcuts gemeinsam. Nicht ausgewählte Vorschläge werden nicht angewendet.</string>
+    <string name="help_sort_automatic_title">Vollautomatische Sortierung</string>
+    <string name="help_sort_automatic_text">AppStow berechnet die Reihenfolge der Kategorien und ihrer Inhalte sowie die Favoritenauswahl anhand der Nutzung. Manuelle Sortierung und Favoritenbearbeitung sind in diesem Modus gesperrt. Beim Verlassen der Vollautomatik wird der sichtbare automatische Stand als neue manuelle Grundlage gespeichert.</string>
     <string name="help_sort_time_profile_title">Zeitprofile</string>
     <string name="help_sort_time_profile_text">Bei halbautomatischer und vollautomatischer Sortierung kannst du Tag- und Abend-/Nachtprofile aktivieren. AppStow berücksichtigt dabei, welche Apps und Shortcuts du während der jeweiligen Tageszeit häufiger über AppStow startest. So können tagsüber bevorzugte Alltags-Apps und abends häufiger genutzte Spiele oder Freizeit-Apps weiter oben erscheinen. Die Startzeiten für Tag und Abend/Nacht kannst du selbst festlegen. Bei manueller Sortierung sind Zeitprofile nicht aktiv.</string>
     <string name="help_backup_title">Backup &amp; Wiederherstellen</string>

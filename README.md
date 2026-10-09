@@ -109,8 +109,28 @@ remain on the device, are retained for at most one year, and can be
 reset independently of the display settings.
 
 Sorting supports manual, semi-automatic, and fully automatic modes.
-Semi-automatic mode lets users select which areas AppStow manages.
-Optional usage-based suggestions and day/evening profiles are available.
+
+Semi-automatic mode has four independent controls:
+- **Favorites:** sort all apps and custom shortcuts in Favorites.
+- **Categories:** sort the category sections themselves.
+- **Category contents:** sort all apps and custom shortcuts inside each category.
+- **Custom shortcuts:** sort the separate Custom shortcuts section.
+
+An enabled content area is sorted as a whole, regardless of entry type,
+and cannot be rearranged manually. Disabled content areas remain
+manually sortable. Semi-automatic sorting saves the resulting orders
+as the new baseline; returning to Manual does not restore older orders.
+
+Fully automatic mode sorts sections and contents and selects favorites
+based on usage. Leaving fully automatic mode saves the current
+automatic ordering and favorite selection as the new manual state.
+
+In Manual mode, optional usage-based suggestions can be reviewed and
+applied individually. Reassign favorites changes favorite membership;
+Sort favorites changes their order. Category order, Category contents
+and Custom shortcuts can also be applied independently.
+
+Optional day/evening profiles are available.
 Time profiles help automatic sorting reflect different usage patterns
 during the day and evening. Everyday apps can appear higher during
 the day, while games and leisure apps may move up in the evening.

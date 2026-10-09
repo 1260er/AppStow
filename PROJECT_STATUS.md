@@ -1,6 +1,6 @@
 # AppStow – Projektstatus
 
-Stand: 8. Oktober 2026
+Stand: 9. Oktober 2026
 
 ## Aktuelle Entwicklung – AppStow 3.0
 
@@ -12,6 +12,10 @@ Stand: 8. Oktober 2026
 - Getesteter Ausgangsstand: Commit 7f2db12.
 - Dauerhaftes GitHub-Prerelease: tested-3.0.0-7f2db12.
 - Gesonderter Abschlussbranch: dev/3.0-final-hardening.
+- Aktueller geprüfter Hardening-Code: Commit 5482b96.
+- Runde 1 (Overlay/Kategoriezuordnung), Runde 2 (manuelle Sortierung) und Runde 3 (Halbautomatik) als Geräte-Smoke-Tests bestanden.
+- Halbautomatik sortiert Inhalte einheitlich nach Bereich, nicht nach App- oder Shortcut-Typ.
+- Runde 4 (Sortiervorschläge und Vollautomatik) steht noch aus.
 - Die Rückführung nach dev/phase9 erfolgt erst nach erfolgreicher Prüfung.
 - main und Stable 2.0.1 bleiben bis zur ausdrücklichen Freigabe unverändert.
 
@@ -92,7 +96,9 @@ wurden nicht vollständig getestet.
 
 ## Nächster Schritt
 
-Phase 9 abschließen: Dokumentation prüfen, 3.0.0-Versionierung
-vorbereiten, Upgrade von einer bestehenden signierten 2.0.1-Installation
-testen, finalen Dev-Release-Kandidaten prüfen und erst nach expliziter
-Freigabe den stabilen Release veröffentlichen.
+Runde 4 auf einem physischen Gerät: Sortiervorschläge einschließlich
+selektiver Übernahme sowie Vollautomatik und Rückkehr zur manuellen
+Sortierung prüfen. Danach vollständiges Abschluss-Deep-Review,
+Release-Bereinigung und finalen signierten 3.0.0-Kandidaten kontrollieren.
+Stable 2.0.1, main und dev/phase9 bleiben bis zur ausdrücklichen
+Freigabe unverändert. Ein Release erfolgt nur nach Freigabe.
