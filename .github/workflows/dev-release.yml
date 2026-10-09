@@ -148,11 +148,18 @@ jobs:
       APPSTOW_KEY_PASSWORD: ${{ secrets.APPSTOW_KEY_PASSWORD }}
 
     steps:
-      - name: Require phase9 development branch
+      - name: Require approved development branch
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_REF" = "refs/heads/dev/phase9"
+          case "$GITHUB_REF" in
+            refs/heads/dev/phase9|refs/heads/dev/3.0-final-hardening)
+              ;;
+            *)
+              echo "Unzulässiger Upgrade-Test-Branch."
+              exit 1
+              ;;
+          esac
 
       - name: Check out source
         uses: actions/checkout@v5

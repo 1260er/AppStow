@@ -361,6 +361,8 @@ None found</string>
     <string name="backup_not_confirmed">Backup saved.</string>
     <string name="backup_failed">Backup failed.</string>
     <string name="backup_restore_failed">Restore failed.</string>
+    <string name="backup_restore_incompatible">This backup format is not supported. AppStow 3.0 cannot restore backups from AppStow 2.x.</string>
+    <string name="backup_restore_invalid">The selected backup is damaged or contains invalid data. Please select a valid AppStow backup.</string>
     <string name="backup_restore_title">Restore backup?</string>
     <string name="backup_restore_message">The settings and arrangements from the selected backup replace the current state.\n\nUsage statistics are completely reset. Apps that are no longer installed are removed from favorites, category assignments and app orders. Custom shortcuts and categories remain.</string>
     <string name="backup_restore_confirm">Restore</string>

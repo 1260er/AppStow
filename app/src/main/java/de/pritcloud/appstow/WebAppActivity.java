@@ -411,7 +411,9 @@ public class WebAppActivity extends Activity {
                             WebResourceRequest request) {
 
                         return handleUri(
-                                request.getUrl());
+                                request.getUrl(),
+                                request.isForMainFrame(),
+                                request.hasGesture());
                     }
 
                     @Override
@@ -2113,38 +2115,26 @@ public class WebAppActivity extends Activity {
     }
 
     private boolean handleUri(
-            Uri uri) {
+            Uri uri,
+            boolean mainFrame,
+            boolean userGesture) {
 
-        String scheme =
-                uri.getScheme();
-
-        if (isHttpsUri(uri)) {
+        if (uri != null && isHttpsUri(uri)) {
             return false;
         }
 
+        Intent intent =
+                createExternalNavigationIntent(
+                        uri,
+                        mainFrame,
+                        userGesture);
+
+        if (intent == null) {
+            return true;
+        }
+
         try {
-            Intent intent;
-
-            if ("intent".equalsIgnoreCase(
-                    scheme)) {
-
-                intent =
-                        Intent.parseUri(
-                                uri.toString(),
-                                Intent.URI_INTENT_SCHEME);
-
-            } else {
-                intent =
-                        new Intent(
-                                Intent.ACTION_VIEW,
-                                uri);
-            }
-
-            intent.addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            startActivity(
-                    intent);
+            startActivity(intent);
 
         } catch (ActivityNotFoundException exception) {
 
@@ -2154,7 +2144,7 @@ public class WebAppActivity extends Activity {
                     Toast.LENGTH_SHORT)
                     .show();
 
-        } catch (Exception exception) {
+        } catch (RuntimeException exception) {
 
             Toast.makeText(
                     this,
@@ -2164,6 +2154,84 @@ public class WebAppActivity extends Activity {
         }
 
         return true;
+    }
+
+    static Intent createExternalNavigationIntent(
+            Uri uri,
+            boolean mainFrame,
+            boolean userGesture) {
+
+        if (uri == null
+                || !mainFrame
+                || !userGesture) {
+
+            return null;
+        }
+
+        Uri target = uri;
+
+        if ("intent".equalsIgnoreCase(
+                uri.getScheme())) {
+
+            try {
+                Intent parsed =
+                        Intent.parseUri(
+                                uri.toString(),
+                                Intent.URI_INTENT_SCHEME);
+
+                target = parsed.getData();
+
+            } catch (Exception exception) {
+                return null;
+            }
+        }
+
+        if (target == null
+                || !isPermittedExternalScheme(
+                        target.getScheme())) {
+
+            return null;
+        }
+
+        /*
+         * Only data is transferred from an intent URI.
+         * Explicit components, packages, selectors,
+         * flags and arbitrary extras are discarded.
+         */
+        return new Intent(
+                Intent.ACTION_VIEW,
+                target)
+                .addCategory(
+                        Intent.CATEGORY_BROWSABLE);
+    }
+
+    private static boolean isPermittedExternalScheme(
+            String scheme) {
+
+        if (scheme == null
+                || !scheme.matches(
+                        "[A-Za-z][A-Za-z0-9+.-]*")) {
+
+            return false;
+        }
+
+        String normalized =
+                scheme.toLowerCase(
+                        java.util.Locale.ROOT);
+
+        return !normalized.equals("javascript")
+                && !normalized.equals("data")
+                && !normalized.equals("file")
+                && !normalized.equals("content")
+                && !normalized.equals("blob")
+                && !normalized.equals("about")
+                && !normalized.equals("intent")
+                && !normalized.equals("android.resource")
+                && !normalized.equals("chrome")
+                && !normalized.equals("chrome-extension")
+                && !normalized.equals("jar")
+                && !normalized.equals("ws")
+                && !normalized.equals("wss");
     }
 
     private void showWebViewError(

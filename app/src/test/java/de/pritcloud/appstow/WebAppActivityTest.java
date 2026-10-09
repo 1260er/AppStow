@@ -814,4 +814,124 @@ public class WebAppActivityTest {
             return false;
         }
     }
+    @Test
+    public void externalNavigationRequiresUserActionAndSafeScheme() {
+
+        Uri whatsapp =
+                Uri.parse(
+                        "whatsapp://send?text=Hallo");
+
+        Intent allowed =
+                WebAppActivity.createExternalNavigationIntent(
+                        whatsapp,
+                        true,
+                        true);
+
+        assertNotNull(allowed);
+
+        assertEquals(
+                Intent.ACTION_VIEW,
+                allowed.getAction());
+
+        assertEquals(
+                whatsapp,
+                allowed.getData());
+
+        assertTrue(
+                allowed.hasCategory(
+                        Intent.CATEGORY_BROWSABLE));
+
+        assertEquals(
+                null,
+                WebAppActivity.createExternalNavigationIntent(
+                        whatsapp,
+                        true,
+                        false));
+
+        assertEquals(
+                null,
+                WebAppActivity.createExternalNavigationIntent(
+                        whatsapp,
+                        false,
+                        true));
+
+        assertEquals(
+                null,
+                WebAppActivity.createExternalNavigationIntent(
+                        Uri.parse("file:///sdcard/test.txt"),
+                        true,
+                        true));
+
+        assertEquals(
+                null,
+                WebAppActivity.createExternalNavigationIntent(
+                        Uri.parse("content://example/file"),
+                        true,
+                        true));
+
+        assertEquals(
+                null,
+                WebAppActivity.createExternalNavigationIntent(
+                        Uri.parse("javascript:alert(1)"),
+                        true,
+                        true));
+
+        assertEquals(
+                null,
+                WebAppActivity.createExternalNavigationIntent(
+                        Uri.parse("data:text/plain,example"),
+                        true,
+                        true));
+
+        assertEquals(
+                null,
+                WebAppActivity.createExternalNavigationIntent(
+                        Uri.parse("blob:https://example.com/123"),
+                        true,
+                        true));
+    }
+
+    @Test
+    public void intentNavigationDiscardsExplicitTargetAndExtras() {
+
+        Uri uri =
+                Uri.parse(
+                        "intent://scan/#Intent;"
+                                + "scheme=zxing;"
+                                + "package=com.example.scanner;"
+                                + "S.payload=untrusted;"
+                                + "end");
+
+        Intent safe =
+                WebAppActivity.createExternalNavigationIntent(
+                        uri,
+                        true,
+                        true);
+
+        assertNotNull(safe);
+
+        assertEquals(
+                Intent.ACTION_VIEW,
+                safe.getAction());
+
+        assertEquals(
+                "zxing",
+                safe.getData().getScheme());
+
+        assertEquals(null, safe.getPackage());
+        assertEquals(null, safe.getComponent());
+        assertEquals(null, safe.getSelector());
+        assertEquals(null, safe.getStringExtra("payload"));
+
+        assertEquals(
+                null,
+                WebAppActivity.createExternalNavigationIntent(
+                        Uri.parse(
+                                "intent://host/#Intent;"
+                                        + "scheme=file;"
+                                        + "end"),
+                        true,
+                        true));
+    }
+
 }

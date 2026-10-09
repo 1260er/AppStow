@@ -361,6 +361,8 @@ Keines gefunden</string>
     <string name="backup_not_confirmed">Backup gespeichert.</string>
     <string name="backup_failed">Backup fehlgeschlagen.</string>
     <string name="backup_restore_failed">Wiederherstellung fehlgeschlagen.</string>
+    <string name="backup_restore_incompatible">Dieses Backupformat wird nicht unterstützt. AppStow 3.0 kann Sicherungen aus AppStow 2.x nicht wiederherstellen.</string>
+    <string name="backup_restore_invalid">Die gewählte Sicherung ist beschädigt oder enthält ungültige Daten. Bitte wähle ein gültiges AppStow-Backup.</string>
     <string name="backup_restore_title">Backup wiederherstellen?</string>
     <string name="backup_restore_message">Die Einstellungen und Anordnungen aus der ausgewählten Sicherung ersetzen den aktuellen Zustand.\n\nNutzungsstatistiken werden vollständig zurückgesetzt. Nicht mehr installierte Apps werden aus Favoriten, Kategoriezuweisungen und App-Reihenfolgen entfernt. Eigene Shortcuts und Kategorien bleiben erhalten.</string>
     <string name="backup_restore_confirm">Wiederherstellen</string>

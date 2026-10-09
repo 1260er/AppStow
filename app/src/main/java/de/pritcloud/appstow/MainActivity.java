@@ -8825,6 +8825,53 @@ public class MainActivity extends Activity {
         return message;
     }
 
+    static int restoreErrorMessageResource(
+            String message) {
+
+        if (message == null) {
+            return R.string.backup_restore_failed;
+        }
+
+        if (message.contains("Backupformat v3")
+                || message.contains(
+                        "Backup-Version wird nicht unterstützt")) {
+
+            return R.string.backup_restore_incompatible;
+        }
+
+        if (message.contains("beschädigt")
+                || message.contains("Ungültig")
+                || message.contains("Ungültig")
+                || message.contains("Unbekanntes Backup")
+                || message.contains("Unvollständiges")
+                || message.contains("ungültig")) {
+
+            return R.string.backup_restore_invalid;
+        }
+
+        return R.string.backup_restore_failed;
+    }
+
+    private void showRestoreFailure(
+            String message) {
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.backup_restore_failed)
+                        .setMessage(
+                                restoreErrorMessageResource(
+                                        message))
+                        .setPositiveButton(
+                                android.R.string.ok,
+                                null)
+                        .show();
+
+        styleCategoryDialog(
+                dialog,
+                true);
+    }
+
     private static void publishRestoreResult(
             Context context,
             boolean success,
@@ -8906,22 +8953,24 @@ public class MainActivity extends Activity {
         backupRestoreProgressContainer.setVisibility(
                 View.INVISIBLE);
 
-        int resultMessage =
-                success
-                        ? R.string.backup_restored
-                        : R.string.backup_restore_failed;
+        if (success) {
 
-        Toast.makeText(
-                this,
-                resultMessage,
-                Toast.LENGTH_SHORT)
-                .show();
+            Toast.makeText(
+                    this,
+                    R.string.backup_restored,
+                    Toast.LENGTH_SHORT)
+                    .show();
 
-        if (success
-                && !isFinishing()
-                && !isDestroyed()) {
+            if (!isFinishing()
+                    && !isDestroyed()) {
 
-            recreate();
+                recreate();
+            }
+
+        } else {
+
+            showRestoreFailure(
+                    errorMessage);
         }
     }
 
@@ -9133,11 +9182,9 @@ public class MainActivity extends Activity {
                         backupRestoreProgressContainer.setVisibility(
                                 View.INVISIBLE);
 
-                        Toast.makeText(
-                                this,
-                                R.string.backup_restore_failed,
-                                Toast.LENGTH_SHORT)
-                                .show();
+                        showRestoreFailure(
+                                getRestoreErrorMessage(
+                                        exception));
                     });
 
                     return;

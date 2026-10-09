@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Guard stable release ref
         shell: bash
@@ -30,6 +32,25 @@ jobs:
           if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$GITHUB_REF" != "refs/heads/main" ]]; then
             echo "Manuelle Stable-Builds sind ausschließlich von main erlaubt."
             exit 1
+          fi
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            if ! [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
+              echo "Nur Stable-Tags im Format vX.Y.Z sind zulässig."
+              exit 1
+            fi
+          fi
+
+          MAIN_SHA=$(git rev-parse origin/main)
+
+          if [[ "$GITHUB_SHA" != "$MAIN_SHA" ]]; then
+            echo "Stable-Build muss exakt auf dem aktuellen main-Commit liegen."
+            exit 1
+          fi
+
+          if [[ "$GITHUB_REF_NAME" == "v3.0.0" ]]; then
+            awk "/versionCode = if/ {found=1} found && /versionName =/ {exit !seen} found && /^[[:space:]]*13[[:space:]]*$/ {seen=1}" app/build.gradle.kts
+            grep -Fq "versionName = \"3.0.0\"" app/build.gradle.kts
           fi
 
       - name: Validate signing secrets

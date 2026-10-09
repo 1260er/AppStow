@@ -1298,4 +1298,34 @@ public class BackupManagerTest {
                     .commit();
         }
     }
+    @Test
+    public void restoreErrorMessagesDistinguishKnownFailures() {
+
+        assertEquals(
+                R.string.backup_restore_incompatible,
+                MainActivity.restoreErrorMessageResource(
+                        "Diese Backup-Datei gehört nicht zum "
+                                + "unterstützten AppStow-Backupformat v3."));
+
+        assertEquals(
+                R.string.backup_restore_incompatible,
+                MainActivity.restoreErrorMessageResource(
+                        "Diese Backup-Version wird nicht unterstützt."));
+
+        assertEquals(
+                R.string.backup_restore_invalid,
+                MainActivity.restoreErrorMessageResource(
+                        "Backup ist beschädigt oder wurde verändert."));
+
+        assertEquals(
+                R.string.backup_restore_invalid,
+                MainActivity.restoreErrorMessageResource(
+                        "Ungültiger Shortcut im Backup."));
+
+        assertEquals(
+                R.string.backup_restore_failed,
+                MainActivity.restoreErrorMessageResource(
+                        "Storage provider unavailable"));
+    }
+
 }

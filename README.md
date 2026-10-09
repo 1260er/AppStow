@@ -79,6 +79,12 @@ Supported features include file and photo uploads, camera
 capture, zoom, fullscreen, location and microphone requests,
 HTTPS downloads and compatible blob downloads.
 
+External links from integrated web apps are only handed to Android
+when the navigation comes from a user action in the main frame.
+Unsafe internal URL schemes are blocked. Explicit targets and
+arbitrary extras in web-originated intent URIs are not forwarded.
+Custom deep-link shortcuts created in AppStow are unaffected.
+
 Web permissions are restricted to the configured HTTPS origin.
 Authenticated HTTPS downloads do not forward session cookies
 or the original Referer to a different origin.
@@ -123,6 +129,8 @@ AppStow 3.0.0 will use encrypted backup format v3. Backups include:
 - statistics display settings
 
 Usage statistics themselves, web-app sessions, and cookies are not included.
+
+**Backup security:** Backup v3 uses AES-256-GCM with a random salt and IV. No user password is required. The key is derived from a fixed value embedded in the open-source application. The encryption prevents casual reading and detects accidental corruption, but it does not provide strong confidentiality or tamper protection against someone who can inspect the published source code. Keep backup files in a trusted, private location.
 
 A successful restore resets usage statistics. References to apps that are no longer installed are removed from favorites, category assignments, and app orders. Categories and custom shortcuts remain.
 

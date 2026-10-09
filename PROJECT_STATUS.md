@@ -9,6 +9,11 @@ Stand: 8. Oktober 2026
 - Statistik, automatische Sortierung sowie Darstellung & Bedienung sind umgesetzt.
 - Phase 8 – Backup v3 ist abgeschlossen.
 - Phase 9 – Hardening ist aktiv.
+- Getesteter Ausgangsstand: Commit 7f2db12.
+- Dauerhaftes GitHub-Prerelease: tested-3.0.0-7f2db12.
+- Gesonderter Abschlussbranch: dev/3.0-final-hardening.
+- Die Rückführung nach dev/phase9 erfolgt erst nach erfolgreicher Prüfung.
+- main und Stable 2.0.1 bleiben bis zur ausdrücklichen Freigabe unverändert.
 
 ## Phase 9 – Hardening
 
