@@ -163,8 +163,10 @@ A successful restore resets usage statistics. During restore, AppStow writes
 an atomic recovery snapshot in its private app storage. If the Android process
 stops during restoration, AppStow attempts to restore the previous preference
 state before loading its UI on the next launch. It refuses to load the UI if
-recovery cannot be completed. This protects against interrupted restore
-operations, but cannot guarantee recovery from storage hardware failures.
+recovery cannot be completed. Restore writes and startup journal recovery
+share a process-wide lock, including during activity recreation after a language
+change. This protects against interrupted restore operations, but cannot
+guarantee recovery from storage hardware failures.
 
 References to apps that are no longer installed are removed from favorites, category assignments, and app orders. Categories and custom shortcuts remain.
 

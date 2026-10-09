@@ -13,6 +13,10 @@
 - Der direkte APK-Upgrade-Test von Stable 2.0.1 auf 3.0.0 wurde auf einem physischen Smartphone erfolgreich durchgeführt; die bestehende Konfiguration blieb erhalten.
 - Baseline Profiles für den aktuellen Entwicklungsstand neu generiert.
 - Neues verschlüsseltes Backupformat v3 für die AppStow-Konfiguration.
+- Sicherungen aus der Vollautomatik bewahren die zuletzt angezeigten Favoriten einschließlich App-/Shortcut-Reihenfolge; Rückfall nach Restore ohne Nutzungsstatistik abgesichert.
+- Wiederherstellung gegen Prozessabbrüche durch privates, atomar geschriebenes Recovery-Journal gehärtet; Start-Rücksicherung und laufender Restore sind synchronisiert.
+- Blob-Downloads aus integrierten Web-Apps gegen übergroße Datenblöcke und unbegrenzte Nachrichtenwarteschlangen abgesichert.
+- Hinweis zum begrenzten Schutz der Backup-Verschlüsselung in Deutsch und Englisch ergänzt.
 - Sortier-, Anzeige-, Bedienungs-, Sprach- und Statistik-Anzeigeeinstellungen werden mitgesichert.
 - Nutzungsstatistiken selbst werden nicht gesichert und nach erfolgreicher Wiederherstellung zurückgesetzt.
 - Nicht mehr installierte Apps werden bei der Wiederherstellung aus Favoriten, Kategoriezuweisungen und App-Reihenfolgen entfernt.

@@ -12,11 +12,14 @@ Stand: 9. Oktober 2026
 - Getesteter Ausgangsstand: Commit 7f2db12.
 - Dauerhaftes GitHub-Prerelease: tested-3.0.0-7f2db12.
 - Gesonderter Abschlussbranch: dev/3.0-final-hardening.
-- Aktueller geprüfter Hardening-Code: Commit 5482b96.
-- Runde 1 (Overlay/Kategoriezuordnung), Runde 2 (manuelle Sortierung) und Runde 3 (Halbautomatik) als Geräte-Smoke-Tests bestanden.
-- Halbautomatik sortiert Inhalte einheitlich nach Bereich, nicht nach App- oder Shortcut-Typ.
-- Runde 4 (Sortiervorschläge und Vollautomatik) steht noch aus.
-- Die Rückführung nach dev/phase9 erfolgt erst nach erfolgreicher Prüfung.
+- Geprüfter Stand vor der letzten Testergänzung: Commit 6ece9b9 auf dev/3.0-final-hardening.
+- Geräte-Smoke-Tests Runden 1 bis 4 bestanden: Kategorien, manuelle und halbautomatische Sortierung, Sortiervorschläge sowie Vollautomatik mit Rückkehr zu Manuell.
+- Die Halbautomatik sortiert Apps und eigene Shortcuts gemeinsam innerhalb eines Bereichs.
+- Deep-Review-Nachtest 1 bestanden: sichtbare automatische Favoriten samt Reihenfolge werden gesichert, wiederhergestellt und nach Manuell übernommen.
+- Deep-Review-Nachtest 2 bestanden: Update, normale Backup-Wiederherstellung, Papra-Blob-Downloads, HTTPS-Downloads, Wiederholung, Abbruch und Neustart.
+- Ein privates Recovery-Journal schützt bei einem Abbruch während der Wiederherstellung; die Wiederherstellung und die Start-Rücksicherung nutzen bereits dieselbe Klassensperre.
+- Die Synchronisierung gegen parallele Start-Rücksicherung wird durch einen gezielten Regressionstest abgesichert.
+- Die spätere Rückführung nach dev/phase9 und main erfordert ausdrückliche Freigabe.
 - main und Stable 2.0.1 bleiben bis zur ausdrücklichen Freigabe unverändert.
 
 ## Phase 9 – Hardening
@@ -48,6 +51,11 @@ Stand: 9. Oktober 2026
 - Kategorien und eigene Shortcuts bleiben erhalten.
 - Web-App-Anmeldungen und Cookies sind nicht Bestandteil der Sicherung.
 - Die Wiederherstellung wird validiert und bei einem Fehler auf den vorherigen Zustand zurückgerollt.
+- Ein privates, atomar geschriebenes Journal sichert die zehn Preference-Stores einschließlich Nutzungsstatistik und Sprache vor Beginn des Restore-Vorgangs.
+- Nach einem Prozessabbruch wird das Journal vor dem Laden der Oberfläche zur Rücksicherung verwendet; bei fehlerhafter Rücksicherung bleibt die Oberfläche gesperrt.
+- Ein Activity-Neustart während einer laufenden Wiederherstellung darf keine parallele Journal-Rücksicherung ausführen: Beide Pfade sind synchronisiert.
+- Die Sicherung aus Vollautomatisch enthält die zuletzt sichtbaren Favoriten einschließlich der gemischten App-/Shortcut-Reihenfolge.
+- Die Backup-Verschlüsselung hat keinen persönlichen Schlüssel; die Einschränkung wird in der App und README erklärt.
 - Cloud-/DocumentsProvider werden beim Lesen mit begrenzten Wiederholungen behandelt.
 - Die Backup-Prüfung verwendet maximal 1 Sekunde zusätzliche Retry-Wartezeit.
 - Die Wiederherstellung verwendet maximal 5 Sekunden zusätzliche Retry-Wartezeit.
@@ -96,9 +104,10 @@ wurden nicht vollständig getestet.
 
 ## Nächster Schritt
 
-Runde 4 auf einem physischen Gerät: Sortiervorschläge einschließlich
-selektiver Übernahme sowie Vollautomatik und Rückkehr zur manuellen
-Sortierung prüfen. Danach vollständiges Abschluss-Deep-Review,
-Release-Bereinigung und finalen signierten 3.0.0-Kandidaten kontrollieren.
-Stable 2.0.1, main und dev/phase9 bleiben bis zur ausdrücklichen
-Freigabe unverändert. Ein Release erfolgt nur nach Freigabe.
+Nach erfolgreichem Parallelitäts-Regressionstest die verbleibenden Release-Unterlagen
+abschließend prüfen, einen kontrollierten Bereinigungsplan für nicht mehr benötigte
+Dev-Branches und Prereleases erstellen und erst nach ausdrücklicher Freigabe ausführen.
+Den stabilen 2.0.1-Release als Upgrade-Testreferenz nicht unüberlegt entfernen.
+F-Droid-Verfügbarkeit und Signatur-/Updatepfad getrennt prüfen.
+Anschließend den signierten Release-Kandidaten 3.0.0 auf main vorbereiten und
+nur nach ausdrücklicher Freigabe taggen und veröffentlichen.
