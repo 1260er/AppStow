@@ -2,26 +2,22 @@
 
 Stand: 9. Oktober 2026
 
-## Aktuelle Entwicklung – AppStow 3.0
+## Veröffentlicht: AppStow 3.0.0
 
-- Entwicklungsbranch: `dev/phase9`, abgezweigt von `dev/automatic-sorting` bei `dev-208`.
-- Der stabile Release `v2.0.1` bleibt unverändert.
-- Statistik, automatische Sortierung sowie Darstellung & Bedienung sind umgesetzt.
-- Phase 8 – Backup v3 ist abgeschlossen.
-- Phase 9 – Hardening und Deep-Review abgeschlossen; finaler Release wird vorbereitet.
-- Getesteter Ausgangsstand: Commit 7f2db12.
-- Dauerhaftes GitHub-Prerelease: tested-3.0.0-7f2db12.
-- Gesonderter Abschlussbranch: dev/3.0-final-hardening.
-- Letzter funktional geprüfter Hardening-Stand vor Release-Dokumentation: Commit d0eee22 auf dev/3.0-final-hardening.
-- Geräte-Smoke-Tests Runden 1 bis 4 bestanden: Kategorien, manuelle und halbautomatische Sortierung, Sortiervorschläge sowie Vollautomatik mit Rückkehr zu Manuell.
-- Die Halbautomatik sortiert Apps und eigene Shortcuts gemeinsam innerhalb eines Bereichs.
-- Deep-Review-Nachtest 1 bestanden: sichtbare automatische Favoriten samt Reihenfolge werden gesichert, wiederhergestellt und nach Manuell übernommen.
-- Deep-Review-Nachtest 2 bestanden: Update, normale Backup-Wiederherstellung, Papra-Blob-Downloads, HTTPS-Downloads, Wiederholung, Abbruch und Neustart.
-- Ein privates Recovery-Journal schützt bei einem Abbruch während der Wiederherstellung; die Wiederherstellung und die Start-Rücksicherung nutzen bereits dieselbe Klassensperre.
-- Die Synchronisierung gegen parallele Start-Rücksicherung wird durch einen gezielten Regressionstest abgesichert.
-- Die Übernahme auf main und die Veröffentlichung von 3.0.0 erfordern ausdrückliche Freigabe.
-- GitHub-Bereinigung am 9. Oktober abgeschlossen: Übrig sind nur main, dev/3.0-final-hardening und die Releases v2.0.1 sowie tested-3.0.0-7f2db12. Alle vier früheren Entwicklungsbranches sowie 64 ältere Releases wurden entfernt.
-- main und Stable 2.0.1 bleiben bis zur ausdrücklichen Freigabe unverändert.
+- Aktuelle stabile Version: **3.0.0**, Versionscode **13**.
+- Signierter GitHub-Release: `v3.0.0`, veröffentlicht am **9. Oktober 2026**.
+- Unveränderlicher Release-Commit: `1682d9b8acec54f18c1f05e3c93e935b8207bd06`.
+- Release-Dateien: `AppStow-3.0.0.apk` und `AppStow-3.0.0.apk.sha256`.
+- GitHub Actions Stable-Build `37975741096`: erfolgreich.
+- `main` enthält den veröffentlichten 3.0.0-Quellcode; anschließende reine Dokumentationsänderungen verändern das Release-Tag nicht.
+- Phase 8 (Backup v3), Phase 9 (Hardening) und Deep-Review sind abgeschlossen.
+- Geräte-Smoke-Tests Runden 1 bis 4 bestanden: Kategorien, manuelle und halbautomatische Sortierung, Sortiervorschläge sowie Vollautomatik einschließlich Rückkehr zu Manuell.
+- Deep-Review-Nachtest 1 bestanden: Sicherung und Wiederherstellung der sichtbaren automatischen Favoriten mit Reihenfolge und Wechsel auf Manuell.
+- Deep-Review-Nachtest 2 bestanden: Update, Backup-Wiederherstellung, Papra-Blob-Downloads, HTTPS-Downloads, Wiederholung, Abbruch und Neustart.
+- Das private Recovery-Journal schützt unterbrochene Wiederherstellungen; eine Regression prüft die Sperre gegen parallele Start-Rücksicherung.
+- Der ehemalige Entwicklungsbranch `dev/phase9` und die anderen alten Entwicklungsbranches wurden am 9. Oktober bereinigt.
+- `dev/3.0-final-hardening` dient nur noch als letzte Release-Referenz und kann nach den Dokumentationsprüfungen separat entfernt werden.
+- Die ältere Version `v2.0.1` und der getestete Ausgangsstand `tested-3.0.0-7f2db12` bleiben vorerst als Vergleichs- und Sicherungsreferenzen erhalten.
 
 ## Phase 9 – Hardening
 
@@ -36,7 +32,7 @@ Stand: 9. Oktober 2026
 - Android akzeptierte das Update ohne vorherige Deinstallation.
 - Kategorien, Favoriten, Shortcuts, Zuordnungen, Reihenfolgen und Einstellungen blieben laut Geräteprüfung erhalten.
 - GitHub Actions Run 37773022513 bestätigte Build, Versionsfolge und identische Signaturzertifikate.
-- Für den finalen Release 3.0.0 ist Versionscode 13 vorgesehen, damit auch bereits installierte Testversionen mit Code 12 aktualisiert werden können.
+- Der veröffentlichte Release 3.0.0 verwendet Versionscode 13 und unterstützt so auch die Aktualisierung älterer Testinstallationen mit Code 12.
 - Die Release-Dokumentation wurde für 3.0.0 aktualisiert.
 
 ## Phase 8 – Backup v3
@@ -65,14 +61,14 @@ Stand: 9. Oktober 2026
 
 ## Stabiler Release
 
-- Version: 2.0.1.
-- Versionscode: 11.
-- Tag: `v2.0.1`.
-- Release-Commit: `56c9ffa489980506ce9266d3bdfea702bc75f2a7`.
-- Der stabile Tag und der stabile Release werden durch die 3.0-Entwicklung nicht verändert.
-- Deutsche und englische F-Droid-Metadaten sind vorhanden.
-- Der F-Droid-Aufnahme-MR !51175 wurde am 8. Oktober 2026 als gemergt gemeldet.
-- Der öffentliche F-Droid-Paketstatus ist damit noch nicht separat bestätigt.
+- Version: **3.0.0**, Versionscode **13**.
+- Tag: `v3.0.0`.
+- Release-Commit: `1682d9b8acec54f18c1f05e3c93e935b8207bd06`.
+- Veröffentlichungsdatum: 9. Oktober 2026.
+- Signierter Stable-Workflow: `37975741096` (erfolgreich).
+- APK und SHA256-Prüfsumme wurden beim Release geprüft.
+- Die vorherige Version `v2.0.1` (Versionscode 11) bleibt als Referenz für den signierten Upgrade-Test erhalten.
+- Der F-Droid-Aufnahme-MR !51175 wurde am 8. Oktober 2026 als gemergt gemeldet. Die öffentliche Verfügbarkeit und das Update auf F-Droid werden separat kontrolliert.
 
 ## Qualitätssicherung
 
@@ -105,11 +101,8 @@ wurden nicht vollständig getestet.
 
 ## Nächster Schritt
 
-Nach Abschluss der Release-Dokumentation und erneut bestandenem Upgrade-Test
-den vollständig geprüften Stand per Fast-Forward auf main übernehmen. Erst nach
-expliziter Freigabe v3.0.0 taggen und den signierten Stable-Release durch GitHub
-Actions erstellen. Release-APK, SHA256, Signatur und Updatefähigkeit überprüfen.
-Anschließend die F-Droid-Verfügbarkeit und den Update-/Signaturweg getrennt
-prüfen. Der Stable-Release v2.0.1 und der getestete Ausgangsstand bleiben bis
-zur ausdrücklichen Entscheidung darüber als Referenzen bestehen.
-Der Hardening-Branch kann erst nach der erfolgreichen Veröffentlichung entfallen.
+- Nachveröffentlichungs-Dokumentation abschließen: englische und vollständige deutsche README gegenseitig verlinken und den Stand 3.0.0 dokumentieren.
+- Den unveränderlichen Release-Tag `v3.0.0` und die signierte APK nicht mehr verändern.
+- Nach erfolgreicher Dokumentationskontrolle `dev/3.0-final-hardening` separat und mit Sicherheitsprüfungen entfernen, sodass nur `main` als Branch bestehen bleibt.
+- Die F-Droid-Aufnahme und das erste tatsächliche Update auf Version 3.0.0 unabhängig von GitHub kontrollieren.
+- `v2.0.1` und `tested-3.0.0-7f2db12` bleiben bis zu einer gesonderten Entscheidung als Referenzen erhalten.

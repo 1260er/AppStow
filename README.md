@@ -1,5 +1,7 @@
 # AppStow
 
+**English** | [Deutsch](README.de.md)
+
 AppStow is an Android launcher and organizer for installed apps, favorites, categories, custom shortcuts, and web apps.
 
 ## Features
@@ -171,8 +173,6 @@ guarantee recovery from storage hardware failures.
 References to apps that are no longer installed are removed from favorites, category assignments, and app orders. Categories and custom shortcuts remain.
 
 > **Important note about AppStow 3.0:** Version 3.0 fundamentally revises AppStow's backup format. Backups created with AppStow 2.x cannot be restored in AppStow 3.0. Likewise, backups created with AppStow 3.0 are not compatible with older AppStow versions.
->
-> **Wichtiger Hinweis zu AppStow 3.0:** Mit Version 3.0 wird das Sicherungsformat von AppStow grundlegend überarbeitet. Sicherungen aus AppStow 2.x können in AppStow 3.0 nicht wiederhergestellt werden. Ebenso sind mit AppStow 3.0 erstellte Sicherungen nicht mit älteren AppStow-Versionen kompatibel.
 
 ## Upgrading from 2.0.1 to 3.0.0
 
@@ -212,6 +212,10 @@ License and attribution files:
 ## Releases
 
 https://github.com/1260er/AppStow/releases
+
+## Support
+
+If you would like to support the work on AppStow and other projects, visit **[Ko-fi – 1260er](https://ko-fi.com/1260er)**.
 
 ## License
 
