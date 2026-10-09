@@ -7680,10 +7680,12 @@ public class MainActivity extends Activity {
             String currentText,
             String suggestedText) {
 
-        currentPreview.setText(
+        setSortingSuggestionLineText(
+                currentPreview,
                 currentText);
 
-        suggestedPreview.setText(
+        setSortingSuggestionLineText(
+                suggestedPreview,
                 formatSortingSuggestionTargetText(
                         currentText,
                         suggestedText));
@@ -7695,14 +7697,24 @@ public class MainActivity extends Activity {
             String currentText,
             String suggestedText) {
 
-        currentPreview.setText(
+        setSortingSuggestionLineText(
+                currentPreview,
                 formatSortingSuggestionCategoryHeaderText(
                         currentText));
 
-        suggestedPreview.setText(
+        setSortingSuggestionLineText(
+                suggestedPreview,
                 formatSortingSuggestionCategoryTargetText(
                         currentText,
                         suggestedText));
+    }
+
+    private void setSortingSuggestionLineText(
+            TextView target,
+            CharSequence content) {
+
+        ((EllipsizedLinesTextView) target)
+                .setComparisonText(content);
     }
 
     private CharSequence formatSortingSuggestionCategoryHeaderText(

@@ -18,6 +18,8 @@
 
         <CheckBox
             android:id="@+id/suggestionApplyFavoriteAssignment"
+            android:singleLine="true"
+            android:ellipsize="end"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -68,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionFavoriteAssignmentCurrent"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -78,7 +80,7 @@
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="13sp" />
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionFavoriteAssignmentPreview"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -94,6 +96,8 @@
 
         <CheckBox
             android:id="@+id/suggestionApplyFavoriteOrder"
+            android:singleLine="true"
+            android:ellipsize="end"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -144,7 +148,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionFavoriteOrderCurrent"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -154,7 +158,7 @@
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="13sp" />
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionFavoriteOrderPreview"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -170,6 +174,8 @@
 
         <CheckBox
             android:id="@+id/suggestionApplyCategories"
+            android:singleLine="true"
+            android:ellipsize="end"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -220,7 +226,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionCategoriesCurrent"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -230,7 +236,7 @@
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="13sp" />
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionCategoriesPreview"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -246,6 +252,8 @@
 
         <CheckBox
             android:id="@+id/suggestionApplyApps"
+            android:singleLine="true"
+            android:ellipsize="end"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -296,7 +304,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionAppsCurrent"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -306,7 +314,7 @@
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="13sp" />
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionAppsPreview"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -322,6 +330,8 @@
 
         <CheckBox
             android:id="@+id/suggestionApplyShortcuts"
+            android:singleLine="true"
+            android:ellipsize="end"
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -372,7 +382,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionShortcutsCurrent"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
@@ -382,7 +392,7 @@
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="13sp" />
 
-                <TextView
+                <de.pritcloud.appstow.EllipsizedLinesTextView
                     android:id="@+id/suggestionShortcutsPreview"
                     style="@style/UiBodyText"
                     android:layout_width="0dp"
