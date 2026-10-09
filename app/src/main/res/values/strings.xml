@@ -42,7 +42,7 @@
     <string name="sorting_suggestion_interval_30">30 days</string>
     <string name="sorting_suggestion_interval_60">60 days</string>
     <string name="sorting_suggestion_interval_90">90 days</string>
-    <string name="sorting_suggestion_favorite_count_value">Automatic favorites when reassignment is selected: %1$d</string>
+    <string name="sorting_suggestion_favorite_count_value">Automatic favorites when Reassign favorites is selected: %1$d</string>
     <string name="sorting_suggestion_check_now">Check now</string>
     <string name="sorting_suggestion_available_title">Sorting suggestions available</string>
     <string name="sorting_suggestion_available_message">AppStow has new sorting suggestions based on your usage.</string>
@@ -52,6 +52,8 @@
     <string name="sorting_suggestion_up_to_date">The current sorting already matches your usage.</string>
     <string name="sorting_suggestion_preview_title">Sorting suggestions</string>
     <string name="sorting_suggestion_preview_intro">Choose which suggestions should be applied.</string>
+    <string name="sorting_suggestion_remove">Remove</string>
+    <string name="sorting_suggestion_add">Add</string>
     <string name="sorting_suggestion_current">Current</string>
     <string name="sorting_suggestion_target">Target</string>
     <string name="sorting_suggestion_favorites_order">Sort favorites</string>

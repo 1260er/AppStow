@@ -45,7 +45,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:paddingEnd="@dimen/spacing_sm"
-                    android:text="@string/sorting_suggestion_current"
+                    android:text="@string/sorting_suggestion_remove"
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -56,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:paddingStart="@dimen/spacing_sm"
-                    android:text="@string/sorting_suggestion_target"
+                    android:text="@string/sorting_suggestion_add"
                     android:textColor="@color/ui_text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold" />

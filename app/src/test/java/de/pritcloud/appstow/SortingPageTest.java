@@ -745,6 +745,82 @@ public class SortingPageTest {
     }
 
     @Test
+    public void manualSuggestionsUseActionLabelsForFavoriteAssignment() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                activity.findViewById(
+                        R.id.navSorting).performClick();
+
+                CheckBox enabled =
+                        activity.findViewById(
+                                R.id.sortingSuggestionsEnabled);
+
+                if (!enabled.isChecked()) {
+                    enabled.performClick();
+                }
+
+                TextView count =
+                        activity.findViewById(
+                                R.id.sortingSuggestionFavoriteCount);
+
+                assertEquals(
+                        activity.getString(
+                                R.string.sorting_suggestion_favorite_count_value,
+                                10),
+                        count.getText().toString());
+
+                View dialogContent =
+                        activity.getLayoutInflater().inflate(
+                                R.layout.dialog_sorting_suggestions,
+                                null,
+                                false);
+
+                ViewGroup favoriteComparison =
+                        dialogContent.findViewById(
+                                R.id.suggestionFavoriteAssignmentComparison);
+
+                ViewGroup favoriteHeaders =
+                        (ViewGroup) favoriteComparison.getChildAt(0);
+
+                assertEquals(
+                        activity.getString(
+                                R.string.sorting_suggestion_remove),
+                        ((TextView) favoriteHeaders.getChildAt(0))
+                                .getText().toString());
+
+                assertEquals(
+                        activity.getString(
+                                R.string.sorting_suggestion_add),
+                        ((TextView) favoriteHeaders.getChildAt(1))
+                                .getText().toString());
+
+                ViewGroup categoriesComparison =
+                        dialogContent.findViewById(
+                                R.id.suggestionCategoriesComparison);
+
+                ViewGroup categoriesHeaders =
+                        (ViewGroup) categoriesComparison.getChildAt(0);
+
+                assertEquals(
+                        activity.getString(
+                                R.string.sorting_suggestion_current),
+                        ((TextView) categoriesHeaders.getChildAt(0))
+                                .getText().toString());
+
+                assertEquals(
+                        activity.getString(
+                                R.string.sorting_suggestion_target),
+                        ((TextView) categoriesHeaders.getChildAt(1))
+                                .getText().toString());
+            });
+        }
+    }
+
+    @Test
     public void automaticModePersistsSortingOptions() {
 
         try (ActivityScenario<MainActivity> scenario =
