@@ -33,14 +33,14 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 
 ## Installation
 
-The current stable release is **AppStow 2.0.1**.
+The current stable release is **AppStow 3.0.0**.
 
 https://github.com/1260er/AppStow/releases/latest
 
 Release files:
 
-- `AppStow-2.0.1.apk`
-- `AppStow-2.0.1.apk.sha256`
+- `AppStow-3.0.0.apk`
+- `AppStow-3.0.0.apk.sha256`
 
 Obtainium repository:
 
@@ -102,7 +102,7 @@ Integrated web apps require a validated network connection.
 Local-only networks without validated internet access
 may therefore be rejected.
 
-## Statistics and sorting (3.0.0, in development)
+## Statistics and sorting (3.0.0)
 
 AppStow records only launches started through AppStow. Usage statistics
 remain on the device, are retained for at most one year, and can be
@@ -136,9 +136,9 @@ during the day and evening. Everyday apps can appear higher during
 the day, while games and leisure apps may move up in the evening.
 Users choose when each period starts. Manual mode remains the default.
 
-## Backup and restore (3.0.0, in development)
+## Backup and restore (3.0.0)
 
-AppStow 3.0.0 will use encrypted backup format v3. Backups include:
+AppStow 3.0.0 uses encrypted backup format v3. Backups include:
 
 - categories, symbols, assignments, and favorites
 - custom shortcuts
@@ -176,14 +176,14 @@ References to apps that are no longer installed are removed from favorites, cate
 
 ## Upgrading from 2.0.1 to 3.0.0
 
-AppStow 3.0.0 is intended to support an in-place Android update from
+AppStow 3.0.0 supports an in-place Android update from
 2.0.1 while preserving existing on-device configuration such as
 categories, favorites, shortcuts, and manual ordering. This update
 does not require importing a backup file.
 
 Backup files created with AppStow 2.x cannot be imported into 3.0.0.
 Likewise, backups created with 3.0.0 cannot be imported into 2.x.
-The on-device APK upgrade test remains a release requirement.
+The in-place APK upgrade from 2.0.1 to 3.0.0 was successfully tested on a physical Android device.
 
 ## Privacy
 

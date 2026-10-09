@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0 – In Entwicklung
+## 3.0.0
 
 - Neue lokale Nutzungsstatistik für über AppStow gestartete Apps und Shortcuts.
 - Auswertungen nach Zeitraum, meistgenutzten und nicht gestarteten Apps sowie Nutzung von Kategorien.
@@ -22,6 +22,7 @@
 - Nicht mehr installierte Apps werden bei der Wiederherstellung aus Favoriten, Kategoriezuweisungen und App-Reihenfolgen entfernt.
 - Kategorien und eigene Shortcuts bleiben bei der Wiederherstellung erhalten.
 - Das Backupformat von AppStow 3.0 ist absichtlich nicht mit AppStow 2.x kompatibel.
+- Vollständiger Deep-Review einschließlich Smartphone-Nachtests, paralleler Restore-Sperre und signiertem Upgrade-Test erfolgreich abgeschlossen.
 
 ## 2.0.1 – 4. Oktober 2026
 

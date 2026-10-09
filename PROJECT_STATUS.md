@@ -8,18 +8,19 @@ Stand: 9. Oktober 2026
 - Der stabile Release `v2.0.1` bleibt unverändert.
 - Statistik, automatische Sortierung sowie Darstellung & Bedienung sind umgesetzt.
 - Phase 8 – Backup v3 ist abgeschlossen.
-- Phase 9 – Hardening ist aktiv.
+- Phase 9 – Hardening und Deep-Review abgeschlossen; finaler Release wird vorbereitet.
 - Getesteter Ausgangsstand: Commit 7f2db12.
 - Dauerhaftes GitHub-Prerelease: tested-3.0.0-7f2db12.
 - Gesonderter Abschlussbranch: dev/3.0-final-hardening.
-- Geprüfter Stand vor der letzten Testergänzung: Commit 6ece9b9 auf dev/3.0-final-hardening.
+- Letzter funktional geprüfter Hardening-Stand vor Release-Dokumentation: Commit d0eee22 auf dev/3.0-final-hardening.
 - Geräte-Smoke-Tests Runden 1 bis 4 bestanden: Kategorien, manuelle und halbautomatische Sortierung, Sortiervorschläge sowie Vollautomatik mit Rückkehr zu Manuell.
 - Die Halbautomatik sortiert Apps und eigene Shortcuts gemeinsam innerhalb eines Bereichs.
 - Deep-Review-Nachtest 1 bestanden: sichtbare automatische Favoriten samt Reihenfolge werden gesichert, wiederhergestellt und nach Manuell übernommen.
 - Deep-Review-Nachtest 2 bestanden: Update, normale Backup-Wiederherstellung, Papra-Blob-Downloads, HTTPS-Downloads, Wiederholung, Abbruch und Neustart.
 - Ein privates Recovery-Journal schützt bei einem Abbruch während der Wiederherstellung; die Wiederherstellung und die Start-Rücksicherung nutzen bereits dieselbe Klassensperre.
 - Die Synchronisierung gegen parallele Start-Rücksicherung wird durch einen gezielten Regressionstest abgesichert.
-- Die spätere Rückführung nach dev/phase9 und main erfordert ausdrückliche Freigabe.
+- Die Übernahme auf main und die Veröffentlichung von 3.0.0 erfordern ausdrückliche Freigabe.
+- GitHub-Bereinigung am 9. Oktober abgeschlossen: Übrig sind nur main, dev/3.0-final-hardening und die Releases v2.0.1 sowie tested-3.0.0-7f2db12. Alle vier früheren Entwicklungsbranches sowie 64 ältere Releases wurden entfernt.
 - main und Stable 2.0.1 bleiben bis zur ausdrücklichen Freigabe unverändert.
 
 ## Phase 9 – Hardening
@@ -104,10 +105,11 @@ wurden nicht vollständig getestet.
 
 ## Nächster Schritt
 
-Nach erfolgreichem Parallelitäts-Regressionstest die verbleibenden Release-Unterlagen
-abschließend prüfen, einen kontrollierten Bereinigungsplan für nicht mehr benötigte
-Dev-Branches und Prereleases erstellen und erst nach ausdrücklicher Freigabe ausführen.
-Den stabilen 2.0.1-Release als Upgrade-Testreferenz nicht unüberlegt entfernen.
-F-Droid-Verfügbarkeit und Signatur-/Updatepfad getrennt prüfen.
-Anschließend den signierten Release-Kandidaten 3.0.0 auf main vorbereiten und
-nur nach ausdrücklicher Freigabe taggen und veröffentlichen.
+Nach Abschluss der Release-Dokumentation und erneut bestandenem Upgrade-Test
+den vollständig geprüften Stand per Fast-Forward auf main übernehmen. Erst nach
+expliziter Freigabe v3.0.0 taggen und den signierten Stable-Release durch GitHub
+Actions erstellen. Release-APK, SHA256, Signatur und Updatefähigkeit überprüfen.
+Anschließend die F-Droid-Verfügbarkeit und den Update-/Signaturweg getrennt
+prüfen. Der Stable-Release v2.0.1 und der getestete Ausgangsstand bleiben bis
+zur ausdrücklichen Entscheidung darüber als Referenzen bestehen.
+Der Hardening-Branch kann erst nach der erfolgreichen Veröffentlichung entfallen.
