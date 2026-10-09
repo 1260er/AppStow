@@ -343,7 +343,8 @@ Keines gefunden</string>
     <string name="backup_verifying">Backup wird geprüft...</string>
     <string name="backup_restoring">Backup wird wiederhergestellt...</string>
     <string name="backup_restore">Backup wiederherstellen</string>
-    <string name="backup_description_intro">Erstelle eine verschlüsselte Sicherung deiner AppStow-Konfiguration und stelle sie bei Bedarf wieder her.</string>
+    <string name="backup_description_intro">Deine AppStow-Sicherung wird verschlüsselt gespeichert. Da AppStow quelloffen ist und keinen persönlichen Schlüssel verwendet, bietet die Verschlüsselung keinen vollständigen Schutz vor unbefugtem Zugriff. Bewahre deine Sicherungen daher an einem sicheren, privaten Ort auf.</string>
+    <string name="backup_recovery_failed">Die automatische Rücksicherung nach einem unterbrochenen Wiederherstellungsvorgang ist fehlgeschlagen. Zur Sicherheit wird AppStow nicht gestartet. Starte die App erneut. Die interne Rücksicherung bleibt für einen erneuten Versuch erhalten.</string>
     <string name="backup_excluded_title">Nicht enthalten</string>
     <string name="backup_excluded_text">Nutzungsstatistiken, Web-App-Anmeldungen und Cookies.</string>
     <string name="backup_last_success_title">Letzte erfolgreiche Sicherung</string>

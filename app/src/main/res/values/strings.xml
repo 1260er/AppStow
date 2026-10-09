@@ -343,7 +343,8 @@ None found</string>
     <string name="backup_verifying">Checking backup...</string>
     <string name="backup_restoring">Restoring backup...</string>
     <string name="backup_restore">Restore backup</string>
-    <string name="backup_description_intro">Create an encrypted backup of your AppStow configuration and restore it when needed.</string>
+    <string name="backup_description_intro">Your AppStow backup is stored in encrypted form. Because AppStow is open source and does not use a personal encryption key, encryption does not provide complete protection against unauthorized access. Keep your backups in a safe, private location.</string>
+    <string name="backup_recovery_failed">Automatic recovery after an interrupted restore failed. AppStow will not start to avoid using inconsistent data. Open the app again to retry. The private recovery snapshot is retained.</string>
     <string name="backup_excluded_title">Not included</string>
     <string name="backup_excluded_text">Usage statistics, web app sessions and cookies.</string>
     <string name="backup_last_success_title">Last successful backup</string>

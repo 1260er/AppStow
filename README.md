@@ -157,9 +157,16 @@ statistics are reset. New usage data can subsequently change the
 automatic selection. Switching to Manual before that retains the
 restored favorite selection and order.
 
-**Backup security:** Backup v3 uses AES-256-GCM with a random salt and IV. No user password is required. The key is derived from a fixed value embedded in the open-source application. The encryption prevents casual reading and detects accidental corruption, but it does not provide strong confidentiality or tamper protection against someone who can inspect the published source code. Keep backup files in a trusted, private location.
+**Backup security:** Backup v3 uses AES-256-GCM with a random salt and IV. No user password is required. The key is derived from a fixed value shared across installations. The encryption prevents casual reading and detects accidental corruption, but it does not provide strong confidentiality or tamper protection against determined third parties. Keep backup files in a trusted, private location.
 
-A successful restore resets usage statistics. References to apps that are no longer installed are removed from favorites, category assignments, and app orders. Categories and custom shortcuts remain.
+A successful restore resets usage statistics. During restore, AppStow writes
+an atomic recovery snapshot in its private app storage. If the Android process
+stops during restoration, AppStow attempts to restore the previous preference
+state before loading its UI on the next launch. It refuses to load the UI if
+recovery cannot be completed. This protects against interrupted restore
+operations, but cannot guarantee recovery from storage hardware failures.
+
+References to apps that are no longer installed are removed from favorites, category assignments, and app orders. Categories and custom shortcuts remain.
 
 > **Important note about AppStow 3.0:** Version 3.0 fundamentally revises AppStow's backup format. Backups created with AppStow 2.x cannot be restored in AppStow 3.0. Likewise, backups created with AppStow 3.0 are not compatible with older AppStow versions.
 >

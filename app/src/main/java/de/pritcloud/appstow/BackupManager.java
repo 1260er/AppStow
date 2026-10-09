@@ -589,11 +589,13 @@ final class BackupManager {
                 installedLauncherPackages);
     }
 
-    static void restoreBackup(
+    static synchronized void restoreBackup(
             Context context,
             JSONObject backup,
             Set<String> installedLauncherPackages)
             throws JSONException, IOException {
+
+        recoverInterruptedRestore(context);
 
         validateBackup(
                 backup,
@@ -757,6 +759,10 @@ final class BackupManager {
                 currentLanguage
                         != configuration.language;
 
+        // Write an atomic, private pre-restore snapshot before
+        // changing any of the ten preference stores.
+        BackupRestoreJournal.prepare(context);
+
         try {
             boolean categoriesSaved =
                     categoryPrefs
@@ -868,7 +874,9 @@ final class BackupManager {
                         configuration.language);
             }
 
-        } catch (IOException | RuntimeException exception) {
+            BackupRestoreJournal.complete(context);
+
+        } catch (IOException | JSONException | RuntimeException exception) {
 
             boolean rollbackSaved =
                     restorePreferences(
@@ -940,9 +948,18 @@ final class BackupManager {
             if (!rollbackSaved
                     || !languageRollbackSaved) {
 
+                // Keep the journal for recovery on next startup.
                 throw new IOException(
                         "Wiederherstellung und Rollback sind fehlgeschlagen.",
                         exception);
+            }
+
+            // The old state has been restored successfully.
+            // A failed cleanup is kept as a recoverable journal.
+            BackupRestoreJournal.complete(context);
+
+            if (exception instanceof JSONException) {
+                throw (JSONException) exception;
             }
 
             if (exception instanceof IOException) {
@@ -953,6 +970,13 @@ final class BackupManager {
                     "Backup konnte nicht vollständig wiederhergestellt werden.",
                     exception);
         }
+    }
+
+    static synchronized boolean recoverInterruptedRestore(
+            Context context)
+            throws IOException {
+
+        return BackupRestoreJournal.recover(context);
     }
 
     private static Map<String, Object> snapshotPreferences(

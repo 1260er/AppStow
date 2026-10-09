@@ -291,6 +291,8 @@ public class MainActivity extends Activity {
 
     private boolean restoreReceiverRegistered;
     private boolean packageReceiverRegistered;
+    private boolean restoreRecoveryBlocked;
+    private boolean restoreRecreationPending;
 
     private final BroadcastReceiver packageChangeReceiver =
             new BroadcastReceiver() {
@@ -409,6 +411,29 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        try {
+            // The theme wrapper ran before recovery. Recreate
+            // once after startup if a journal was recovered.
+            restoreRecreationPending =
+                    BackupManager.recoverInterruptedRestore(this);
+
+        } catch (java.io.IOException exception) {
+            // Do not initialize stores from a potentially
+            // half-restored state. Keep the journal for retry.
+            restoreRecoveryBlocked = true;
+            setContentView(R.layout.activity_main);
+
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.backup_restore_failed)
+                    .setMessage(R.string.backup_recovery_failed)
+                    .setCancelable(false)
+                    .setPositiveButton(
+                            android.R.string.ok,
+                            (dialog, which) -> finish())
+                    .show();
+            return;
+        }
 
         setContentView(R.layout.activity_main);
 
@@ -1177,6 +1202,16 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
+        if (restoreRecoveryBlocked) {
+            return;
+        }
+
+        if (restoreRecreationPending) {
+            restoreRecreationPending = false;
+            recreate();
+            return;
+        }
+
         refreshAppsIfPackagesChanged();
         refreshOverviewForActiveTimeProfile();
         scheduleNextSortingProfileBoundary();
@@ -1185,6 +1220,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onSaveInstanceState(
             Bundle outState) {
+
+        if (restoreRecoveryBlocked) {
+            super.onSaveInstanceState(outState);
+            return;
+        }
 
         outState.putString(
                 STATE_PAGE,
@@ -1432,6 +1472,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        if (restoreRecoveryBlocked) {
+            return;
+        }
 
         boolean returningFromBackground =
                 stoppedForBackground;
