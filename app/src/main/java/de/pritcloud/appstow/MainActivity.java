@@ -1777,6 +1777,20 @@ public class MainActivity extends Activity {
                         settings.dayStartHour,
                         settings.eveningStartHour);
 
+        if (settings.mode
+                == SortingSettingsStore.Mode.AUTOMATIC
+                || settings.mode
+                == SortingSettingsStore.Mode.SEMI_AUTOMATIC) {
+
+            sorting = new AutomaticSortingSnapshotStore(this)
+                    .getOrCreate(
+                            settings.timeProfileEnabled
+                                    ? activeProfile
+                                    : null,
+                            sorting,
+                            settings.suggestionIntervalDays);
+        }
+
         UsageStatisticsStore.Snapshot overall =
                 sorting.getOverallWeighted();
 
@@ -7036,6 +7050,11 @@ public class MainActivity extends Activity {
                                     .markSuggestionHandledNow();
 
                             refreshSortingSettingsUi();
+
+                            if (current.mode
+                                    != SortingSettingsStore.Mode.MANUAL) {
+                                refreshOverviewForSortingSettingsChange();
+                            }
 
                             dialog.dismiss();
                         })

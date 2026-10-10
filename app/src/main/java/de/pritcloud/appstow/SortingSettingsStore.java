@@ -246,11 +246,22 @@ final class SortingSettingsStore {
         validate(
                 settings);
 
+        Settings previous = load();
+
+        boolean resetAutomaticSnapshot =
+                previous.mode != settings.mode
+                        || previous.timeProfileEnabled
+                        != settings.timeProfileEnabled
+                        || previous.dayStartHour
+                        != settings.dayStartHour
+                        || previous.eveningStartHour
+                        != settings.eveningStartHour;
+
         boolean restoredFallback =
                 settings.mode == Mode.AUTOMATIC
                         && hasRestoredAutomaticFavorites();
 
-        preferences.edit()
+        SharedPreferences.Editor editor = preferences.edit()
                 .putString(
                         KEY_MODE,
                         settings.mode.name())
@@ -289,8 +300,13 @@ final class SortingSettingsStore {
                         settings.suggestionsEnabled)
                 .putInt(
                         KEY_SUGGESTION_INTERVAL_DAYS,
-                        settings.suggestionIntervalDays)
-                .apply();
+                        settings.suggestionIntervalDays);
+
+        if (resetAutomaticSnapshot) {
+            AutomaticSortingSnapshotStore.invalidate(editor);
+        }
+
+        editor.apply();
     }
 
     boolean hasRestoredAutomaticFavorites() {

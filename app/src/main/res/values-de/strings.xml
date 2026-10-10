@@ -34,9 +34,10 @@
     <string name="sorting_favorite_count_title">Anzahl automatische Favoriten</string>
     <string name="sorting_favorite_count_invalid">Gib eine Zahl größer als null ein.</string>
     <string name="sorting_always_start_favorites">Immer mit geöffneten Favoriten starten</string>
+    <string name="sorting_interval_description">Die Nutzung wird laufend erfasst. Dieses Intervall gilt für die Automatik und optionale manuelle Sortiervorschläge.</string>
     <string name="sorting_suggestions_enabled">Sortiervorschläge anbieten</string>
-    <string name="sorting_suggestion_interval_value">Intervall: %1$d Tage</string>
-    <string name="sorting_suggestion_interval_title">Intervall für Sortiervorschläge</string>
+    <string name="sorting_suggestion_interval_value">Sortierintervall: %1$d Tage</string>
+    <string name="sorting_suggestion_interval_title">Sortierintervall</string>
     <string name="sorting_suggestion_interval_7">7 Tage</string>
     <string name="sorting_suggestion_interval_14">14 Tage</string>
     <string name="sorting_suggestion_interval_30">30 Tage</string>
@@ -305,6 +306,8 @@ Keines gefunden</string>
     <string name="help_sort_items_text">Tippe auf das Sortiersymbol innerhalb eines Bereichs. Ziehe Apps und eigene Shortcuts an ihren Anfassern an die gewünschte Position. In der Kachelansicht kannst du die Kacheln über die Anfasser rechts oben in alle vier Richtungen verschieben.</string>
     <string name="help_sort_finish_title">Reihenfolge speichern</string>
     <string name="help_sort_finish_text">Tippe auf das Häkchen, um die Sortierung zu beenden. Die neue Reihenfolge wird gespeichert.</string>
+    <string name="help_sort_interval_title">Sortierintervall</string>
+    <string name="help_sort_interval_text">Das Intervall von 7, 14, 30, 60 oder 90 Tagen gilt für die automatische Sortierung und optionale manuelle Sortiervorschläge. Nutzungsdaten werden laufend erfasst. Die Automatik verwendet bis zum Intervallende stabile Bewertungsdaten. Tag- und Abendprofil besitzen getrennte Schnappschüsse. Änderungen installierter Apps und bewusste Einstellungen werden unabhängig behandelt. Ein leerer Schnappschuss kann nach dem ersten App-Start aktualisiert werden.</string>
     <string name="help_sort_modes_title">Halbautomatische Sortierung</string>
     <string name="help_sort_modes_text">Vier Schalter steuern unabhängig voneinander: Favoriten sortiert alle Einträge im Favoritenbereich; Kategorien sortiert nur die Kategorien selbst; Kategorieinhalte sortiert alle Apps und Shortcuts innerhalb jeder Kategorie; Eigene Shortcuts sortiert den separaten Shortcut-Bereich. Ist ein Inhaltsbereich automatisch, sind alle seine Einträge von der manuellen Sortierung ausgeschlossen. Andernfalls sind alle manuell sortierbar. Automatisch berechnete Reihenfolgen werden zur neuen Grundlage und beim Zurückschalten auf Manuell nicht automatisch rückgängig gemacht.</string>
     <string name="help_sort_suggestions_title">Sortiervorschläge</string>

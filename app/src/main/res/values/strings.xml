@@ -34,9 +34,10 @@
     <string name="sorting_favorite_count_title">Number of automatic favorites</string>
     <string name="sorting_favorite_count_invalid">Enter a number greater than zero.</string>
     <string name="sorting_always_start_favorites">Always start with Favorites open</string>
+    <string name="sorting_interval_description">Usage is tracked continuously. This interval applies to automatic sorting and optional manual suggestions.</string>
     <string name="sorting_suggestions_enabled">Offer sorting suggestions</string>
-    <string name="sorting_suggestion_interval_value">Interval: %1$d days</string>
-    <string name="sorting_suggestion_interval_title">Sorting suggestion interval</string>
+    <string name="sorting_suggestion_interval_value">Sorting interval: %1$d days</string>
+    <string name="sorting_suggestion_interval_title">Sorting interval</string>
     <string name="sorting_suggestion_interval_7">7 days</string>
     <string name="sorting_suggestion_interval_14">14 days</string>
     <string name="sorting_suggestion_interval_30">30 days</string>
@@ -305,6 +306,8 @@ None found</string>
     <string name="help_sort_items_text">Tap the sort icon inside a section. Drag entries using their handles. In grid view, tiles can be moved in all four directions using the handles at the upper right.</string>
     <string name="help_sort_finish_title">Save the order</string>
     <string name="help_sort_finish_text">Tap the check mark to finish sorting. The new order is saved.</string>
+    <string name="help_sort_interval_title">Sorting interval</string>
+    <string name="help_sort_interval_text">The interval of 7, 14, 30, 60 or 90 days applies to automatic sorting and optional manual suggestions. Usage is recorded continuously. Automatic modes use stable scores until the interval expires. Day and evening profiles have separate snapshots. Changes in installed apps and explicit settings are handled independently. An empty usage snapshot may refresh after the first launch.</string>
     <string name="help_sort_modes_title">Semi-automatic sorting</string>
     <string name="help_sort_modes_text">Four switches control independent areas: Favorites sorts all items in Favorites; Categories sorts the category sections only; Category contents sorts every app and shortcut within each category; Custom shortcuts sorts the separate shortcut section. When content sorting is automatic, every item in that area is excluded from manual reordering. Otherwise every item can be moved manually. Automatically calculated orders become the new baseline and are not automatically undone when switching back to Manual.</string>
     <string name="help_sort_suggestions_title">Sorting suggestions</string>

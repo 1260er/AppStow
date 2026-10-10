@@ -197,11 +197,32 @@ public class SortingPageTest {
                                 activity.findViewById(
                                         R.id.sortingSuggestionInterval);
 
+                        ViewGroup root =
+                                (ViewGroup) manual.getParent();
+
+                        View modes = activity.findViewById(
+                                R.id.sortingModeGroup);
+
                         assertTrue(
-                                manual.indexOfChild(
-                                        manualFavoriteCount)
-                                        < manual.indexOfChild(
-                                        interval));
+                                manual.indexOfChild(manualFavoriteCount) >= 0);
+
+                        assertTrue(root.indexOfChild(modes)
+                                < root.indexOfChild(interval));
+
+                        assertTrue(root.indexOfChild(interval)
+                                < root.indexOfChild(manual));
+
+                        for (int mode : new int[] {
+                                R.id.sortingModeManual,
+                                R.id.sortingModeSemi,
+                                R.id.sortingModeAutomatic}) {
+
+                            activity.findViewById(mode).performClick();
+
+                            assertEquals(
+                                    View.VISIBLE,
+                                    interval.getVisibility());
+                        }
 
                         View automatic =
                                 activity.findViewById(

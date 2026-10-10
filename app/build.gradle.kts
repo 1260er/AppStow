@@ -67,7 +67,7 @@ android {
         } else {
             13
         }
-        versionName = "3.0.0"
+        versionName = "3.0.1"
     }
 
     signingConfigs {
