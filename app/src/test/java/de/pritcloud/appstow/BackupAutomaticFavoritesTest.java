@@ -190,21 +190,90 @@ public class BackupAutomaticFavoritesTest {
                         .getOrderedIds("favorites", visible));
 
         SortingSettingsStore sorting = new SortingSettingsStore(context);
-        assertEquals(SortingSettingsStore.Mode.AUTOMATIC,
+        assertEquals(SortingSettingsStore.Mode.MANUAL,
                 sorting.load().mode);
-        assertTrue(sorting.hasRestoredAutomaticFavorites());
+        assertFalse(sorting.hasRestoredAutomaticFavorites());
 
         sorting.save(sorting.load());
-        assertTrue(sorting.hasRestoredAutomaticFavorites());
+        assertFalse(sorting.hasRestoredAutomaticFavorites());
 
         assertEquals(
                 visible,
-                AutomaticSortingPlanner
-                        .preserveRestoredFavoritesWithoutUsage(
-                                Collections.emptyList(),
-                                new SectionItemOrderStore(context)
-                                        .getOrderedIds("favorites", visible),
-                                sorting.hasRestoredAutomaticFavorites()));
+                new SectionItemOrderStore(context)
+                        .getOrderedIds("favorites", visible));
+    }
+
+    @Test
+    public void fullAutomaticBackupPreservesVisibleOrderInManualMode()
+            throws Exception {
+
+        org.junit.Assert.assertTrue(
+                new CategoryStore(context).addCategory("Work", "W"));
+        String category = "category:" +
+                new CategoryStore(context).getCategories().get(0).id;
+
+        List<String> savedSections = Arrays.asList(
+                "favorites", category, "shortcuts");
+        List<String> visibleSections = Arrays.asList(
+                "shortcuts", "favorites", category);
+        List<String> visibleFavorites = Arrays.asList(
+                "shortcut:site", "app:com.saved.app");
+        List<String> visibleShortcuts = Arrays.asList(
+                "shortcut:site", "shortcut:old");
+
+        new OverviewOrderStore(context).saveOrderIds(savedSections);
+        new SectionItemOrderStore(context).saveOrder(
+                "shortcuts", Arrays.asList(
+                        "shortcut:old", "shortcut:site"));
+
+        java.util.Map<String, List<String>> visibleItems =
+                new java.util.HashMap<>();
+        visibleItems.put("favorites", visibleFavorites);
+        visibleItems.put("shortcuts", visibleShortcuts);
+        visibleItems.put(category, Collections.emptyList());
+
+        File file = File.createTempFile(
+                "appstow-visible-orders-", ".json", context.getCacheDir());
+        JSONObject backup;
+        try {
+            Uri uri = Uri.fromFile(file);
+            BackupManager.writeBackup(context, uri, null,
+                    visibleFavorites, visibleSections, visibleItems);
+            backup = BackupManager.readBackup(context, uri);
+        } finally {
+            file.delete();
+        }
+
+        // Eine Sicherung selbst veraendert NICHT die aktiven Stores.
+        assertEquals(savedSections,
+                new OverviewOrderStore(context).getOrder());
+        assertEquals(Arrays.asList("shortcut:old", "shortcut:site"),
+                new SectionItemOrderStore(context).getOrderedIds(
+                        "shortcuts", visibleShortcuts));
+        assertTrue(new FavoritesStore(context).isFavorite("com.manual.old"));
+
+        JSONArray sections = backup.getJSONArray("overviewOrder");
+        for (int i = 0; i < visibleSections.size(); i++) {
+            assertEquals(visibleSections.get(i), sections.getString(i));
+        }
+        JSONArray shortcuts = backup.getJSONObject("sectionItemOrder")
+                .getJSONArray("shortcuts");
+        assertEquals("shortcut:site", shortcuts.getString(0));
+        assertEquals("shortcut:old", shortcuts.getString(1));
+
+        BackupManager.restoreBackup(context, backup, Set.of("com.saved.app"));
+
+        assertEquals(SortingSettingsStore.Mode.MANUAL,
+                new SortingSettingsStore(context).load().mode);
+        assertEquals(visibleSections,
+                new OverviewOrderStore(context).getOrder());
+        assertEquals(visibleFavorites,
+                new SectionItemOrderStore(context).getOrderedIds(
+                        "favorites", visibleFavorites));
+        assertEquals(visibleShortcuts,
+                new SectionItemOrderStore(context).getOrderedIds(
+                        "shortcuts", visibleShortcuts));
+        assertTrue(new FavoritesStore(context).isFavorite("com.saved.app"));
     }
 
     @Test

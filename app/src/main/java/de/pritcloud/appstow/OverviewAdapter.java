@@ -562,7 +562,7 @@ final class OverviewAdapter
                         automaticTimeProfileEnabled);
     }
 
-    private void materializeSemiAutomaticOrders() {
+    void materializeSemiAutomaticOrders() {
 
         if (!semiAutomaticSorting) {
             return;
@@ -585,6 +585,26 @@ final class OverviewAdapter
                             section,
                             currentIds));
         }
+    }
+
+    Map<String, List<String>> snapshotVisibleAutomaticSectionItemOrders() {
+
+        if (!fullAutomaticSorting) {
+            throw new IllegalStateException(
+                    "Vollautomatik ist nicht aktiv.");
+        }
+
+        Map<String, List<String>> result = new HashMap<>();
+
+        for (OverviewSection section : sections) {
+            result.put(
+                    section.id,
+                    new ArrayList<>(getRankedItemIds(
+                            section,
+                            getCurrentItemIds(section))));
+        }
+
+        return result;
     }
 
     List<String> snapshotVisibleAutomaticFavorites() {

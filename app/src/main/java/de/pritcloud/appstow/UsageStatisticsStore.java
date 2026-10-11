@@ -853,6 +853,123 @@ final class UsageStatisticsStore {
         }
     }
 
+    static final class AutomaticHistory {
+
+        final int availableDays;
+        final int activeDays;
+        final int missingDays;
+        final boolean recentlyUsed;
+        final boolean sufficient;
+
+        AutomaticHistory(
+                int availableDays,
+                int activeDays,
+                int requiredDays,
+                boolean recentlyUsed) {
+
+            this.availableDays = availableDays;
+            this.activeDays = activeDays;
+            this.missingDays = Math.max(
+                    0, requiredDays - availableDays);
+            this.recentlyUsed = recentlyUsed;
+
+            this.sufficient =
+                    availableDays >= requiredDays
+                            && activeDays >= 2
+                            && recentlyUsed;
+        }
+    }
+
+    AutomaticHistory getAutomaticHistory(
+            int requiredDays) {
+
+        if (requiredDays != 7
+                && requiredDays != 14
+                && requiredDays != 30
+                && requiredDays != 60
+                && requiredDays != 90) {
+
+            throw new IllegalArgumentException(
+                    "Unsupported sorting interval.");
+        }
+
+        LocalDate today = LocalDate.now(clock);
+        LocalDate oldestAllowed = today.minusDays(89);
+
+        LocalDate first = null;
+        LocalDate last = null;
+        int activeDays = 0;
+
+        for (Map.Entry<String, ?> entry :
+                preferences.getAll().entrySet()) {
+
+            LocalDate date = parseDateKey(
+                    entry.getKey());
+
+            if (date == null
+                    || date.isBefore(oldestAllowed)
+                    || date.isAfter(today)
+                    || !(entry.getValue() instanceof String)) {
+                continue;
+            }
+
+            JSONObject day = parseDay(
+                    (String) entry.getValue());
+
+            if (!hasPositiveLaunch(
+                    day.optJSONObject(KEY_APPS))
+                    && !hasPositiveLaunch(
+                            day.optJSONObject(KEY_SHORTCUTS))) {
+                continue;
+            }
+
+            activeDays++;
+
+            if (first == null || date.isBefore(first)) {
+                first = date;
+            }
+
+            if (last == null || date.isAfter(last)) {
+                last = date;
+            }
+        }
+
+        int availableDays = first == null
+                ? 0
+                : (int) ChronoUnit.DAYS.between(
+                        first, today) + 1;
+
+        boolean recentlyUsed = last != null
+                && !last.isBefore(today.minusDays(6));
+
+        return new AutomaticHistory(
+                availableDays,
+                activeDays,
+                requiredDays,
+                recentlyUsed);
+    }
+
+    private static boolean hasPositiveLaunch(
+            JSONObject counts) {
+
+        if (counts == null) {
+            return false;
+        }
+
+        java.util.Iterator<String> keys = counts.keys();
+
+        while (keys.hasNext()) {
+            Object value = counts.opt(keys.next());
+
+            if (value instanceof Number
+                    && ((Number) value).doubleValue() > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void clear() {
         preferences.edit()
                 .clear()

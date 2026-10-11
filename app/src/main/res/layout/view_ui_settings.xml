@@ -21,7 +21,7 @@
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_lg"
+            android:layout_marginTop="@dimen/spacing_md"
             android:text="@string/ui_theme_title"
             android:textStyle="bold" />
 
@@ -74,7 +74,7 @@
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_lg"
+            android:layout_marginTop="@dimen/spacing_md"
             android:text="@string/ui_start_behavior_title"
             android:textStyle="bold" />
 
@@ -127,7 +127,7 @@
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_lg"
+            android:layout_marginTop="@dimen/spacing_md"
             android:text="@string/ui_control_side_title"
             android:textStyle="bold" />
 
@@ -171,7 +171,7 @@
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_lg"
+            android:layout_marginTop="@dimen/spacing_md"
             android:text="@string/ui_language_title"
             android:textStyle="bold" />
 

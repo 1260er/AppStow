@@ -15,8 +15,9 @@
     <string name="sorting_mode_semi">Semi-automatic</string>
     <string name="sorting_mode_automatic">Automatic</string>
     <string name="sorting_manual_description">All ordering and favorites remain under manual control.</string>
-    <string name="sorting_semi_description">Only the selected areas are sorted automatically. All other areas remain manual.</string>
+    <string name="sorting_semi_description">Only selected areas are sorted automatically. Favorite membership stays editable; the Favorites switch controls their order.</string>
     <string name="sorting_automatic_description">AppStow manages the complete order and the automatic favorites.</string>
+    <string name="sorting_area_favorites_sort">Sort favorites</string>
     <string name="sorting_area_favorites">Favorites</string>
     <string name="sorting_area_categories">Categories</string>
     <string name="sorting_area_apps">Category contents</string>
@@ -35,6 +36,11 @@
     <string name="sorting_favorite_count_invalid">Enter a number greater than zero.</string>
     <string name="sorting_always_start_favorites">Always start with Favorites open</string>
     <string name="sorting_interval_description">Usage is tracked continuously. This interval applies to automatic sorting and optional manual suggestions.</string>
+    <string name="sorting_history_title">Not enough usage history</string>
+    <string name="sorting_history_missing">Available: %1$d days of usage history. The selected interval requires %2$d days. Another %3$d days are needed. At least two days with launches and a launch within the last seven days are also required.</string>
+    <string name="sorting_history_activity">The required time span is available, but at least two separate days with app or shortcut launches and a launch within the last seven days are needed.</string>
+    <string name="sorting_keep_interval">Keep previous interval</string>
+    <string name="sorting_switch_manual">Switch to Manual</string>
     <string name="sorting_suggestions_enabled">Offer sorting suggestions</string>
     <string name="sorting_suggestion_interval_value">Sorting interval: %1$d days</string>
     <string name="sorting_suggestion_interval_title">Sorting interval</string>
@@ -79,10 +85,10 @@
     <string name="help_statistics_display_title">Display</string>
     <string name="help_statistics_display_text">Most used entries combines apps and custom shortcuts in one ranking. The number control selects Top 5, 10, 25, 50 or All. The period control selects 1, 3 or 6 months, or 1 year. A star marks an app that is currently a favorite. Apps not launched lists installed apps that were not launched through AppStow during the selected period. Statistics cards can be rearranged with the sort icon.</string>
     <string name="help_statistics_reset_title">Reset statistics</string>
-    <string name="help_statistics_reset_text">The reset icon deletes the recorded usage history after confirmation. The selected period, number of entries and statistics card order are kept.</string>
+    <string name="help_statistics_reset_text">The reset icon deletes the usage history after confirmation. AppStow switches automatic sorting to Manual, preserving the current favorites and order. Statistics display settings are kept.</string>
 
     <string name="statistics_reset_title">Reset statistics?</string>
-    <string name="statistics_reset_message">All recorded usage statistics will be deleted. The selected period, number of entries and card order will be kept.</string>
+    <string name="statistics_reset_message">All recorded usage statistics will be deleted. If automatic sorting is active, AppStow will switch to Manual and preserve the current favorites and order. Statistics display settings remain unchanged.</string>
     <string name="statistics_reset_confirm">Reset</string>
     <string name="statistics_period_title">Period</string>
     <string name="statistics_period_one_month">1 month</string>
@@ -376,7 +382,7 @@ None found</string>
     <string name="backup_restore_incompatible">This backup format is not supported. AppStow 3.0 cannot restore backups from AppStow 2.x.</string>
     <string name="backup_restore_invalid">The selected backup is damaged or contains invalid data. Please select a valid AppStow backup.</string>
     <string name="backup_restore_title">Restore backup?</string>
-    <string name="backup_restore_message">The settings and arrangements from the selected backup replace the current state.\n\nUsage statistics are completely reset. Apps that are no longer installed are removed from favorites, category assignments and app orders. Custom shortcuts and categories remain.</string>
+    <string name="backup_restore_message">The settings and arrangements from the selected backup replace the current state.\n\nUsage statistics are completely reset. Automatic sorting therefore starts in Manual mode. Saved favorites and orders remain available. Apps no longer installed are filtered from favorites, assignments and app orders.</string>
     <string name="backup_restore_confirm">Restore</string>
     <string name="backup_restored">Backup restored.</string>
 

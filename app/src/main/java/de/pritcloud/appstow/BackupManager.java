@@ -140,10 +140,26 @@ final class BackupManager {
             List<String> visibleAutomaticFavorites)
             throws IOException, JSONException {
 
+        return writeBackup(
+                context, uri, onVerificationStarted,
+                visibleAutomaticFavorites, null, null);
+    }
+
+    static BackupSummary writeBackup(
+            Context context,
+            Uri uri,
+            Runnable onVerificationStarted,
+            List<String> visibleAutomaticFavorites,
+            List<String> visibleAutomaticSections,
+            Map<String, List<String>> visibleAutomaticOrders)
+            throws IOException, JSONException {
+
         JSONObject backup =
                 createBackup(
                         context,
-                        visibleAutomaticFavorites);
+                        visibleAutomaticFavorites,
+                        visibleAutomaticSections,
+                        visibleAutomaticOrders);
 
         JSONObject envelope =
                 BackupCrypto.encrypt(
@@ -1082,7 +1098,9 @@ final class BackupManager {
 
     private static JSONObject createBackup(
             Context context,
-            List<String> visibleAutomaticFavorites)
+            List<String> visibleAutomaticFavorites,
+            List<String> visibleAutomaticSections,
+            Map<String, List<String>> visibleAutomaticOrders)
             throws JSONException {
 
         SharedPreferences categoryPrefs =
@@ -1293,11 +1311,68 @@ final class BackupManager {
                     visibleAutomaticFavorites);
         }
 
+        if ((visibleAutomaticSections == null)
+                != (visibleAutomaticOrders == null)) {
+            throw new JSONException(
+                    "Unvollstaendiger automatischer Sicherungszustand.");
+        }
+
+        if (visibleAutomaticSections != null
+                && new SortingSettingsStore(context).load().mode
+                == SortingSettingsStore.Mode.AUTOMATIC) {
+
+            applyVisibleAutomaticOrders(
+                    backup,
+                    visibleAutomaticSections,
+                    visibleAutomaticOrders);
+        }
+
         validateBackup(
                 backup,
                 true);
 
         return backup;
+    }
+
+    private static void applyVisibleAutomaticOrders(
+            JSONObject backup,
+            List<String> sectionIds,
+            Map<String, List<String>> itemOrders)
+            throws JSONException {
+
+        JSONArray sectionOrder = new JSONArray();
+        JSONObject storedOrders = backup.getJSONObject("sectionItemOrder");
+        Set<String> seenSections = new HashSet<>();
+
+        for (String sectionId : sectionIds) {
+            if (sectionId == null
+                    || sectionId.isBlank()
+                    || !seenSections.add(sectionId)) {
+                throw new JSONException("Ungueltige Abschnittsreihenfolge.");
+            }
+
+            List<String> items = itemOrders.get(sectionId);
+            if (items == null) {
+                throw new JSONException("Abschnitt ohne Reihenfolge.");
+            }
+
+            JSONArray orderedItems = new JSONArray();
+            Set<String> seenItems = new HashSet<>();
+
+            for (String itemId : items) {
+                if (itemId == null
+                        || itemId.isBlank()
+                        || !seenItems.add(itemId)) {
+                    throw new JSONException("Ungueltige Eintragsreihenfolge.");
+                }
+                orderedItems.put(itemId);
+            }
+
+            sectionOrder.put(sectionId);
+            storedOrders.put(sectionId, orderedItems);
+        }
+
+        backup.put("overviewOrder", sectionOrder);
     }
 
     private static void applyVisibleAutomaticFavorites(

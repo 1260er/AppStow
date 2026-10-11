@@ -209,7 +209,7 @@ public class BackupV3StateTest {
                     sortingStore.load();
 
             assertEquals(
-                    SortingSettingsStore.Mode.AUTOMATIC,
+                    SortingSettingsStore.Mode.MANUAL,
                     restoredSorting.mode);
 
             assertTrue(

@@ -39,6 +39,25 @@ public class SortingPageTest {
 
         context.deleteSharedPreferences(
                 "sorting_settings");
+
+        context.deleteSharedPreferences(
+                "usage_statistics");
+
+        java.time.ZoneId zone =
+                java.time.ZoneId.systemDefault();
+
+        java.time.Instant past =
+                java.time.ZonedDateTime.now(zone)
+                        .minusDays(35)
+                        .toInstant();
+
+        new UsageStatisticsStore(
+                context,
+                java.time.Clock.fixed(past, zone))
+                .recordAppLaunch("app.history.start", null);
+
+        new UsageStatisticsStore(context)
+                .recordAppLaunch("app.history.recent", null);
     }
 
     @Test
@@ -168,6 +187,110 @@ public class SortingPageTest {
                         assertTrue(
                                 suggestions.isChecked());
                     });
+        }
+    }
+
+    @Test
+    public void sortingDescriptionsAndControlsUseConsistentSpacing() {
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                activity.findViewById(
+                        R.id.navSorting).performClick();
+
+                int close =
+                        activity.getResources()
+                                .getDimensionPixelSize(
+                                        R.dimen.spacing_sm);
+
+                int section =
+                        activity.getResources()
+                                .getDimensionPixelSize(
+                                        R.dimen.spacing_md);
+
+                View modes = activity.findViewById(
+                        R.id.sortingModeGroup);
+
+                View interval = activity.findViewById(
+                        R.id.sortingSuggestionInterval);
+
+                ViewGroup root =
+                        (ViewGroup) modes.getParent();
+
+                View intervalExplanation =
+                        root.getChildAt(
+                                root.indexOfChild(interval) - 1);
+
+                assertEquals(
+                        activity.getString(
+                                R.string.sorting_interval_description),
+                        ((TextView) intervalExplanation)
+                                .getText().toString());
+
+                View[] controls = {
+                        modes,
+                        interval,
+                        activity.findViewById(
+                                R.id.sortingSuggestionsEnabled),
+                        activity.findViewById(
+                                R.id.sortingSuggestionFavoriteCount),
+                        activity.findViewById(
+                                R.id.sortingSuggestionCheckNow),
+                        activity.findViewById(
+                                R.id.sortingSemiTopRow),
+                        activity.findViewById(
+                                R.id.sortingFavoriteCount),
+                        activity.findViewById(
+                                R.id.sortingTimeProfileRow),
+                        activity.findViewById(
+                                R.id.sortingDayStart),
+                        activity.findViewById(
+                                R.id.sortingEveningStart)
+                };
+
+                for (View control : controls) {
+
+                    assertEquals(
+                            close,
+                            ((ViewGroup.MarginLayoutParams)
+                                    control.getLayoutParams())
+                                    .topMargin);
+                }
+
+                View[] sections = {
+                        intervalExplanation,
+                        activity.findViewById(
+                                R.id.sortingManualSettings),
+                        activity.findViewById(
+                                R.id.sortingSemiSettings),
+                        activity.findViewById(
+                                R.id.sortingAutomaticSettings),
+                        activity.findViewById(
+                                R.id.sortingTimeSettings)
+                };
+
+                for (View sectionView : sections) {
+
+                    assertEquals(
+                            section,
+                            ((ViewGroup.MarginLayoutParams)
+                                    sectionView.getLayoutParams())
+                                    .topMargin);
+                }
+
+                assertTrue(
+                        root.indexOfChild(modes)
+                                < root.indexOfChild(intervalExplanation));
+
+                assertTrue(
+                        root.indexOfChild(interval)
+                                < root.indexOfChild(
+                                        activity.findViewById(
+                                                R.id.sortingManualSettings)));
+            });
         }
     }
 
@@ -306,6 +429,12 @@ public class SortingPageTest {
                         assertEquals(
                                 R.id.sortingSemiFavorites,
                                 top.getChildAt(0).getId());
+
+                        assertEquals(
+                                activity.getString(
+                                        R.string.sorting_area_favorites_sort),
+                                ((CheckBox) top.getChildAt(0))
+                                        .getText().toString());
 
                         assertEquals(
                                 R.id.sortingSemiCategories,
@@ -941,6 +1070,45 @@ public class SortingPageTest {
                         activity.getString(
                                 R.string.sorting_suggestion_apps_order),
                         categoryContents.getText().toString());
+            });
+        }
+    }
+
+    @Test
+    public void noHistoryBlocksBothAutomaticModes() {
+
+        Context context =
+                ApplicationProvider.getApplicationContext();
+
+        context.deleteSharedPreferences("usage_statistics");
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                activity.findViewById(
+                        R.id.navSorting).performClick();
+
+                activity.findViewById(
+                        R.id.sortingModeSemi).performClick();
+
+                assertEquals(
+                        SortingSettingsStore.Mode.MANUAL,
+                        new SortingSettingsStore(activity).load().mode);
+
+                assertEquals(
+                        R.id.sortingModeManual,
+                        ((RadioGroup) activity.findViewById(
+                                R.id.sortingModeGroup))
+                                .getCheckedRadioButtonId());
+
+                activity.findViewById(
+                        R.id.sortingModeAutomatic).performClick();
+
+                assertEquals(
+                        SortingSettingsStore.Mode.MANUAL,
+                        new SortingSettingsStore(activity).load().mode);
             });
         }
     }

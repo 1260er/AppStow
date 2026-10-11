@@ -579,6 +579,27 @@ public class MainActivity extends Activity {
         sortingSettingsStore =
                 new SortingSettingsStore(this);
 
+        SortingSettingsStore.Settings startupSorting =
+                sortingSettingsStore.load();
+
+        if (startupSorting.mode
+                != SortingSettingsStore.Mode.MANUAL
+                && !sortingSettingsStore.hasApprovedAutomaticHistory()) {
+
+            if (usageStatisticsStore.getAutomaticHistory(
+                    startupSorting.suggestionIntervalDays).sufficient) {
+
+                // Alte, bereits gueltige Automatik nach Upgrade bestaetigen.
+                sortingSettingsStore.approveAutomaticHistory();
+
+            } else {
+                sortingSettingsStore.save(
+                        startupSorting.withModeAndInterval(
+                                SortingSettingsStore.Mode.MANUAL,
+                                startupSorting.suggestionIntervalDays));
+            }
+        }
+
         uiSettingsStore =
                 new UiSettingsStore(this);
 
@@ -3211,8 +3232,33 @@ public class MainActivity extends Activity {
     }
 
     private void resetStatistics() {
+
+        SortingSettingsStore.Settings current =
+                sortingSettingsStore.load();
+
+        if (current.mode
+                != SortingSettingsStore.Mode.MANUAL) {
+
+            switchToManualPreservingOrder(
+                    current.suggestionIntervalDays);
+        }
+
         usageStatisticsStore.clear();
+
+        getSharedPreferences(
+                        "sorting_settings",
+                        MODE_PRIVATE)
+                .edit()
+                .remove("automatic_snapshot_v1_global")
+                .remove("automatic_snapshot_v1_day")
+                .remove("automatic_snapshot_v1_evening")
+                .apply();
+
         refreshStatistics();
+
+        if (sortingManagement != null) {
+            refreshSortingSettingsUi();
+        }
     }
 
     private void startStatisticsDrag(
@@ -6722,6 +6768,30 @@ public class MainActivity extends Activity {
                     SortingSettingsStore.Mode.MANUAL;
         }
 
+        if (mode != SortingSettingsStore.Mode.MANUAL
+                && mode != current.mode) {
+
+            UsageStatisticsStore.AutomaticHistory history =
+                    usageStatisticsStore.getAutomaticHistory(
+                            current.suggestionIntervalDays);
+
+            if (!history.sufficient) {
+                refreshSortingSettingsUi();
+                showInsufficientSortingHistory(
+                        history,
+                        current.suggestionIntervalDays);
+                return;
+            }
+        }
+
+        if (current.mode
+                == SortingSettingsStore.Mode.SEMI_AUTOMATIC
+                && mode == SortingSettingsStore.Mode.MANUAL
+                && overviewAdapter != null) {
+
+            overviewAdapter.materializeSemiAutomaticOrders();
+        }
+
         SortingSettingsStore.Settings updated =
                 new SortingSettingsStore.Settings(
                         mode,
@@ -6752,6 +6822,11 @@ public class MainActivity extends Activity {
         sortingSettingsStore.save(
                 updated);
 
+        if (mode != SortingSettingsStore.Mode.MANUAL
+                && mode != current.mode) {
+            sortingSettingsStore.approveAutomaticHistory();
+        }
+
         if (suggestionsJustEnabled) {
 
             sortingSettingsStore
@@ -6765,6 +6840,73 @@ public class MainActivity extends Activity {
 
         refreshOverviewForSortingSettingsChange();
         scheduleNextSortingProfileBoundary();
+    }
+
+    private void switchToManualPreservingOrder(
+            int intervalDays) {
+
+        SortingSettingsStore.Settings current =
+                sortingSettingsStore.load();
+
+        if (current.mode
+                == SortingSettingsStore.Mode.AUTOMATIC) {
+
+            materializeFullAutomaticState();
+
+        } else if (current.mode
+                == SortingSettingsStore.Mode.SEMI_AUTOMATIC
+                && overviewAdapter != null) {
+
+            overviewAdapter.materializeSemiAutomaticOrders();
+        }
+
+        sortingSettingsStore.save(
+                current.withModeAndInterval(
+                        SortingSettingsStore.Mode.MANUAL,
+                        intervalDays));
+
+        refreshOverviewForSortingSettingsChange();
+        scheduleNextSortingProfileBoundary();
+
+        if (sortingManagement != null) {
+            refreshSortingSettingsUi();
+        }
+    }
+
+    private String formatInsufficientSortingHistory(
+            UsageStatisticsStore.AutomaticHistory history,
+            int intervalDays) {
+
+        if (history.missingDays > 0) {
+
+            return getString(
+                    R.string.sorting_history_missing,
+                    history.availableDays,
+                    intervalDays,
+                    history.missingDays);
+        }
+
+        return getString(
+                R.string.sorting_history_activity);
+    }
+
+    private void showInsufficientSortingHistory(
+            UsageStatisticsStore.AutomaticHistory history,
+            int intervalDays) {
+
+        UiDialogHandedness.show(
+                this,
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                R.string.sorting_history_title)
+                        .setMessage(
+                                formatInsufficientSortingHistory(
+                                        history,
+                                        intervalDays))
+                        .setPositiveButton(
+                                android.R.string.ok,
+                                null)
+                        .create());
     }
 
     private void updateSortingModeVisibility(
@@ -7042,6 +7184,40 @@ public class MainActivity extends Activity {
                                             current.alwaysStartFavorites,
                                             current.suggestionsEnabled,
                                             values[which]);
+
+                            if (current.mode
+                                    != SortingSettingsStore.Mode.MANUAL) {
+
+                                UsageStatisticsStore.AutomaticHistory history =
+                                        usageStatisticsStore
+                                                .getAutomaticHistory(
+                                                        values[which]);
+
+                                if (!history.sufficient) {
+
+                                    dialog.dismiss();
+
+                                    UiDialogHandedness.show(
+                                            this,
+                                            new AlertDialog.Builder(this)
+                                                    .setTitle(
+                                                            R.string.sorting_history_title)
+                                                    .setMessage(
+                                                            formatInsufficientSortingHistory(
+                                                                    history,
+                                                                    values[which]))
+                                                    .setPositiveButton(
+                                                            R.string.sorting_keep_interval,
+                                                            null)
+                                                    .setNegativeButton(
+                                                            R.string.sorting_switch_manual,
+                                                            (warning, selectedAction) ->
+                                                                    switchToManualPreservingOrder(
+                                                                            values[which]))
+                                                    .create());
+                                    return;
+                                }
+                            }
 
                             sortingSettingsStore.save(
                                     updated);
@@ -9182,8 +9358,9 @@ public class MainActivity extends Activity {
         if (requestCode
                 == REQUEST_CREATE_BACKUP) {
 
-            List<String> automaticFavoriteSnapshot =
-                    null;
+            List<String> automaticFavoriteSnapshot = null;
+            List<String> automaticSectionSnapshot = null;
+            Map<String, List<String>> automaticItemSnapshot = null;
 
             if (sortingSettingsStore.load().mode
                     == SortingSettingsStore.Mode.AUTOMATIC) {
@@ -9202,10 +9379,22 @@ public class MainActivity extends Activity {
                 automaticFavoriteSnapshot =
                         overviewAdapter
                                 .snapshotVisibleAutomaticFavorites();
+
+                automaticSectionSnapshot = new ArrayList<>();
+                for (OverviewSection section : overviewSections) {
+                    automaticSectionSnapshot.add(section.id);
+                }
+
+                automaticItemSnapshot = overviewAdapter
+                        .snapshotVisibleAutomaticSectionItemOrders();
             }
 
             final List<String> favoritesForBackup =
                     automaticFavoriteSnapshot;
+            final List<String> sectionsForBackup =
+                    automaticSectionSnapshot;
+            final Map<String, List<String>> itemsForBackup =
+                    automaticItemSnapshot;
 
             backupCreateButton.setEnabled(
                     false);
@@ -9238,7 +9427,9 @@ public class MainActivity extends Activity {
                                         backupProgressText.setText(
                                                 R.string.backup_verifying);
                                     }),
-                                    favoritesForBackup);
+                                    favoritesForBackup,
+                                    sectionsForBackup,
+                                    itemsForBackup);
 
                     saveLastBackupSummary(
                             summary);

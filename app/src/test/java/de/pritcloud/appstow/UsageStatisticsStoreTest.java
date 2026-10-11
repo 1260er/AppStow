@@ -991,6 +991,99 @@ public class UsageStatisticsStoreTest {
                         .intValue());
     }
 
+    @Test
+    public void automaticHistoryIgnoresSectionVisits() {
+
+        UsageStatisticsStore current =
+                storeAt("2026-10-20T12:00:00Z");
+
+        current.recordSectionAccess("favorites");
+
+        UsageStatisticsStore.AutomaticHistory history =
+                current.getAutomaticHistory(7);
+
+        assertEquals(0, history.availableDays);
+        assertEquals(0, history.activeDays);
+        assertEquals(7, history.missingDays);
+        assertFalse(history.sufficient);
+    }
+
+    @Test
+    public void tenDaysAllowSevenButNotFourteen() {
+
+        storeAt("2026-10-11T12:00:00Z")
+                .recordAppLaunch("app.mail", null);
+
+        storeAt("2026-10-20T12:00:00Z")
+                .recordShortcutLaunch("shortcut.web", null);
+
+        UsageStatisticsStore current =
+                storeAt("2026-10-20T12:00:00Z");
+
+        UsageStatisticsStore.AutomaticHistory seven =
+                current.getAutomaticHistory(7);
+
+        UsageStatisticsStore.AutomaticHistory fourteen =
+                current.getAutomaticHistory(14);
+
+        assertEquals(10, seven.availableDays);
+        assertEquals(2, seven.activeDays);
+        assertEquals(0, seven.missingDays);
+        assertTrue(seven.sufficient);
+
+        assertEquals(10, fourteen.availableDays);
+        assertEquals(4, fourteen.missingDays);
+        assertFalse(fourteen.sufficient);
+    }
+
+    @Test
+    public void oldSingleLaunchDoesNotUnlockAutomation() {
+
+        storeAt("2026-10-01T12:00:00Z")
+                .recordAppLaunch("app.old", null);
+
+        UsageStatisticsStore.AutomaticHistory history =
+                storeAt("2026-10-20T12:00:00Z")
+                        .getAutomaticHistory(14);
+
+        assertEquals(20, history.availableDays);
+        assertEquals(1, history.activeDays);
+        assertFalse(history.recentlyUsed);
+        assertFalse(history.sufficient);
+    }
+
+    @Test
+    public void futureLaunchesCannotUnlockAutomation() {
+
+        storeAt("2026-11-01T12:00:00Z")
+                .recordAppLaunch("app.future", null);
+
+        UsageStatisticsStore.AutomaticHistory history =
+                storeAt("2026-10-20T12:00:00Z")
+                        .getAutomaticHistory(7);
+
+        assertEquals(0, history.availableDays);
+        assertFalse(history.sufficient);
+    }
+
+    @Test
+    public void historyUsesOnlyNinetyDayScoringWindow() {
+
+        storeAt("2026-06-01T12:00:00Z")
+                .recordAppLaunch("app.old", null);
+
+        storeAt("2026-10-20T12:00:00Z")
+                .recordAppLaunch("app.today", null);
+
+        UsageStatisticsStore.AutomaticHistory history =
+                storeAt("2026-10-20T12:00:00Z")
+                        .getAutomaticHistory(7);
+
+        assertEquals(1, history.availableDays);
+        assertEquals(1, history.activeDays);
+        assertFalse(history.sufficient);
+    }
+
     private UsageStatisticsStore storeAt(
             String instant) {
 

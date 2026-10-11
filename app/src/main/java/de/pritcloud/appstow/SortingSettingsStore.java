@@ -11,6 +11,9 @@ final class SortingSettingsStore {
     private static final String KEY_MODE =
             "mode";
 
+    private static final String KEY_HISTORY_APPROVED =
+            "automatic_history_approved";
+
     private static final String KEY_RESTORED_AUTO_FAVORITES =
             "restored_auto_favorites_pending";
     private static final String KEY_SEMI_FAVORITES =
@@ -121,6 +124,25 @@ final class SortingSettingsStore {
                     suggestionsEnabled;
             this.suggestionIntervalDays =
                     suggestionIntervalDays;
+        }
+
+        Settings withModeAndInterval(
+                Mode updatedMode,
+                int updatedInterval) {
+
+            return new Settings(
+                    updatedMode,
+                    semiFavorites,
+                    semiCategories,
+                    semiApps,
+                    semiShortcuts,
+                    timeProfileEnabled,
+                    dayStartHour,
+                    eveningStartHour,
+                    automaticFavoriteCount,
+                    alwaysStartFavorites,
+                    suggestionsEnabled,
+                    updatedInterval);
         }
 
         static Settings defaults() {
@@ -306,7 +328,21 @@ final class SortingSettingsStore {
             AutomaticSortingSnapshotStore.invalidate(editor);
         }
 
+        if (settings.mode == Mode.MANUAL) {
+            editor.remove(KEY_HISTORY_APPROVED);
+        }
+
         editor.apply();
+    }
+
+    boolean hasApprovedAutomaticHistory() {
+        return preferences.getBoolean(KEY_HISTORY_APPROVED, false);
+    }
+
+    void approveAutomaticHistory() {
+        preferences.edit()
+                .putBoolean(KEY_HISTORY_APPROVED, true)
+                .apply();
     }
 
     boolean hasRestoredAutomaticFavorites() {

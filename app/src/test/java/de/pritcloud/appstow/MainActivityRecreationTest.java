@@ -71,6 +71,34 @@ public class MainActivityRecreationTest {
                 "sorting_settings");
     }
 
+    private static void seedSufficientAutomaticHistory(
+            Context context) {
+
+        java.time.ZoneId zone =
+                java.time.ZoneId.systemDefault();
+
+        java.time.ZonedDateTime now =
+                java.time.ZonedDateTime.now(zone);
+
+        new UsageStatisticsStore(
+                context,
+                java.time.Clock.fixed(
+                        now.minusDays(35).toInstant(),
+                        zone))
+                .recordAppLaunch(
+                        "app.test.history.start",
+                        null);
+
+        new UsageStatisticsStore(
+                context,
+                java.time.Clock.fixed(
+                        now.toInstant(),
+                        zone))
+                .recordAppLaunch(
+                        "app.test.history.recent",
+                        null);
+    }
+
     @Test
     public void categorySymbolsAreAlwaysShownAfterRecreation() {
 
@@ -148,12 +176,120 @@ public class MainActivityRecreationTest {
     }
 
     @Test
+    public void approvedAutomaticModeSurvivesInactivity() {
+
+        Context context = ApplicationProvider.getApplicationContext();
+        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        java.time.ZonedDateTime now =
+                java.time.ZonedDateTime.now(zone);
+
+        new UsageStatisticsStore(context, java.time.Clock.fixed(
+                now.minusDays(35).toInstant(), zone))
+                .recordAppLaunch("app.history.early", null);
+
+        new UsageStatisticsStore(context, java.time.Clock.fixed(
+                now.minusDays(10).toInstant(), zone))
+                .recordAppLaunch("app.history.latest", null);
+
+        SortingSettingsStore sorting = new SortingSettingsStore(context);
+        sorting.save(SortingSettingsStore.Settings.defaults()
+                .withModeAndInterval(
+                        SortingSettingsStore.Mode.AUTOMATIC, 30));
+        sorting.approveAutomaticHistory();
+
+        assertTrue(!new UsageStatisticsStore(context)
+                .getAutomaticHistory(30).sufficient);
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity -> {
+                assertEquals(
+                        SortingSettingsStore.Mode.AUTOMATIC,
+                        new SortingSettingsStore(activity).load().mode);
+            });
+        }
+    }
+
+    @Test
+    public void legacyAutomaticWithEnoughHistoryGetsApproved() {
+
+        Context context = ApplicationProvider.getApplicationContext();
+        seedSufficientAutomaticHistory(context);
+
+        SortingSettingsStore sorting = new SortingSettingsStore(context);
+        sorting.save(SortingSettingsStore.Settings.defaults()
+                .withModeAndInterval(
+                        SortingSettingsStore.Mode.SEMI_AUTOMATIC, 30));
+
+        assertTrue(!sorting.hasApprovedAutomaticHistory());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity -> {
+                SortingSettingsStore restored =
+                        new SortingSettingsStore(activity);
+                assertEquals(
+                        SortingSettingsStore.Mode.SEMI_AUTOMATIC,
+                        restored.load().mode);
+                assertTrue(restored.hasApprovedAutomaticHistory());
+            });
+        }
+    }
+
+    @Test
+    public void savedAutomaticModeWithoutHistoryFallsBackToManual() {
+
+        Context context =
+                ApplicationProvider.getApplicationContext();
+
+        new SortingSettingsStore(context).save(
+                new SortingSettingsStore.Settings(
+                        SortingSettingsStore.Mode.AUTOMATIC,
+                        true,
+                        true,
+                        true,
+                        true,
+                        false,
+                        8,
+                        21,
+                        10,
+                        false));
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity -> {
+
+                SortingSettingsStore.Settings actual =
+                        new SortingSettingsStore(activity).load();
+
+                assertEquals(
+                        SortingSettingsStore.Mode.MANUAL,
+                        actual.mode);
+
+                activity.findViewById(
+                        R.id.navSorting).performClick();
+
+                android.widget.RadioGroup group =
+                        activity.findViewById(
+                                R.id.sortingModeGroup);
+
+                assertEquals(
+                        R.id.sortingModeManual,
+                        group.getCheckedRadioButtonId());
+            });
+        }
+    }
+
+    @Test
     public void automaticCategoryOrderKeepsOverviewSortButtonHidden()
             throws Exception {
 
         Context context =
                 ApplicationProvider
                         .getApplicationContext();
+
+        seedSufficientAutomaticHistory(context);
 
         new SortingSettingsStore(
                 context)
@@ -204,6 +340,8 @@ public class MainActivityRecreationTest {
         Context context =
                 ApplicationProvider
                         .getApplicationContext();
+
+        seedSufficientAutomaticHistory(context);
 
         new SortingSettingsStore(
                 context)
