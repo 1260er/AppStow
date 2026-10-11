@@ -1819,10 +1819,12 @@ final class OverviewAdapter
             return false;
         }
 
-        Collections.swap(
-                rows,
-                fromPosition,
-                toPosition);
+        Row moved = rows.remove(fromPosition);
+        rows.add(toPosition, moved);
+
+        // Die Reihenfolge muss VOR einer asynchronen Aktualisierung
+        // gesichert sein, nicht erst nach dem Loslassen oder „Fertig“.
+        saveItemOrder();
 
         notifyItemMoved(
                 fromPosition,
@@ -1877,15 +1879,11 @@ final class OverviewAdapter
             return false;
         }
 
-        Collections.swap(
-                sections,
-                fromPosition,
-                toPosition);
+        OverviewSection movedSection = sections.remove(fromPosition);
+        sections.add(toPosition, movedSection);
 
-        Collections.swap(
-                rows,
-                fromPosition,
-                toPosition);
+        Row movedRow = rows.remove(fromPosition);
+        rows.add(toPosition, movedRow);
 
         notifyItemMoved(
                 fromPosition,

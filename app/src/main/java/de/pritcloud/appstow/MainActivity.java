@@ -943,19 +943,9 @@ public class MainActivity extends Activity {
                                 int toPosition =
                                         target.getBindingAdapterPosition();
 
-                                if (overviewAdapter.isSortMode()) {
-                                    return overviewAdapter.moveSection(
-                                            fromPosition,
-                                            toPosition);
-                                }
-
-                                if (overviewAdapter.isItemSortMode()) {
-                                    return overviewAdapter.moveItem(
-                                            fromPosition,
-                                            toPosition);
-                                }
-
-                                return false;
+                                return moveOverviewRow(
+                                        fromPosition,
+                                        toPosition);
                             }
 
                             @Override
@@ -2351,6 +2341,32 @@ public class MainActivity extends Activity {
                 overviewSections);
 
         captureManualOverviewBaseline();
+    }
+
+    private boolean moveOverviewRow(
+            int fromPosition,
+            int toPosition) {
+
+        if (overviewAdapter.isSortMode()) {
+
+            if (!overviewAdapter.moveSection(
+                    fromPosition,
+                    toPosition)) {
+                return false;
+            }
+
+            // Auch ganze Kategorien sofort sichern.
+            saveOverviewOrderPreservingAutomation();
+            return true;
+        }
+
+        if (overviewAdapter.isItemSortMode()) {
+            return overviewAdapter.moveItem(
+                    fromPosition,
+                    toPosition);
+        }
+
+        return false;
     }
 
     private void startOverviewDrag(
