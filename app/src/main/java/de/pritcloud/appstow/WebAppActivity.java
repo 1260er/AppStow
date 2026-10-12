@@ -73,7 +73,6 @@ public class WebAppActivity extends Activity {
             7L * 24L * 60L * 60L * 1000L;
 
     private WebView webView;
-    private WebViewLagDiagnostics lagDiagnostics;
     private Uri webAppInitialOrigin;
     private AlertDialog errorDialog;
     private View customFullscreenView;
@@ -180,12 +179,6 @@ public class WebAppActivity extends Activity {
 
         try {
             configureWebView(initialUri);
-
-            // Nur in der separat installierbaren Dev-App; keine
-            // Änderungen an WebSettings, JavaScript oder Layout.
-            if (WebViewLagDiagnostics.enabledForPackage(getPackageName())) {
-                lagDiagnostics = WebViewLagDiagnostics.attach(this, webView);
-            }
 
             boolean restored =
                     false;
@@ -407,10 +400,6 @@ public class WebAppActivity extends Activity {
                                 url,
                                 favicon);
 
-                        if (lagDiagnostics != null) {
-                            lagDiagnostics.note("navigation_started");
-                        }
-
                         if (blobDownloadBridge != null) {
                             blobDownloadBridge.cancelActive();
                         }
@@ -449,10 +438,6 @@ public class WebAppActivity extends Activity {
                         super.onPageFinished(
                                 view,
                                 url);
-
-                        if (lagDiagnostics != null) {
-                            lagDiagnostics.note("navigation_finished");
-                        }
 
                         updateWebHistoryBackCallback();
                     }
@@ -528,11 +513,6 @@ public class WebAppActivity extends Activity {
                     public boolean onRenderProcessGone(
                             WebView view,
                             RenderProcessGoneDetail detail) {
-
-                        if (lagDiagnostics != null) {
-                            lagDiagnostics.note("RENDERER_GONE_crash="
-                                    + detail.didCrash());
-                        }
 
                         disposeWebView(
                                 view);
@@ -2401,19 +2381,7 @@ public class WebAppActivity extends Activity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (lagDiagnostics != null) {
-            lagDiagnostics.resume();
-        }
-    }
-
-    @Override
     protected void onPause() {
-
-        if (lagDiagnostics != null) {
-            lagDiagnostics.pause();
-        }
 
         if (webView != null) {
             try {
@@ -2505,11 +2473,6 @@ public class WebAppActivity extends Activity {
                             webHistoryBackCallback);
 
             webHistoryBackCallbackRegistered = false;
-        }
-
-        if (lagDiagnostics != null) {
-            lagDiagnostics.close();
-            lagDiagnostics = null;
         }
 
         disposeWebView(

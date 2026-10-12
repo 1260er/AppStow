@@ -60,12 +60,12 @@ android {
         versionCode = if (devReleaseBuild) {
             providers.environmentVariable("APPSTOW_VERSION_CODE")
                 .orNull?.toIntOrNull()
-                ?.takeIf { it > 13 }
+                ?.takeIf { it > 14 }
                 ?: throw GradleException(
                     "Dev release requires APPSTOW_VERSION_CODE > 13."
                 )
         } else {
-            13
+            14
         }
         versionName = "3.0.1"
     }
