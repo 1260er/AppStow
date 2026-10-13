@@ -164,14 +164,24 @@ final class SortingSettingsStore {
     }
 
     private final SharedPreferences preferences;
+    private final Context context;
 
     SortingSettingsStore(
             Context context) {
 
+        this.context = context;
         preferences =
                 context.getSharedPreferences(
                         PREFS_NAME,
                         Context.MODE_PRIVATE);
+
+        // The raw store contains usage-derived sorting snapshots and is
+        // NEVER eligible for Android system backup. Only a sanitized
+        // mirror is backed up. AppStowBackupAgent applies that mirror
+        // after Android has completely restored its files.
+        if (preferences.contains(KEY_MODE)) {
+            SystemBackupSortingStore.save(context, load());
+        }
     }
 
     Settings load() {
@@ -333,6 +343,7 @@ final class SortingSettingsStore {
         }
 
         editor.apply();
+        SystemBackupSortingStore.save(context, settings);
     }
 
     boolean hasApprovedAutomaticHistory() {
