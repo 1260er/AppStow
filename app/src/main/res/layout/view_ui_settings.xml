@@ -123,6 +123,46 @@
 
         </RadioGroup>
 
+        <RadioGroup
+            android:id="@+id/uiStartViewGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/uiStartViewLastCategory"
+                style="@style/UiBodyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="2dp"
+                android:minHeight="48dp"
+                android:textSize="14sp"
+                android:text="@string/ui_start_view_last_category" />
+
+            <RadioButton
+                android:id="@+id/uiStartViewFavorites"
+                style="@style/UiBodyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="2dp"
+                android:minHeight="48dp"
+                android:textSize="14sp"
+                android:text="@string/ui_start_view_favorites" />
+
+            <RadioButton
+                android:id="@+id/uiStartViewHome"
+                style="@style/UiBodyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="2dp"
+                android:minHeight="48dp"
+                android:textSize="14sp"
+                android:text="@string/ui_start_view_home" />
+
+        </RadioGroup>
+
         <TextView
             style="@style/UiBodyText"
             android:layout_width="match_parent"

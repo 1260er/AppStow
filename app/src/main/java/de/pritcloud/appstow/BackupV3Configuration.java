@@ -185,6 +185,9 @@ final class BackupV3Configuration {
                                 "startBehavior",
                                 ui.startBehavior.name())
                         .put(
+                                "startView",
+                                ui.startView.name())
+                        .put(
                                 "controlSide",
                                 ui.controlSide.name())
                         .put(
@@ -366,6 +369,17 @@ final class BackupV3Configuration {
                         "startBehavior",
                         "Ungültiges Favoriten-Startverhalten im Backup.");
 
+        // Older v3 backups have no startView: preserve their Favorites target.
+        UiSettingsStore.StartView startView =
+                UiSettingsStore.StartView.FAVORITES;
+        if (ui.has("startView")) {
+            startView = requireEnum(
+                    UiSettingsStore.StartView.class,
+                    ui,
+                    "startView",
+                    "Ungültige Startansicht im Backup.");
+        }
+
         UiSettingsStore.ControlSide controlSide =
                 requireEnum(
                         UiSettingsStore.ControlSide.class,
@@ -391,7 +405,8 @@ final class BackupV3Configuration {
                 new UiSettingsStore.Settings(
                         startBehavior,
                         controlSide,
-                        themeMode);
+                        themeMode,
+                        startView);
 
         JSONObject statisticsDisplay =
                 settings.getJSONObject(
@@ -526,6 +541,9 @@ final class BackupV3Configuration {
                         .putString(
                                 "start_behavior",
                                 state.ui.startBehavior.name())
+                        .putString(
+                                "start_view",
+                                state.ui.startView.name())
                         .putString(
                                 "control_side",
                                 state.ui.controlSide.name())

@@ -411,10 +411,13 @@ None found</string>
     <string name="ui_control_side_description">Place frequently used controls on the side that is easier to reach with one hand.</string>
     <string name="ui_control_side_right">Right</string>
     <string name="ui_control_side_left">Left</string>
-    <string name="ui_start_behavior_title">Open favorites</string>
-    <string name="ui_start_behavior_description">Choose when AppStow should automatically open Favorites.</string>
-    <string name="ui_start_never">Never</string>
+    <string name="ui_start_behavior_title">Start view</string>
+    <string name="ui_start_behavior_description">Choose which view AppStow opens on launch or when returning from the background. With Off, a fresh launch opens the start page and returning keeps the current page.</string>
+    <string name="ui_start_never">Off</string>
     <string name="ui_start_once">On start</string>
     <string name="ui_start_always">Always</string>
+    <string name="ui_start_view_last_category">Last category</string>
+    <string name="ui_start_view_favorites">Favorites</string>
+    <string name="ui_start_view_home">Start page</string>
 
 </resources>

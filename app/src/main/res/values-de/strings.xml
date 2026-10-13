@@ -411,10 +411,13 @@ Keines gefunden</string>
     <string name="ui_control_side_description">Platziert häufig genutzte Bedienelemente auf der Seite, die einhändig leichter erreichbar ist.</string>
     <string name="ui_control_side_right">Rechts</string>
     <string name="ui_control_side_left">Links</string>
-    <string name="ui_start_behavior_title">Favoriten öffnen</string>
-    <string name="ui_start_behavior_description">Lege fest, wann AppStow automatisch die Favoriten öffnet.</string>
-    <string name="ui_start_never">Nie</string>
+    <string name="ui_start_behavior_title">Startansicht</string>
+    <string name="ui_start_behavior_description">Lege fest, welche Ansicht AppStow beim Start und bei der Rückkehr aus dem Hintergrund öffnet. Bei Aus beginnt ein Neustart auf der Startseite; beim Zurückkehren bleibt die aktuelle Seite erhalten.</string>
+    <string name="ui_start_never">Aus</string>
     <string name="ui_start_once">Bei Start</string>
     <string name="ui_start_always">Immer</string>
+    <string name="ui_start_view_last_category">Letzte Kategorie</string>
+    <string name="ui_start_view_favorites">Favoriten</string>
+    <string name="ui_start_view_home">Startseite</string>
 
 </resources>

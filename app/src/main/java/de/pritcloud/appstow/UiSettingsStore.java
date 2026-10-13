@@ -11,6 +11,12 @@ final class UiSettingsStore {
     private static final String KEY_START_BEHAVIOR =
             "start_behavior";
 
+    private static final String KEY_START_VIEW =
+            "start_view";
+
+    private static final String KEY_LAST_CATEGORY_ID =
+            "last_category_id";
+
     private static final String KEY_CONTROL_SIDE =
             "control_side";
 
@@ -29,6 +35,12 @@ final class UiSettingsStore {
         ALWAYS_FOREGROUND
     }
 
+    enum StartView {
+        LAST_CATEGORY,
+        FAVORITES,
+        HOME
+    }
+
     enum ControlSide {
         RIGHT,
         LEFT
@@ -43,6 +55,7 @@ final class UiSettingsStore {
     static final class Settings {
 
         final StartBehavior startBehavior;
+        final StartView startView;
         final ControlSide controlSide;
         final ThemeMode themeMode;
 
@@ -52,7 +65,8 @@ final class UiSettingsStore {
             this(
                     startBehavior,
                     ControlSide.RIGHT,
-                    ThemeMode.SYSTEM);
+                    ThemeMode.SYSTEM,
+                    StartView.FAVORITES);
         }
 
         Settings(
@@ -62,17 +76,27 @@ final class UiSettingsStore {
             this(
                     startBehavior,
                     controlSide,
-                    ThemeMode.SYSTEM);
+                    ThemeMode.SYSTEM,
+                    StartView.FAVORITES);
         }
 
         Settings(
                 StartBehavior startBehavior,
                 ControlSide controlSide,
                 ThemeMode themeMode) {
+            this(startBehavior, controlSide, themeMode, StartView.FAVORITES);
+        }
+
+        Settings(
+                StartBehavior startBehavior,
+                ControlSide controlSide,
+                ThemeMode themeMode,
+                StartView startView) {
 
             if (startBehavior == null
                     || controlSide == null
-                    || themeMode == null) {
+                    || themeMode == null
+                    || startView == null) {
 
                 throw new IllegalArgumentException(
                         "UI settings are incomplete.");
@@ -80,6 +104,9 @@ final class UiSettingsStore {
 
             this.startBehavior =
                     startBehavior;
+
+            this.startView =
+                    startView;
 
             this.controlSide =
                     controlSide;
@@ -120,6 +147,11 @@ final class UiSettingsStore {
                         KEY_START_BEHAVIOR,
                         null);
 
+        String storedStartView =
+                preferences.getString(
+                        KEY_START_VIEW,
+                        null);
+
         String storedControlSide =
                 preferences.getString(
                         KEY_CONTROL_SIDE,
@@ -137,7 +169,9 @@ final class UiSettingsStore {
                 parseControlSide(
                         storedControlSide),
                 parseThemeMode(
-                        storedThemeMode));
+                        storedThemeMode),
+                parseStartView(
+                        storedStartView));
     }
 
     void save(
@@ -145,6 +179,7 @@ final class UiSettingsStore {
 
         if (settings == null
                 || settings.startBehavior == null
+                || settings.startView == null
                 || settings.controlSide == null
                 || settings.themeMode == null) {
 
@@ -157,12 +192,45 @@ final class UiSettingsStore {
                         KEY_START_BEHAVIOR,
                         settings.startBehavior.name())
                 .putString(
+                        KEY_START_VIEW,
+                        settings.startView.name())
+                .putString(
                         KEY_CONTROL_SIDE,
                         settings.controlSide.name())
                 .putString(
                         KEY_THEME_MODE,
                         settings.themeMode.name())
                 .apply();
+    }
+
+    void rememberLastCategory(String sectionId) {
+        if (sectionId != null
+                && sectionId.startsWith("category:")
+                && sectionId.length() > "category:".length()) {
+            preferences.edit()
+                    .putString(KEY_LAST_CATEGORY_ID, sectionId)
+                    .apply();
+        }
+    }
+
+    String getLastCategoryId() {
+        String stored = preferences.getString(KEY_LAST_CATEGORY_ID, null);
+        return stored != null
+                && stored.startsWith("category:")
+                && stored.length() > "category:".length()
+                ? stored : null;
+    }
+
+    private static StartView parseStartView(String stored) {
+        if (stored == null) {
+            // Older installs used Favorites for START_ONLY and ALWAYS_FOREGROUND.
+            return StartView.FAVORITES;
+        }
+        try {
+            return StartView.valueOf(stored);
+        } catch (IllegalArgumentException exception) {
+            return StartView.FAVORITES;
+        }
     }
 
     private static ThemeMode parseThemeMode(

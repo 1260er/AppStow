@@ -231,6 +231,7 @@ public class MainActivity extends Activity {
     private TextView uiLanguageSelection;
     private RadioGroup uiControlSideGroup;
     private RadioGroup uiStartBehaviorGroup;
+    private RadioGroup uiStartViewGroup;
     private UiSettingsStore uiSettingsStore;
     private boolean updatingUiSettingsUi;
     private boolean stoppedForBackground;
@@ -870,6 +871,9 @@ public class MainActivity extends Activity {
                         this::openGridSection,
                         this::showOverview,
                         this::showSectionGridColumnsDialog);
+
+        overviewAdapter.setOnSectionOpenedListener(
+                section -> uiSettingsStore.rememberLastCategory(section.id));
 
         applyOverviewSorting();
 
@@ -2557,6 +2561,7 @@ public class MainActivity extends Activity {
     private void openGridSection(
             OverviewSection section) {
 
+        uiSettingsStore.rememberLastCategory(section.id);
         setOverviewSortMode(false);
 
         overviewGridLayoutManager.setSpanCount(
@@ -2608,113 +2613,127 @@ public class MainActivity extends Activity {
     }
 
     private void applyStartupFavorites() {
-
-        applyConfiguredFavorites(
-                false);
+        applyConfiguredStartView(false);
     }
 
     private void applyForegroundFavoritesIfConfigured() {
-
-        applyConfiguredFavorites(
-                true);
+        applyConfiguredStartView(true);
     }
 
-    private void applyConfiguredFavorites(
-            boolean returningFromBackground) {
+    private void applyConfiguredStartView(boolean returningFromBackground) {
+        UiSettingsStore.Settings settings = uiSettingsStore.load();
 
-        UiSettingsStore.Settings settings =
-                uiSettingsStore.load();
-
-        if (settings.startBehavior
-                == UiSettingsStore.StartBehavior.NEVER) {
-
+        if (settings.startBehavior == UiSettingsStore.StartBehavior.NEVER) {
+            // Old "Never" semantics: cold launch shows overview;
+            // returning from background retains the currently open page.
             return;
         }
 
         if (returningFromBackground
                 && settings.startBehavior
                 != UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND) {
-
             return;
         }
 
-        /*
-         * Bei einer echten Rückkehr aus dem Hintergrund
-         * muss zuerst die Übersicht sichtbar werden.
-         * Sonst würde die Favoriten-Auswahl zwar intern
-         * aktualisiert, während z. B. Statistik oder
-         * Shortcut-Verwaltung sichtbar bleiben.
-         *
-         * Activity-Recreation erreicht diesen Pfad nicht,
-         * weil onStop() bei isChangingConfigurations()
-         * stoppedForBackground nicht setzt.
-         */
         if (returningFromBackground) {
             showOverview();
         }
 
-        /*
-         * Dieser Zugriff beeinflusst ausschließlich
-         * die Sortierbewertung. Sichtbare Statistik-
-         * Zähler und Gesamtstarts bleiben unverändert.
-         */
-        usageStatisticsStore.recordSectionAccess(
-                "favorites");
+        if (settings.startView == UiSettingsStore.StartView.HOME) {
+            showDefaultStartOverview();
+            return;
+        }
 
-        refreshOverviewForSortingSettingsChange();
+        if (settings.startView == UiSettingsStore.StartView.LAST_CATEGORY) {
+            showLastCategoryOrOverview();
+            return;
+        }
 
-        OverviewSection favorites =
-                null;
+        // Preserve the old Favorites startup behaviour and its usage accounting.
+        openConfiguredFavorites();
+    }
 
-        int favoritesIndex =
-                -1;
+    private void showDefaultStartOverview() {
+        overviewSearchQuery = "";
+        overviewAdapter.setSearchQuery("");
+        appSearch.setText("");
+        for (OverviewSection section : overviewSections) {
+            section.expanded = false;
+        }
+        overviewAdapter.setApps(apps);
+        overviewList.scrollToPosition(0);
+    }
 
-        for (int i = 0;
-             i < overviewSections.size();
-             i++) {
+    private void showLastCategoryOrOverview() {
+        String id = uiSettingsStore.getLastCategoryId();
+        if (id == null) {
+            showDefaultStartOverview();
+            return;
+        }
 
-            OverviewSection section =
-                    overviewSections.get(i);
-
-            if ("favorites".equals(
-                    section.id)) {
-
-                favorites =
-                        section;
-
-                favoritesIndex =
-                        i;
-
+        OverviewSection selected = null;
+        int index = 0;
+        for (int i = 0; i < overviewSections.size(); i++) {
+            OverviewSection section = overviewSections.get(i);
+            if (id.equals(section.id) && section.id.startsWith("category:")) {
+                selected = section;
+                index = i;
                 break;
             }
         }
+        if (selected == null) {
+            // Category deleted or unavailable: stay on normal start page.
+            showDefaultStartOverview();
+            return;
+        }
 
+        overviewSearchQuery = "";
+        overviewAdapter.setSearchQuery("");
+        appSearch.setText("");
+        if (overviewAdapter.isGridMode()) {
+            openGridSection(selected);
+        } else {
+            for (OverviewSection section : overviewSections) {
+                section.expanded = section == selected;
+            }
+            overviewAdapter.setApps(apps);
+            overviewList.scrollToPosition(index);
+        }
+    }
+
+    private void openConfiguredFavorites() {
+        /*
+         * Preserve the existing usage-weighting logic. Opening another
+         * start view must never count as an access to Favorites.
+         */
+        usageStatisticsStore.recordSectionAccess("favorites");
+        refreshOverviewForSortingSettingsChange();
+
+        OverviewSection favorites = null;
+        int favoritesIndex = -1;
+        for (int i = 0; i < overviewSections.size(); i++) {
+            OverviewSection section = overviewSections.get(i);
+            if ("favorites".equals(section.id)) {
+                favorites = section;
+                favoritesIndex = i;
+                break;
+            }
+        }
         if (favorites == null) {
             return;
         }
 
         if (overviewAdapter.isGridMode()) {
-
-            openGridSection(
-                    favorites);
-
+            openGridSection(favorites);
             return;
         }
 
-        for (OverviewSection section :
-                overviewSections) {
-
-            section.expanded =
-                    section == favorites;
+        for (OverviewSection section : overviewSections) {
+            section.expanded = section == favorites;
         }
-
-        overviewAdapter.setApps(
-                apps);
-
+        overviewAdapter.setApps(apps);
         if (favoritesIndex >= 0) {
-
-            overviewList.scrollToPosition(
-                    favoritesIndex);
+            overviewList.scrollToPosition(favoritesIndex);
         }
     }
 
@@ -6154,6 +6173,10 @@ public class MainActivity extends Activity {
                 uiSettingsManagement.findViewById(
                         R.id.uiStartBehaviorGroup);
 
+        uiStartViewGroup =
+                uiSettingsManagement.findViewById(
+                        R.id.uiStartViewGroup);
+
         uiThemeGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {
 
@@ -6176,7 +6199,14 @@ public class MainActivity extends Activity {
 
         uiStartBehaviorGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {
+                    if (!updatingUiSettingsUi) {
+                        saveUiSettingsFromControls();
+                    }
+                    updateStartViewEnabled();
+                });
 
+        uiStartViewGroup.setOnCheckedChangeListener(
+                (group, checkedId) -> {
                     if (!updatingUiSettingsUi) {
                         saveUiSettingsFromControls();
                     }
@@ -6251,8 +6281,26 @@ public class MainActivity extends Activity {
                     R.id.uiStartNever);
         }
 
-        updatingUiSettingsUi =
-                false;
+        if (settings.startView == UiSettingsStore.StartView.LAST_CATEGORY) {
+            uiStartViewGroup.check(R.id.uiStartViewLastCategory);
+        } else if (settings.startView == UiSettingsStore.StartView.HOME) {
+            uiStartViewGroup.check(R.id.uiStartViewHome);
+        } else {
+            uiStartViewGroup.check(R.id.uiStartViewFavorites);
+        }
+
+        updatingUiSettingsUi = false;
+        updateStartViewEnabled();
+    }
+
+    private void updateStartViewEnabled() {
+        boolean enabled = uiStartBehaviorGroup.getCheckedRadioButtonId()
+                != R.id.uiStartNever;
+        uiStartViewGroup.setEnabled(enabled);
+        uiStartViewGroup.setAlpha(enabled ? 1.0f : 0.45f);
+        for (int i = 0; i < uiStartViewGroup.getChildCount(); i++) {
+            uiStartViewGroup.getChildAt(i).setEnabled(enabled);
+        }
     }
 
     private String getUiLanguageLabel(
@@ -6381,6 +6429,16 @@ public class MainActivity extends Activity {
                     UiSettingsStore.StartBehavior.NEVER;
         }
 
+        int startViewId = uiStartViewGroup.getCheckedRadioButtonId();
+        UiSettingsStore.StartView startView;
+        if (startViewId == R.id.uiStartViewLastCategory) {
+            startView = UiSettingsStore.StartView.LAST_CATEGORY;
+        } else if (startViewId == R.id.uiStartViewHome) {
+            startView = UiSettingsStore.StartView.HOME;
+        } else {
+            startView = UiSettingsStore.StartView.FAVORITES;
+        }
+
         int controlSideId =
                 uiControlSideGroup
                         .getCheckedRadioButtonId();
@@ -6425,7 +6483,8 @@ public class MainActivity extends Activity {
                 new UiSettingsStore.Settings(
                         startBehavior,
                         controlSide,
-                        themeMode));
+                        themeMode,
+                        startView));
 
         if ((controlSideChanged
                 || themeChanged)

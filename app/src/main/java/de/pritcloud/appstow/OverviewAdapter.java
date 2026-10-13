@@ -63,6 +63,10 @@ final class OverviewAdapter
         void onGridSectionClose();
     }
 
+    interface OnSectionOpenedListener {
+        void onSectionOpened(OverviewSection section);
+    }
+
     interface OnSectionColumnsListener {
         void onSectionColumns(OverviewSection section);
     }
@@ -70,6 +74,12 @@ final class OverviewAdapter
     interface OnSectionDragStartListener {
         void onDragStart(
                 RecyclerView.ViewHolder holder);
+    }
+
+    private OnSectionOpenedListener sectionOpenedListener;
+
+    void setOnSectionOpenedListener(OnSectionOpenedListener listener) {
+        sectionOpenedListener = listener;
     }
 
     private final List<OverviewSection> sections;
@@ -1415,6 +1425,9 @@ final class OverviewAdapter
                         if (expand) {
                             collapseOtherSections(
                                     section);
+                            if (sectionOpenedListener != null) {
+                                sectionOpenedListener.onSectionOpened(section);
+                            }
                         }
 
                         section.expanded =
