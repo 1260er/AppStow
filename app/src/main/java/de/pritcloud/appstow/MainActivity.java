@@ -107,6 +107,8 @@ public class MainActivity extends Activity {
                     + ".action.RESTORE_FINISHED";
 
     private static final String STATE_PAGE = "main_page";
+    private static final String STATE_BACKUP_PICKER_PENDING =
+            "backup_picker_pending";
     private static final String STATE_APP_SEARCH = "app_search";
     private static final String STATE_OVERVIEW_SEARCH = "overview_search";
     private static final String STATE_GRID_OPEN_SECTION =
@@ -236,6 +238,11 @@ public class MainActivity extends Activity {
     private boolean updatingUiSettingsUi;
     private boolean stoppedForBackground;
     private boolean uiRecreationRequested;
+
+    // System document pickers are part of the backup flow, not a
+    // user-initiated return to AppStow from another app.
+    private boolean backupPickerPending;
+    private boolean skipNextForegroundStartForBackupPicker;
 
     private View backupManagement;
     private TextView backupCreateButton;
@@ -412,6 +419,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            backupPickerPending = savedInstanceState.getBoolean(
+                    STATE_BACKUP_PICKER_PENDING, false);
+        }
 
         try {
             // The theme wrapper ran before recovery. Recreate
@@ -1245,6 +1257,10 @@ public class MainActivity extends Activity {
                 STATE_PAGE,
                 currentPage);
 
+        outState.putBoolean(
+                STATE_BACKUP_PICKER_PENDING,
+                backupPickerPending);
+
         outState.putString(
                 STATE_APP_SEARCH,
                 assignmentSearchQuery);
@@ -1495,8 +1511,14 @@ public class MainActivity extends Activity {
         boolean returningFromBackground =
                 stoppedForBackground;
 
-        stoppedForBackground =
-                false;
+        // The result may arrive before or after onStart, depending
+        // on the platform. Suppress exactly the picker return.
+        boolean returningFromBackupPicker =
+                backupPickerPending
+                        || skipNextForegroundStartForBackupPicker;
+
+        skipNextForegroundStartForBackupPicker = false;
+        stoppedForBackground = false;
 
         IntentFilter filter =
                 new IntentFilter(
@@ -1519,7 +1541,8 @@ public class MainActivity extends Activity {
 
         handlePendingRestoreResult();
 
-        if (returningFromBackground) {
+        if (returningFromBackground
+                && !returningFromBackupPicker) {
             applyForegroundFavoritesIfConfigured();
         }
     }
@@ -9128,12 +9151,15 @@ public class MainActivity extends Activity {
                 Intent.EXTRA_TITLE,
                 backupFileName);
 
+        backupPickerPending = true;
+
         try {
             startActivityForResult(
                     intent,
                     REQUEST_CREATE_BACKUP);
 
         } catch (RuntimeException exception) {
+            backupPickerPending = false;
             Toast.makeText(
                     this,
                     R.string.backup_failed,
@@ -9153,12 +9179,15 @@ public class MainActivity extends Activity {
         intent.setType(
                 "application/json");
 
+        backupPickerPending = true;
+
         try {
             startActivityForResult(
                     intent,
                     REQUEST_RESTORE_BACKUP);
 
         } catch (RuntimeException exception) {
+            backupPickerPending = false;
             Toast.makeText(
                     this,
                     R.string.backup_restore_failed,
@@ -9420,6 +9449,17 @@ public class MainActivity extends Activity {
                 requestCode,
                 resultCode,
                 data);
+
+        if (requestCode == REQUEST_CREATE_BACKUP
+                || requestCode == REQUEST_RESTORE_BACKUP) {
+            if (backupPickerPending && stoppedForBackground) {
+                // Result arrived before onStart: retain the
+                // exemption until the corresponding foreground entry.
+                skipNextForegroundStartForBackupPicker = true;
+            }
+            // Also clear on RESULT_CANCELED or missing URI.
+            backupPickerPending = false;
+        }
 
         if (resultCode != RESULT_OK
                 || data == null
