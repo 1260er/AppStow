@@ -21,8 +21,9 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 - View local usage statistics for launches started through AppStow
 - Use manual, semi-automatic, or fully automatic sorting
 - Configure sorting suggestions and optional day/evening profiles
-- Customize appearance, controls, and start behavior
-- Create encrypted backups and restore the AppStow configuration
+- Customize appearance, controls, and the startup view (off, on start, or always)
+- Create encrypted manual v3 backups and restore the AppStow configuration
+- Use Android system backup through Seedvault or compatible providers such as Google Backup
 - German and English interface
 - Light and dark system themes
 - Android themed / monochrome launcher icon support
@@ -35,14 +36,11 @@ AppStow is an Android launcher and organizer for installed apps, favorites, cate
 
 ## Installation
 
-The current stable release is **AppStow 3.0.1**.
+The latest **published stable** release and its SHA-256 checksum are available at:
 
 https://github.com/1260er/AppStow/releases/latest
 
-Release files:
-
-- `AppStow-3.0.1.apk`
-- `AppStow-3.0.1.apk.sha256`
+Release assets use the naming pattern `AppStow-X.Y.Z.apk` and `AppStow-X.Y.Z.apk.sha256`. Development builds are separate pre-releases and are not stable updates.
 
 Obtainium repository:
 
@@ -138,9 +136,17 @@ during the day and evening. Everyday apps can appear higher during
 the day, while games and leisure apps may move up in the evening.
 Users choose when each period starts. Manual mode remains the default.
 
-## Backup and restore (3.0.0)
+## Start view (3.0.2)
 
-AppStow 3.0.0 uses encrypted backup format v3. Backups include:
+In **Appearance & controls**, select when AppStow opens the chosen start view: **Off**, **On start**, or **Always**. The second, centered horizontal row chooses **Last category**, **Favorites**, or **Home**.
+
+**Off** starts on Home after a complete restart and leaves the currently opened page unchanged when returning from the background. The target row is disabled but its selection is retained. **On start** opens the chosen view on a new launch only. **Always** also applies it when returning to AppStow from another app. Returning from AppStow's own Android backup file picker does not trigger this navigation.
+
+**Last category** recalls a category opened within the launch overview, in list or grid mode. If it no longer exists, AppStow falls back to Home. Settings, statistics and backup screens are not treated as categories.
+
+## Backup and restore
+
+AppStow 3.x uses encrypted manual backup format v3. Backups include:
 
 - categories, symbols, assignments, and favorites
 - custom shortcuts
@@ -174,6 +180,18 @@ References to apps that are no longer installed are removed from favorites, cate
 
 > **Important note about AppStow 3.0:** Version 3.0 fundamentally revises AppStow's backup format. Backups created with AppStow 2.x cannot be restored in AppStow 3.0. Likewise, backups created with AppStow 3.0 are not compatible with older AppStow versions.
 
+## Android system backup (3.0.2)
+
+AppStow also supports Android's system backup framework. Users choose and manage the backup service in Android settings; AppStow does not upload backups by itself. It is intended for **Seedvault**, **Google Backup** and other compatible Android backup services. Actual availability depends on the device, OS and provider.
+
+Only these configuration stores are allowed: categories, favorites, custom shortcuts, overview/section ordering, overview display, UI preferences, statistics **display settings**, and a sanitized copy of sorting configuration. This allows restoring user organization and preferences without exporting usage-derived snapshots.
+
+**Not included:** recorded usage statistics, automatic sorting snapshots, web-app data, cookies, databases, transient backup state, or the private restore journal. Cloud backup is allowed only if Android reports the required encryption capabilities. Device-to-device transfers use the same file allowlist.
+
+After an Android system restore, AppStow rehydrates sorting preferences without importing usage history; fully automatic sorting may safely fall back to Manual until new local history is available. Unlike the manual v3 restore, the system backup is controlled by Android and is not imported from within AppStow.
+
+Seedvault backup **and restore** were tested successfully on a device. Google Backup is supported by the same Android integration but has **not** yet been separately restore-tested; no Google-specific account, SDK or dependency is required.
+
 ## Upgrading from 2.0.1 to 3.0.0
 
 AppStow 3.0.0 supports an in-place Android update from
@@ -186,6 +204,8 @@ Likewise, backups created with 3.0.0 cannot be imported into 2.x.
 The in-place APK upgrade from 2.0.1 to 3.0.0 was successfully tested on a physical Android device.
 
 ## Privacy
+
+Android system backup sends only allowlisted configuration through the user's selected Android provider; please consult that provider's privacy terms. Usage statistics are excluded from AppStow's manual backups and Android system backups.
 
 AppStow does not require an account.
 Network access is used for configured websites and web apps.
@@ -209,7 +229,11 @@ License and attribution files:
 - `app/src/main/assets/emoji_search_LICENSE.txt`
 - `app/src/main/assets/emoji_search_NOTICE.txt`
 
-## Releases
+## Releases and changes
+
+- [English changelog](CHANGELOG.en.md) | [Deutsches Changelog](CHANGELOG.md)
+- [Release notes 3.0.2 (bilingual, once approved)](RELEASE_NOTES_3.0.2.md)
+- [Current project status](PROJECT_STATUS.en.md)
 
 https://github.com/1260er/AppStow/releases
 

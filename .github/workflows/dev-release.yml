@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       upgrade_test:
-        description: "Build a signed 3.0.0 upgrade-test APK without a release"
+        description: "Build a signed 3.0.2 upgrade candidate from v3.0.1; do not create a release"
         required: false
         type: boolean
         default: false
@@ -148,34 +148,32 @@ jobs:
       APPSTOW_KEY_PASSWORD: ${{ secrets.APPSTOW_KEY_PASSWORD }}
 
     steps:
-      - name: Require approved development branch
+      - name: Require dedicated 3.0.2 release candidate branch
         shell: bash
         run: |
           set -euo pipefail
-          case "$GITHUB_REF" in
-            refs/heads/dev/phase9|refs/heads/dev/3.0-final-hardening)
-              ;;
-            *)
-              echo "Unzulässiger Upgrade-Test-Branch."
-              exit 1
-              ;;
-          esac
+          test "$GITHUB_REF" = "refs/heads/dev/3.0.2-rc"
 
-      - name: Check out source
+      - name: Check out candidate source
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-      - name: Validate version and signing secrets
+      - name: Validate signed upgrade inputs
         env:
           KEYSTORE_BASE64: ${{ secrets.APPSTOW_KEYSTORE_BASE64 }}
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq 'versionName = "3.0.0"' app/build.gradle.kts
+          grep -Fq 'versionName = "3.0.2"' app/build.gradle.kts
           grep -Fq 'applicationId = "de.pritcloud.appstow"' app/build.gradle.kts
+          grep -Eq '^[[:space:]]*15[[:space:]]*$' app/build.gradle.kts
           test -n "$KEYSTORE_BASE64"
           test -n "$APPSTOW_KEYSTORE_PASSWORD"
           test -n "$APPSTOW_KEY_ALIAS"
           test -n "$APPSTOW_KEY_PASSWORD"
+          test -f RELEASE_NOTES_3.0.2.md
+          git merge-base --is-ancestor c8620dc5f454ecc494773d5d8f58f76a7dea1b43 HEAD
 
       - name: Restore signing keystore
         env:
@@ -208,90 +206,73 @@ jobs:
         with:
           gradle-version: "8.11.1"
 
-      - name: Build signed 3.0.0 upgrade candidate
+      - name: Build and test signed stable-package candidate
         env:
           APPSTOW_KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
           APPSTOW_REQUIRE_RELEASE_SIGNING: "true"
         run: ./gradlew --no-daemon clean testDebugUnitTest testReleaseUnitTest lintRelease assembleRelease
 
-      - name: Compare signed 2.0.1 and 3.0.0 APKs
+      - name: Compare stable 3.0.1 and candidate signatures
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-
-          DIR="$RUNNER_TEMP/appstow-upgrade"
+          DIR="$RUNNER_TEMP/appstow-3.0.2-upgrade"
           APK="app/build/outputs/apk/release/app-release.apk"
           APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
-
           mkdir -p "$DIR"
           test -s "$APK"
           test -s app/build/outputs/mapping/release/mapping.txt
-
-          gh release download v2.0.1             --repo "$GITHUB_REPOSITORY"             --pattern "AppStow-2.0.1.apk*"             --dir "$DIR"
-
-          test -s "$DIR/AppStow-2.0.1.apk"
-          test -s "$DIR/AppStow-2.0.1.apk.sha256"
-
-          (
-            cd "$DIR"
-            sha256sum --check AppStow-2.0.1.apk.sha256
-          )
-
-          "$APKSIGNER" verify --verbose --print-certs             "$DIR/AppStow-2.0.1.apk" > "$DIR/stable-certificate.txt"
-
-          "$APKSIGNER" verify --verbose --print-certs             "$APK" > "$DIR/candidate-certificate.txt"
-
-          STABLE_CERT=$(sed -n             "s/^Signer #1 certificate SHA-256 digest: //p"             "$DIR/stable-certificate.txt" | head -n 1)
-
-          CANDIDATE_CERT=$(sed -n             "s/^Signer #1 certificate SHA-256 digest: //p"             "$DIR/candidate-certificate.txt" | head -n 1)
-
+          gh release download v3.0.1 --repo "$GITHUB_REPOSITORY" \
+            --pattern 'AppStow-3.0.1.apk*' --dir "$DIR"
+          test -s "$DIR/AppStow-3.0.1.apk"
+          test -s "$DIR/AppStow-3.0.1.apk.sha256"
+          (cd "$DIR" && sha256sum --check AppStow-3.0.1.apk.sha256)
+          "$APKSIGNER" verify --verbose --print-certs \
+            "$DIR/AppStow-3.0.1.apk" > "$DIR/stable-certificate.txt"
+          "$APKSIGNER" verify --verbose --print-certs \
+            "$APK" > "$DIR/candidate-certificate.txt"
+          STABLE_CERT=$(sed -n \
+            's/^Signer #1 certificate SHA-256 digest: //p' \
+            "$DIR/stable-certificate.txt" | head -n 1)
+          CANDIDATE_CERT=$(sed -n \
+            's/^Signer #1 certificate SHA-256 digest: //p' \
+            "$DIR/candidate-certificate.txt" | head -n 1)
           test -n "$STABLE_CERT"
-          test -n "$CANDIDATE_CERT"
           test "$STABLE_CERT" = "$CANDIDATE_CERT"
-
-          echo "Signaturzertifikate stimmen überein."
-
-          "$AAPT" dump badging "$DIR/AppStow-2.0.1.apk"             > "$DIR/stable-badging.txt"
-
-          "$AAPT" dump badging "$APK"             > "$DIR/candidate-badging.txt"
-
-          grep -Eq             "^package: name=.de[.]pritcloud[.]appstow. versionCode=.11. versionName=.2[.]0[.]1."             "$DIR/stable-badging.txt"
-
-          grep -Eq             "^package: name=.de[.]pritcloud[.]appstow. versionCode=.13. versionName=.3[.]0[.]0."             "$DIR/candidate-badging.txt"
-
-          if grep -q "application-debuggable" "$DIR/candidate-badging.txt"
-          then
-            echo "FEHLER: Testkandidat ist debuggable."
+          "$AAPT" dump badging "$DIR/AppStow-3.0.1.apk" \
+            > "$DIR/stable-badging.txt"
+          "$AAPT" dump badging "$APK" \
+            > "$DIR/candidate-badging.txt"
+          grep -Fq "package: name='de.pritcloud.appstow' versionCode='14' versionName='3.0.1'" \
+            "$DIR/stable-badging.txt"
+          grep -Fq "package: name='de.pritcloud.appstow' versionCode='15' versionName='3.0.2'" \
+            "$DIR/candidate-badging.txt"
+          if grep -q 'application-debuggable' "$DIR/candidate-badging.txt"; then
+            echo "FAIL: candidate APK is debuggable"
             exit 1
           fi
-
           unzip -Z1 "$APK" > "$DIR/candidate-files.txt"
-          grep -Fxq "assets/dexopt/baseline.prof"             "$DIR/candidate-files.txt"
+          grep -Fxq 'assets/dexopt/baseline.prof' "$DIR/candidate-files.txt"
+          cp "$APK" "$DIR/AppStow-3.0.2-upgrade-test.apk"
+          (cd "$DIR" && sha256sum AppStow-3.0.1.apk \
+            AppStow-3.0.2-upgrade-test.apk > SHA256SUMS.txt)
+          echo "Signed same-certificate 3.0.1-to-3.0.2 upgrade candidate verified."
 
-          cp "$APK" "$DIR/AppStow-3.0.0-upgrade-test.apk"
-
-          (
-            cd "$DIR"
-            sha256sum               AppStow-2.0.1.apk               AppStow-3.0.0-upgrade-test.apk               > SHA256SUMS.txt
-          )
-
-          echo "=== SIGNATUR UND VERSIONSFOLGE GEPRÜFT ==="
-
-      - name: Upload upgrade-test APKs
+      - name: Upload signed upgrade-test APKs (no release)
         uses: actions/upload-artifact@v6
         with:
-          name: AppStow-3.0.0-upgrade-test
+          name: AppStow-3.0.2-upgrade-test
           retention-days: 7
           if-no-files-found: error
           path: |
-            ${{ runner.temp }}/appstow-upgrade/AppStow-2.0.1.apk
-            ${{ runner.temp }}/appstow-upgrade/AppStow-3.0.0-upgrade-test.apk
-            ${{ runner.temp }}/appstow-upgrade/SHA256SUMS.txt
+            ${{ runner.temp }}/appstow-3.0.2-upgrade/AppStow-3.0.1.apk
+            ${{ runner.temp }}/appstow-3.0.2-upgrade/AppStow-3.0.2-upgrade-test.apk
+            ${{ runner.temp }}/appstow-3.0.2-upgrade/SHA256SUMS.txt
 
-      - name: Remove signing keystore
+      - name: Remove restored keystore
         if: always()
         shell: bash
         run: rm -f "$KEYSTORE_PATH"

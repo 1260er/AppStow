@@ -1,5 +1,57 @@
 # AppStow – Projektstatus
 
+**Deutsch** | [English](PROJECT_STATUS.en.md)
+
+Stand: 13. Oktober 2026 – Releasevorbereitung 3.0.2
+
+## Veröffentlichter Stand
+
+- **Stable:** AppStow 3.0.1, Versionscode **14**, Tag `v3.0.1`.
+- `main` bleibt auf `c8620dc5f454ecc494773d5d8f58f76a7dea1b43` bis zur ausdrücklich freigegebenen Veröffentlichung.
+- Die aktuelle stabile APK und ihre Prüfsumme befinden sich unter https://github.com/1260er/AppStow/releases/tag/v3.0.1.
+- **3.0.2 ist noch kein Stable-Release.** Versionscode **15** ist ausschließlich für den Releasekandidaten vorbereitet; Tag `v3.0.2` noch nicht erstellen.
+
+## Freigegebener Entwicklungsstand
+
+- Basis: `dev/backup-ui-fix`, Commit `fefd4421861cfcfee7bb2b09fff16edcd4759203` (Dev-232).
+- Drei Commits über Stable 3.0.1: Startansicht, Android-Systembackup und Backup-UI-Korrektur.
+- Startansicht: „Aus / Bei Start / Immer“ und „Letzte Kategorie / Favoriten / Startseite“; beide Reihen horizontal und mittig. Bestehende Optionen bleiben kompatibel.
+- **Seedvault:** Sicherung und Wiederherstellung mit Dev-232 auf dem Gerät getestet und erfolgreich.
+- **Google-Backup:** Android-Integration vorbereitet; ein gesonderter praktischer Google-Restore-Test fehlt.
+- Android-Systembackup hat eine strenge Dateifreigabeliste und setzt für Cloud-Backups Verschlüsselungsfähigkeiten voraus. Nutzungsstatistiken, Sortier-Snapshots, WebView-Daten und Restore-Journal bleiben ausgeschlossen.
+- Manuelles Backupformat **v3** bleibt unverändert; v3 ist nicht mit 2.x-Sicherungen kompatibel.
+- Backup-UI: vier Praxistests mit Dev-232 bestanden, einschließlich des Abbruchs und echter Vordergrundrückkehr bei „Immer“.
+- Neue Regressionstests, vollständige Unit-Tests, Lint, Debug- und Release-Builds erfolgreich.
+
+## Releasekandidat 3.0.2: Noch offen
+
+1. Deutsch/Englisch: README, Changelog, Release-Hinweise und Status synchronisieren; bisher fehlenden Changelog-Eintrag 3.0.1 ergänzen.
+2. Versionscode **15**, Name **3.0.2**, unveränderte App-ID `de.pritcloud.appstow`; separater `.dev`-Build bleibt erhalten.
+3. Signierten **Upgrade-Test von Stable 3.0.1 auf 3.0.2** mit demselben Zertifikat durchführen. Upgrade ohne Datenverlust auf einem Gerät überprüfen.
+4. F-Droid-Metadaten auf GitLab **über die Weboberfläche** kontrollieren: Versionscode, nur Stable-Tags, `AutoUpdateMode`, `UpdateCheckMode`, Buildbarkeit. Vor dem echten Stable-Tag kein 3.0.2-Update auslösen.
+5. Deep-Review und finale Checks erneut durchführen. Erst nach Freigabe Merge zu `main`, Stable-Tag `v3.0.2`, signierte Stable-APK/SHA-256 und F-Droid-Nachkontrolle.
+
+## Wichtige Sicherheits- und Kompatibilitätshinweise
+
+- Keine Änderung der öffentlichen Stable-Release-Dateien und keine vorzeitigen Tags.
+- Das manuelle Backup v3 verwendet AES-256-GCM, aber keinen persönlichen geheimen Schlüssel; die feste Schlüsselableitung bietet keinen starken Schutz gegen entschlossene Dritte. Die Einschränkung wird in beiden READMEs erklärt.
+- Die Android-Systembackup-Regeln schließen lokale Nutzungsstatistiken aus. Die Art der Datenübertragung hängt vom gewählten Android-Backup-Dienst ab.
+- F-Droid erstellt ein eigenes APK aus dem getaggten Quellcode; seine Signatur kann von der GitHub-APK abweichen. Kein unbestätigtes Upgrade von F-Droid auf GitHub-APK versprechen.
+
+## Dokumentation
+
+- [README Deutsch](README.de.md) | [README English](README.md)
+- [Changelog Deutsch](CHANGELOG.md) | [Changelog English](CHANGELOG.en.md)
+- [Bilinguale Release-Hinweise 3.0.2](RELEASE_NOTES_3.0.2.md)
+- [F-Droid-Prüfliste](FDROID_RELEASE_CHECKLIST.md)
+
+---
+
+## Archivierte Projektnotizen bis Version 3.0.0
+
+Die folgenden Angaben dokumentieren den früheren Stand; die Aussagen zu „aktuell“ und „nächster Schritt“ sind **historisch**. Für aktuelle Releaseentscheidungen gilt ausschließlich der obere Abschnitt.
+
+
 Stand: 9. Oktober 2026
 
 ## Veröffentlicht: AppStow 3.0.0

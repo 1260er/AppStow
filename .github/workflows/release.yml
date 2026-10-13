@@ -53,6 +53,13 @@ jobs:
             grep -Fq "versionName = \"3.0.0\"" app/build.gradle.kts
           fi
 
+          if [[ "$GITHUB_REF_NAME" == "v3.0.2" ]]; then
+            grep -Fq 'versionName = "3.0.2"' app/build.gradle.kts
+            grep -Eq '^[[:space:]]*15[[:space:]]*$' app/build.gradle.kts
+            grep -Fq 'applicationId = "de.pritcloud.appstow"' app/build.gradle.kts
+            test -s RELEASE_NOTES_3.0.2.md
+          fi
+
       - name: Validate signing secrets
         env:
           KEYSTORE_BASE64: ${{ secrets.APPSTOW_KEYSTORE_BASE64 }}
@@ -187,10 +194,17 @@ jobs:
             echo "Tag $GITHUB_REF_NAME passt nicht zu versionName $VERSION (erwartet: $EXPECTED_TAG)"
             exit 1
           }
-          gh release create "$GITHUB_REF_NAME" \
-            "$APK_FILE" "$APK_FILE.sha256" \
-            --title "AppStow $VERSION" \
-            --generate-notes
+          if [[ "$VERSION" == "3.0.2" ]]; then
+            gh release create "$GITHUB_REF_NAME" \
+              "$APK_FILE" "$APK_FILE.sha256" \
+              --title "AppStow $VERSION" \
+              --notes-file RELEASE_NOTES_3.0.2.md
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              "$APK_FILE" "$APK_FILE.sha256" \
+              --title "AppStow $VERSION" \
+              --generate-notes
+          fi
 
       - name: Remove restored keystore
         if: always()

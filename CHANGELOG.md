@@ -1,5 +1,28 @@
 # Changelog
 
+**Deutsch** | [English](CHANGELOG.en.md)
+
+## 3.0.2 – Releasekandidat (noch nicht veröffentlicht)
+
+- Neue Einstellung **Startansicht** mit zwei horizontal und mittig angeordneten Auswahlreihen: **Aus / Bei Start / Immer** und **Letzte Kategorie / Favoriten / Startseite**.
+- **Aus** behält die bisherige Startlogik bei und deaktiviert die zweite Auswahlreihe. Bereits gespeicherte Startverhalten werden übernommen.
+- Zuletzt besuchte Kategorien können beim Start geöffnet werden; die Listen- und Kachelansicht und gelöschte Kategorien werden berücksichtigt.
+- Android-Systembackup für Seedvault, Google-Backup und kompatible Backup-Dienste vorbereitet, mit strikter Positivliste der Konfigurationsdateien.
+- Nutzungsstatistiken, automatische Sortier-Snapshots, WebView-Sitzungen und das interne Wiederherstellungsjournal sind aus dem Systembackup ausgeschlossen; für Cloud-Backups werden Android-Verschlüsselungsfähigkeiten verlangt.
+- Systembackup stellt die gespeicherte Sortierkonfiguration ohne Nutzungshistorie wieder her und wählt, falls erforderlich, einen sicheren manuellen Sortiermodus.
+- Der eigene manuelle Sicherungs- und Wiederherstellungsweg bleibt beim kompatiblen AppStow-Backupformat **v3**.
+- Backup-Dateidialoge lösen unter **Immer** keinen unerwünschten Wechsel zur Startansicht mehr aus; auch Abbruch und Activity-Neuerstellung wurden abgesichert.
+- Neue Regressionstests für Startansicht, Systembackup-Regeln und Backup-Dateidialog.
+- Seedvault: Sicherung und Wiederherstellung auf einem Gerät erfolgreich getestet. Google-Backup: vorbereitet, jedoch noch nicht separat auf einem Gerät getestet.
+- Versionscode 15; signierter Update-Test von Stable 3.0.1 auf 3.0.2 und finale Freigabe stehen noch aus.
+
+## 3.0.1 – 12. Oktober 2026
+
+- Neue Intervall-Snapshots für halb- und vollautomatische Sortierung und optionale nutzungsbasierte Vorschläge.
+- Verbesserte Sortier- und Favoritenlogik sowie weitere Tests der manuellen Reihenfolgen.
+- Verbesserungen beim Schreiben und Verifizieren von Sicherungen über Android-Dokumentanbieter.
+- Zusätzliche UI-Anpassungen und Regressionstests; Versionscode auf 14 erhöht.
+
 ## 3.0.0
 
 - Neue lokale Nutzungsstatistik für über AppStow gestartete Apps und Shortcuts.

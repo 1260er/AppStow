@@ -62,12 +62,12 @@ android {
                 .orNull?.toIntOrNull()
                 ?.takeIf { it > 14 }
                 ?: throw GradleException(
-                    "Dev release requires APPSTOW_VERSION_CODE > 13."
+                    "Dev release requires APPSTOW_VERSION_CODE > 14."
                 )
         } else {
-            14
+            15
         }
-        versionName = "3.0.1"
+        versionName = "3.0.2"
     }
 
     signingConfigs {

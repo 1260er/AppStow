@@ -21,8 +21,9 @@ AppStow ist ein Android-Launcher und Organizer für installierte Apps, Favoriten
 - Lokale Nutzungsstatistik für Starts über AppStow anzeigen
 - Manuelle, halbautomatische und vollautomatische Sortierung nutzen
 - Sortiervorschläge und optionale Tag-/Abendprofile einstellen
-- Darstellung, Bedienung und Startverhalten anpassen
-- Verschlüsselte Sicherungen erstellen und die AppStow-Konfiguration wiederherstellen
+- Darstellung, Bedienung und Startansicht (Aus, Bei Start oder Immer) anpassen
+- Verschlüsselte manuelle v3-Sicherungen erstellen und wiederherstellen
+- Android-Systembackups über Seedvault oder kompatible Dienste wie Google-Backup nutzen
 - Deutsche und englische Benutzeroberfläche
 - Helles und dunkles Systemdesign
 - Unterstützung für dynamische bzw. einfarbige Launcher-Symbole unter Android
@@ -35,14 +36,11 @@ AppStow ist ein Android-Launcher und Organizer für installierte Apps, Favoriten
 
 ## Installation
 
-Die aktuelle stabile Version ist **AppStow 3.0.1**.
+Die **zuletzt veröffentlichte stabile Version** und ihre SHA-256-Prüfsumme findest du hier:
 
 https://github.com/1260er/AppStow/releases/latest
 
-Release-Dateien:
-
-- `AppStow-3.0.1.apk`
-- `AppStow-3.0.1.apk.sha256`
+Die Dateien heißen `AppStow-X.Y.Z.apk` und `AppStow-X.Y.Z.apk.sha256`. Entwicklungs-Builds sind gesonderte Vorabversionen und keine stabilen Updates.
 
 Repository-Adresse für Obtainium:
 
@@ -107,9 +105,17 @@ Im manuellen Modus können optionale nutzungsbasierte Sortiervorschläge einzeln
 
 Optional lassen sich Tag-/Abendprofile einrichten. Zeitprofile helfen der automatischen Sortierung, unterschiedliche Nutzungsgewohnheiten zu berücksichtigen: Alltags-Apps können tagsüber weiter oben stehen, Spiele oder Freizeit-Apps am Abend. Die Anfangszeiten legst du selbst fest. **Manuell** ist der Standardmodus.
 
-## Backup und Wiederherstellung (3.0.0)
+## Startansicht (3.0.2)
 
-AppStow 3.0.0 verwendet das verschlüsselte Sicherungsformat v3. Gesichert werden:
+Unter **Darstellung & Bedienung** legst du fest, wann AppStow die gewählte Ansicht öffnet: **Aus**, **Bei Start** oder **Immer**. In der zweiten horizontalen, mittig angeordneten Reihe wählst du **Letzte Kategorie**, **Favoriten** oder **Startseite**.
+
+**Aus** öffnet bei einem vollständigen Neustart die Startseite und lässt beim Zurückkehren aus dem Hintergrund die aktuelle Seite bestehen. Die zweite Reihe ist dann deaktiviert; ihre Auswahl bleibt gespeichert. **Bei Start** öffnet die Auswahl bei einem neuen Start, **Immer** zusätzlich bei der Rückkehr aus einer anderen App. Der eigene Android-Dateidialog für Sicherungen gilt dabei nicht als normaler App-Wechsel.
+
+**Letzte Kategorie** merkt sich die zuletzt geöffnete Kategorie innerhalb von „Apps starten“ (Liste und Kachel). Ist sie nicht mehr vorhanden, wird die Startseite geöffnet. Einstellungen, Statistik und Backup sind keine Kategorien.
+
+## Backup und Wiederherstellung
+
+AppStow 3.x verwendet das verschlüsselte manuelle Sicherungsformat v3. Gesichert werden:
 
 - Kategorien, Symbole, Zuordnungen und Favoriten
 - Eigene Verknüpfungen
@@ -131,6 +137,18 @@ Verweise auf nicht mehr installierte Apps werden aus Favoriten, Kategoriezuweisu
 
 > **Wichtiger Hinweis zu AppStow 3.0:** Version 3.0 überarbeitet das Sicherungsformat grundlegend. Sicherungen aus AppStow 2.x können nicht in AppStow 3.0 wiederhergestellt werden. Umgekehrt sind mit AppStow 3.0 erstellte Sicherungen nicht mit älteren AppStow-Versionen kompatibel.
 
+## Android-Systembackup (3.0.2)
+
+AppStow unterstützt außerdem Androids Systembackup-Schnittstelle. Den Backup-Dienst wählst und verwaltest du in den Android-Einstellungen; AppStow lädt selbst keine Sicherungen hoch. Vorgesehen sind **Seedvault**, **Google-Backup** und kompatible Android-Dienste. Die tatsächliche Verfügbarkeit hängt vom Gerät, Betriebssystem und Anbieter ab.
+
+Die Freigabeliste umfasst ausschließlich: Kategorien, Favoriten, eigene Verknüpfungen, Bereichs- und Eintragsreihenfolgen, Übersichtsdarstellung, Bedienungseinstellungen, **Anzeigeeinstellungen** der Statistik und eine bereinigte Kopie der Sortierkonfiguration. Nutzungsbasierte Sortier-Snapshots werden nicht übertragen.
+
+**Ausgeschlossen:** Nutzungsstatistiken, berechnete automatische Sortierdaten, Web-App-Daten, Cookies, Datenbanken, temporäre Backupdaten und das private Wiederherstellungsjournal. Cloud-Sicherungen setzen von Android gemeldete Verschlüsselungsfähigkeiten voraus. Für Geräteübertragungen gilt dieselbe Dateifreigabeliste.
+
+Nach einer Android-Systemwiederherstellung werden die Sortiereinstellungen ohne Nutzungshistorie übernommen. Falls erforderlich, wechselt die Vollautomatik sicher zu Manuell, bis neue lokale Nutzungshistorie vorhanden ist. Anders als die manuelle v3-Sicherung wird das Systembackup von Android gesteuert und nicht innerhalb von AppStow importiert.
+
+**Seedvault-Sicherung und -Wiederherstellung wurden auf einem Gerät erfolgreich getestet.** Google-Backup wird über dieselbe Android-Schnittstelle unterstützt, wurde aber noch **nicht** gesondert auf einem Gerät wiederhergestellt. Eine Google-Anmeldung, ein Google-SDK oder eine zusätzliche Abhängigkeit in AppStow sind nicht erforderlich.
+
 ## Update von 2.0.1 auf 3.0.0
 
 AppStow 3.0.0 unterstützt das direkte Android-Update von 2.0.1. Vorhandene Konfigurationsdaten wie Kategorien, Favoriten, Verknüpfungen und manuelle Reihenfolgen bleiben erhalten. Dafür muss keine Sicherungsdatei importiert werden.
@@ -138,6 +156,8 @@ AppStow 3.0.0 unterstützt das direkte Android-Update von 2.0.1. Vorhandene Konf
 Sicherungen aus AppStow 2.x können nicht in 3.0.0 importiert werden. Sicherungen aus 3.0.0 lassen sich auch nicht in 2.x importieren. Das direkte APK-Update von 2.0.1 auf 3.0.0 wurde erfolgreich auf einem physischen Android-Gerät getestet.
 
 ## Datenschutz
+
+Beim Android-Systembackup gelangen nur die ausdrücklich freigegebenen Konfigurationsdateien an den ausgewählten Android-Backup-Anbieter. Für dessen Datenverarbeitung gelten die jeweiligen Datenschutzbedingungen. Nutzungsstatistiken sind sowohl aus AppStows manuellen Sicherungen als auch aus Android-Systembackups ausgeschlossen.
 
 AppStow benötigt kein Benutzerkonto. Netzwerkzugriffe erfolgen für konfigurierte Webseiten und Web-Apps. Nutzungsstatistiken verbleiben lokal auf dem Gerät und werden von AppStow nicht hochgeladen.
 
@@ -159,7 +179,11 @@ Lizenz- und Urheberrechtshinweise:
 - `app/src/main/assets/emoji_search_LICENSE.txt`
 - `app/src/main/assets/emoji_search_NOTICE.txt`
 
-## Releases
+## Releases und Änderungen
+
+- [Deutsches Changelog](CHANGELOG.md) | [English changelog](CHANGELOG.en.md)
+- [Release-Hinweise 3.0.2 (zweisprachig, nach Freigabe)](RELEASE_NOTES_3.0.2.md)
+- [Aktueller Projektstatus](PROJECT_STATUS.md)
 
 https://github.com/1260er/AppStow/releases
 
