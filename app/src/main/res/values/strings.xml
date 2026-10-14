@@ -412,13 +412,13 @@ None found</string>
     <string name="ui_control_side_right">Right</string>
     <string name="ui_control_side_left">Left</string>
     <string name="ui_start_behavior_title">Start view</string>
-    <string name="ui_start_behavior_description">On: selected start view. Off: last open page.</string>
+    <string name="ui_start_behavior_description">On: Show the selected view at launch and when returning to AppStow. Off: Keep the last open page.</string>
     <string name="ui_start_never">Off</string>
     <string name="ui_start_always">On</string>
     <string name="ui_start_view_last_category">Last category</string>
     <string name="ui_start_view_favorites">Favorites</string>
     <string name="ui_start_view_home">Start page</string>
     <string name="ui_visibility_title">Visibility</string>
-    <string name="ui_visibility_description">Choose whether AppStow appears in Android Recents.</string>
+    <string name="ui_visibility_description">On: Show AppStow in Android Recents. Off: Hide its entry while keeping AppStow usable.</string>
 
 </resources>

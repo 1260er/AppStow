@@ -412,13 +412,13 @@ Keines gefunden</string>
     <string name="ui_control_side_right">Rechts</string>
     <string name="ui_control_side_left">Links</string>
     <string name="ui_start_behavior_title">Startansicht</string>
-    <string name="ui_start_behavior_description">An: gewählte Startansicht. Aus: letzte Seite.</string>
+    <string name="ui_start_behavior_description">An: Beim Start und bei der Rückkehr zu AppStow erscheint die gewählte Ansicht. Aus: Die zuletzt geöffnete Seite bleibt erhalten.</string>
     <string name="ui_start_never">Aus</string>
     <string name="ui_start_always">An</string>
     <string name="ui_start_view_last_category">Letzte Kategorie</string>
     <string name="ui_start_view_favorites">Favoriten</string>
     <string name="ui_start_view_home">Startseite</string>
     <string name="ui_visibility_title">Sichtbarkeit</string>
-    <string name="ui_visibility_description">Hier legst du fest, ob AppStow in „Zuletzt verwendet“ erscheint.</string>
+    <string name="ui_visibility_description">An: AppStow erscheint unter „Zuletzt verwendet“. Aus: Der Eintrag wird ausgeblendet, AppStow bleibt weiterhin nutzbar.</string>
 
 </resources>
