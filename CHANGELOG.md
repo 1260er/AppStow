@@ -14,7 +14,7 @@
 - Backup-Dateidialoge lösen unter **Immer** keinen unerwünschten Wechsel zur Startansicht mehr aus; auch Abbruch und Activity-Neuerstellung wurden abgesichert.
 - Neue Regressionstests für Startansicht, Systembackup-Regeln und Backup-Dateidialog.
 - Seedvault: Sicherung und Wiederherstellung auf einem Gerät erfolgreich getestet. Google-Backup: vorbereitet, jedoch noch nicht separat auf einem Gerät getestet.
-- Versionscode 15; signierter Update-Test von Stable 3.0.1 auf 3.0.2 und finale Freigabe stehen noch aus.
+- Versionscode 15; der signierte CI-Upgrade-Test 3.0.1 (14) → 3.0.2 (15) war erfolgreich. Auch das direkte Update auf einem Smartphone ohne Deinstallation wurde erfolgreich getestet: Kategorien, Favoriten, Verknüpfungen, Reihenfolgen und Einstellungen blieben erhalten. Die Stable-Freigabe steht noch aus.
 
 ## 3.0.1 – 12. Oktober 2026
 

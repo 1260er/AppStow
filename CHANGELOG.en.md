@@ -14,7 +14,7 @@
 - Returning from Android's backup file picker no longer triggers unwanted **Always** startup navigation; cancellation and activity recreation are also handled.
 - Add regression tests for start-view selection, system-backup policy, and file-picker navigation.
 - Seedvault backup and restore succeeded on a device. Google Backup is prepared, but has not yet been tested separately on a device.
-- Stable versionCode 15; the signed upgrade test from 3.0.1 to 3.0.2 and final release approval are still pending.
+- Stable versionCode 15; the signed CI upgrade check from 3.0.1 (14) to 3.0.2 (15) passed. A direct in-place upgrade on a physical device was also successful without uninstalling; categories, favorites, shortcuts, ordering and settings were preserved. Stable release approval remains pending.
 
 ## 3.0.1 – October 12, 2026
 

@@ -192,6 +192,12 @@ After an Android system restore, AppStow rehydrates sorting preferences without 
 
 Seedvault backup **and restore** were tested successfully on a device. Google Backup is supported by the same Android integration but has **not** yet been separately restore-tested; no Google-specific account, SDK or dependency is required.
 
+## Tested upgrade from 3.0.1 to 3.0.2
+
+The signed AppStow 3.0.2 (versionCode 15) release candidate was installed **in place** over the published GitHub-signed AppStow 3.0.1 (versionCode 14) on a physical device. The update succeeded without uninstalling the app. The existing categories, favorites, custom shortcuts, ordering, and settings were checked and preserved. The GitHub Actions signing and version-comparison run passed: [3.0.2 upgrade test](https://github.com/1260er/AppStow/actions/runs/38472809157).
+
+This is a **release-candidate test**, not an announcement that 3.0.2 is already published. The tested APK shares the GitHub signing certificate; installations from F-Droid may use different signing credentials and must not be assumed compatible with the GitHub APK.
+
 ## Upgrading from 2.0.1 to 3.0.0
 
 AppStow 3.0.0 supports an in-place Android update from

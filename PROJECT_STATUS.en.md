@@ -2,7 +2,7 @@
 
 [Deutsch](PROJECT_STATUS.md) | **English**
 
-As of October 13, 2026 – preparing the 3.0.2 release candidate.
+As of October 14, 2026 – 3.0.2 release candidate; signed in-place upgrade test passed.
 
 ## Published stable version
 
@@ -22,13 +22,21 @@ As of October 13, 2026 – preparing the 3.0.2 release candidate.
 - The independent manual **backup v3** format is unchanged and intentionally incompatible with 2.x backups.
 - All four backup-UI tests passed on the device; unit tests, lint and builds passed, including new regression tests.
 
-## Remaining before 3.0.2 release
+## Release candidate: completed and outstanding checks
 
-1. Update both READMEs, both changelogs, project status, bilingual release notes and F-Droid checklist.
-2. Set `versionName=3.0.2`, stable `versionCode=15`; preserve `de.pritcloud.appstow` and the separate `.dev` package for test builds.
-3. Build a **signed 3.0.1 → 3.0.2 upgrade candidate**; confirm certificate, version progression, and no data loss on a physical device.
-4. Check F-Droid's existing recipe **through GitLab web UI**: stable-tag filter, auto-update mode, build dependencies, source version. Do not publish/update 3.0.2 before a stable tag exists.
-5. Repeat release checks and deep review, then only with approval merge to `main`, create tag `v3.0.2`, publish APK/SHA-256 and follow the F-Droid update.
+**Completed:**
+
+1. Prepare versionName **3.0.2**, versionCode **15**, same application ID `de.pritcloud.appstow` and separate `.dev` test package.
+2. Update German and English README, changelog, project status, and bilingual release notes, including the missing 3.0.1 changelog entry.
+3. Signed GitHub Actions [upgrade run 38472809157](https://github.com/1260er/AppStow/actions/runs/38472809157) succeeded: same package ID and signing certificate, versionCode 14 → 15, unit tests, lint and optimized APK.
+4. Install the signed 3.0.2 candidate **in place** over GitHub-stable 3.0.1 on a physical device, without uninstalling. Categories, favorites, custom shortcuts, ordering and settings remained intact.
+5. On-device startup-view, backup-UI, and Seedvault backup/restore tests passed with Dev-232.
+
+**Still outstanding:**
+
+1. Confirm the live F-Droid recipe **through the GitLab web UI**: stable-tag restriction, update mode, dependencies, licenses and donation link; do not publish 3.0.2 prematurely.
+2. Complete the final repository/documentation review and release checks. Only after explicit approval merge to `main`, tag `v3.0.2`, publish signed APK/SHA-256 and monitor F-Droid.
+3. Google Backup restore has **not** been separately tested on a physical device; keep that limitation clear.
 
 ## Security and compatibility
 

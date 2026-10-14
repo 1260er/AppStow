@@ -149,6 +149,12 @@ Nach einer Android-Systemwiederherstellung werden die Sortiereinstellungen ohne 
 
 **Seedvault-Sicherung und -Wiederherstellung wurden auf einem Gerät erfolgreich getestet.** Google-Backup wird über dieselbe Android-Schnittstelle unterstützt, wurde aber noch **nicht** gesondert auf einem Gerät wiederhergestellt. Eine Google-Anmeldung, ein Google-SDK oder eine zusätzliche Abhängigkeit in AppStow sind nicht erforderlich.
 
+## Getestetes Update von 3.0.1 auf 3.0.2
+
+Der signierte Releasekandidat AppStow 3.0.2 (Versionscode 15) wurde auf einem physischen Smartphone **direkt über** die veröffentlichte, auf GitHub signierte Version 3.0.1 (Versionscode 14) installiert. Das Update gelang ohne Deinstallation. Kategorien, Favoriten, eigene Verknüpfungen, Reihenfolgen und Einstellungen wurden anschließend kontrolliert und blieben vollständig erhalten. Auch die Signatur- und Versionsprüfung in GitHub Actions war erfolgreich: [Upgrade-Test 3.0.2](https://github.com/1260er/AppStow/actions/runs/38472809157).
+
+Dies ist ein **Test des Releasekandidaten**, keine Ankündigung eines bereits veröffentlichten Stable-Releases 3.0.2. Die getestete APK verwendet das GitHub-Signaturzertifikat. Installationen aus F-Droid können anders signiert sein und dürfen nicht ohne Prüfung als mit der GitHub-APK updatekompatibel bezeichnet werden.
+
 ## Update von 2.0.1 auf 3.0.0
 
 AppStow 3.0.0 unterstützt das direkte Android-Update von 2.0.1. Vorhandene Konfigurationsdaten wie Kategorien, Favoriten, Verknüpfungen und manuelle Reihenfolgen bleiben erhalten. Dafür muss keine Sicherungsdatei importiert werden.
