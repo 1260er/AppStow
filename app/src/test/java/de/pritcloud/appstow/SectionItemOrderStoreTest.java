@@ -101,6 +101,51 @@ public class SectionItemOrderStoreTest {
     }
 
     @Test
+    public void unchangedOrderPreservesOriginalStoredValue() {
+        String original =
+                "{ \"favorites\" : [\"app:b\",\"app:a\"], \"shortcuts\" : [\"shortcut:z\"] }";
+
+        preferences.edit()
+                .putString("orders", original)
+                .commit();
+
+        store.saveOrder(
+                "favorites",
+                Arrays.asList("app:b", "app:a", "app:b", ""));
+
+        assertEquals(
+                original,
+                preferences.getString("orders", null));
+    }
+
+    @Test
+    public void changedOrderPersistsWithoutChangingOtherSections() {
+        store.saveOrder(
+                "favorites",
+                Arrays.asList("app:a", "app:b"));
+
+        store.saveOrder(
+                "shortcuts",
+                Arrays.asList("shortcut:x", "shortcut:y"));
+
+        store.saveOrder(
+                "favorites",
+                Arrays.asList("app:b", "app:a"));
+
+        assertEquals(
+                Arrays.asList("app:b", "app:a"),
+                store.getOrderedIds(
+                        "favorites",
+                        Arrays.asList("app:a", "app:b")));
+
+        assertEquals(
+                Arrays.asList("shortcut:x", "shortcut:y"),
+                store.getOrderedIds(
+                        "shortcuts",
+                        Arrays.asList("shortcut:y", "shortcut:x")));
+    }
+
+    @Test
     public void saveDropsEmptyAndDuplicateIds() {
 
         store.saveOrder(

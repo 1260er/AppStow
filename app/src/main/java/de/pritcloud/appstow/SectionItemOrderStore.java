@@ -114,6 +114,29 @@ final class SectionItemOrderStore {
             array.put(id);
         }
 
+        // Avoid writing unchanged orders during UI refreshes.
+        JSONArray previous = orders.optJSONArray(sectionId);
+
+        if (previous != null
+                && previous.length() == array.length()) {
+
+            boolean unchanged = true;
+
+            for (int i = 0; i < array.length(); i++) {
+                Object oldValue = previous.opt(i);
+
+                if (!(oldValue instanceof String)
+                        || !oldValue.equals(array.optString(i))) {
+                    unchanged = false;
+                    break;
+                }
+            }
+
+            if (unchanged) {
+                return;
+            }
+        }
+
         try {
             orders.put(
                     sectionId,
