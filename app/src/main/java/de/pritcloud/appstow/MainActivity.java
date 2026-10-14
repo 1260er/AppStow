@@ -622,7 +622,6 @@ public class MainActivity extends Activity {
         uiSettingsStore =
                 new UiSettingsStore(this);
 
-        updateRecentsScreenshotPolicy();
         applyControlSideUi();
 
         overviewOrderStore =
@@ -1533,8 +1532,6 @@ public class MainActivity extends Activity {
         if (restoreRecoveryBlocked) {
             return;
         }
-
-        updateRecentsScreenshotPolicy();
 
         RecentTasksVisibilityController.apply(
                 this, uiSettingsStore.load().showInRecents);
@@ -6152,21 +6149,6 @@ public class MainActivity extends Activity {
                 : GravityCompat.END;
     }
 
-    static boolean shouldEnableRecentsScreenshot(
-            UiSettingsStore.Settings settings) {
-        // Automatic start views replace the previously displayed page.
-        // Prevent Android Recents from previewing that obsolete page.
-        return settings.startBehavior
-                != UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND;
-    }
-
-    private void updateRecentsScreenshotPolicy() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            setRecentsScreenshotEnabled(
-                    shouldEnableRecentsScreenshot(uiSettingsStore.load()));
-        }
-    }
-
     private void applyControlSideUi() {
 
         UiHandedness.applyContainer(
@@ -6588,10 +6570,6 @@ public class MainActivity extends Activity {
                         themeMode,
                         startView,
                         showInRecents));
-
-        if (current.startBehavior != startBehavior) {
-            updateRecentsScreenshotPolicy();
-        }
 
         if (current.showInRecents != showInRecents) {
             RecentTasksVisibilityController.apply(this, showInRecents);
