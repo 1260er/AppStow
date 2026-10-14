@@ -2,7 +2,7 @@
 
 [Deutsch](CHANGELOG.de.md) | **English**
 
-## 3.0.2 – Release candidate (not yet published)
+## 3.0.2 – October 14, 2026
 
 - New **Start view** setting with two centered horizontal radio rows: **Off / On start / Always** and **Last category / Favorites / Home**.
 - **Off** preserves the previous startup behavior and disables the second row. Existing startup settings migrate without changing user preferences.
@@ -14,7 +14,7 @@
 - Returning from Android's backup file picker no longer triggers unwanted **Always** startup navigation; cancellation and activity recreation are also handled.
 - Add regression tests for start-view selection, system-backup policy, and file-picker navigation.
 - Seedvault backup and restore succeeded on a device. Google Backup is prepared, but has not yet been tested separately on a device.
-- Stable versionCode 15; the signed CI upgrade check from 3.0.1 (14) to 3.0.2 (15) passed. A direct in-place upgrade on a physical device was also successful without uninstalling; categories, favorites, shortcuts, ordering and settings were preserved. Stable release approval remains pending.
+- Stable versionCode 15; the signed CI upgrade check from 3.0.1 (14) to 3.0.2 (15) passed. A direct in-place upgrade on a physical device was also successful without uninstalling; categories, favorites, shortcuts, ordering and settings were preserved. The stable release follows successful upgrade and regression testing.
 
 ## 3.0.1 – October 12, 2026
 

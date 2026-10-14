@@ -196,7 +196,7 @@ Seedvault backup **and restore** were tested successfully on a device. Google Ba
 
 The signed AppStow 3.0.2 (versionCode 15) release candidate was installed **in place** over the published GitHub-signed AppStow 3.0.1 (versionCode 14) on a physical device. The update succeeded without uninstalling the app. The existing categories, favorites, custom shortcuts, ordering, and settings were checked and preserved. The GitHub Actions signing and version-comparison run passed: [3.0.2 upgrade test](https://github.com/1260er/AppStow/actions/runs/38472809157).
 
-This is a **release-candidate test**, not an announcement that 3.0.2 is already published. The tested APK shares the GitHub signing certificate; installations from F-Droid may use different signing credentials and must not be assumed compatible with the GitHub APK.
+The device test used the signed 3.0.2 upgrade candidate built from the same application source as the stable release. GitHub and F-Droid installations may have different signing certificates; cross-source upgrades must not be assumed compatible.
 
 ## Upgrading from 2.0.1 to 3.0.0
 
@@ -238,7 +238,7 @@ License and attribution files:
 ## Releases and changes
 
 - [English changelog](CHANGELOG.md) | [Deutsches Changelog](CHANGELOG.de.md)
-- [Release notes 3.0.2 (bilingual, once approved)](RELEASE_NOTES_3.0.2.md)
+- [AppStow 3.0.2 release notes (German and English)](RELEASE_NOTES_3.0.2.md)
 - [Current project status](PROJECT_STATUS.md)
 
 https://github.com/1260er/AppStow/releases

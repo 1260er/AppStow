@@ -8,7 +8,7 @@
 
 **Quelle:** https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/de.pritcloud.appstow.yml
 
-- [ ] GitLab-Rezept **über die Weboberfläche** prüfen. Bisheriger Plan: `AutoUpdateMode: Version`, `UpdateCheckMode: Tags` mit Filter auf `vX.Y.Z`-Stable-Tags. Tatsächliche Werte vor dem Release ablesen und bei Bedarf über GitLab bearbeiten.
+- [x] Live-Rezeptur im GitLab-fdroiddata-Master vor Veröffentlichung als Originaldatei geprüft: `AutoUpdateMode: Version`, `UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$`, Versionscode-Auswertung, Changelog-, Lizenz-, APK-, Signatur- und Ko-fi-Links. Keine Änderung auf GitLab notwendig.
 - [ ] Die Paketkennung bleibt `de.pritcloud.appstow`; Versionsname `3.0.2` und Versionscode `15` müssen im **Stable-Tag** stehen.
 - [ ] `dev-*`-Tags und `dev/`-Branches dürfen keinen F-Droid-Autoupdate-Build auslösen.
 - [ ] Lizenz GPL-3.0-or-later, Unicode/CLDR-Datenhinweise, nur bestehende freie AndroidX-Abhängigkeiten; keine Google-Play-Dienste und kein proprietäres SDK erforderlich.
@@ -25,7 +25,7 @@
 
 **Metadata:** https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/de.pritcloud.appstow.yml
 
-- [ ] Inspect the recipe in the **GitLab web UI**. Expected configuration: `AutoUpdateMode: Version` and `UpdateCheckMode: Tags` matching stable `vX.Y.Z` tags; verify exact live values before release.
+- [x] Validated the live GitLab fdroiddata master recipe before publication: stable-only tag filter, update/version extraction, changelog, license, APK/source links, signing-key allowlist and Ko-fi metadata. No GitLab recipe edit required.
 - [ ] Preserve application ID `de.pritcloud.appstow`, stable versionName `3.0.2` and versionCode `15` in the tagged source.
 - [ ] Do not allow `dev-*` pre-release tags or development branches to trigger F-Droid updates.
 - [ ] Verify GPL-3.0-or-later, bundled Unicode/CLDR notices and free AndroidX dependencies; no Google Play services or proprietary SDK is needed.

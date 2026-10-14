@@ -153,7 +153,7 @@ Nach einer Android-Systemwiederherstellung werden die Sortiereinstellungen ohne 
 
 Der signierte Releasekandidat AppStow 3.0.2 (Versionscode 15) wurde auf einem physischen Smartphone **direkt über** die veröffentlichte, auf GitHub signierte Version 3.0.1 (Versionscode 14) installiert. Das Update gelang ohne Deinstallation. Kategorien, Favoriten, eigene Verknüpfungen, Reihenfolgen und Einstellungen wurden anschließend kontrolliert und blieben vollständig erhalten. Auch die Signatur- und Versionsprüfung in GitHub Actions war erfolgreich: [Upgrade-Test 3.0.2](https://github.com/1260er/AppStow/actions/runs/38472809157).
 
-Dies ist ein **Test des Releasekandidaten**, keine Ankündigung eines bereits veröffentlichten Stable-Releases 3.0.2. Die getestete APK verwendet das GitHub-Signaturzertifikat. Installationen aus F-Droid können anders signiert sein und dürfen nicht ohne Prüfung als mit der GitHub-APK updatekompatibel bezeichnet werden.
+Der Gerätetest verwendete den signierten 3.0.2-Upgrade-Kandidaten aus demselben App-Quellstand wie das Stable-Release. GitHub- und F-Droid-Installationen können unterschiedliche Signaturzertifikate besitzen; ein Update zwischen beiden Quellen darf nicht ohne Prüfung als kompatibel gelten.
 
 ## Update von 2.0.1 auf 3.0.0
 
@@ -188,7 +188,7 @@ Lizenz- und Urheberrechtshinweise:
 ## Releases und Änderungen
 
 - [Deutsches Changelog](CHANGELOG.de.md) | [English changelog](CHANGELOG.md)
-- [Release-Hinweise 3.0.2 (zweisprachig, nach Freigabe)](RELEASE_NOTES_3.0.2.md)
+- [AppStow 3.0.2 – Release-Hinweise (Deutsch und Englisch)](RELEASE_NOTES_3.0.2.md)
 - [Aktueller Projektstatus](PROJECT_STATUS.de.md)
 
 https://github.com/1260er/AppStow/releases

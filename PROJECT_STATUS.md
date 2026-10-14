@@ -2,14 +2,15 @@
 
 [Deutsch](PROJECT_STATUS.de.md) | **English**
 
-As of October 14, 2026 – 3.0.2 release candidate; signed in-place upgrade test passed.
+As of October 14, 2026 – AppStow 3.0.2 stable release (versionCode 15).
 
 ## Published stable version
 
-- **Stable 3.0.1**, versionCode **14**, tag `v3.0.1`.
-- GitHub `main` remains at `c8620dc5f454ecc494773d5d8f58f76a7dea1b43` until final approval.
-- The signed stable APK and SHA-256 file are available at https://github.com/1260er/AppStow/releases/tag/v3.0.1.
-- **3.0.2 is not a stable release yet**. VersionCode **15** is prepared for the candidate; do not create `v3.0.2` before approval.
+- **Stable 3.0.2**, versionCode **15**, tag `v3.0.2`.
+- The `main` branch contains the source for the tagged 3.0.2 stable release.
+- GitHub's signed stable APK and SHA-256 file: https://github.com/1260er/AppStow/releases/tag/v3.0.2.
+- Previous stable release: AppStow 3.0.1 (versionCode 14), tag `v3.0.1`.
+- F-Droid has a separate update/build schedule; do not infer F-Droid 3.0.2 availability from the GitHub release.
 
 ## Tested development baseline
 
@@ -22,7 +23,7 @@ As of October 14, 2026 – 3.0.2 release candidate; signed in-place upgrade test
 - The independent manual **backup v3** format is unchanged and intentionally incompatible with 2.x backups.
 - All four backup-UI tests passed on the device; unit tests, lint and builds passed, including new regression tests.
 
-## Release candidate: completed and outstanding checks
+## Stable 3.0.2 – verified release checks
 
 **Completed:**
 
@@ -32,15 +33,15 @@ As of October 14, 2026 – 3.0.2 release candidate; signed in-place upgrade test
 4. Install the signed 3.0.2 candidate **in place** over GitHub-stable 3.0.1 on a physical device, without uninstalling. Categories, favorites, custom shortcuts, ordering and settings remained intact.
 5. On-device startup-view, backup-UI, and Seedvault backup/restore tests passed with Dev-232.
 
-**Still outstanding:**
+**After-release F-Droid follow-up:**
 
-1. Confirm the live F-Droid recipe **through the GitLab web UI**: stable-tag restriction, update mode, dependencies, licenses and donation link; do not publish 3.0.2 prematurely.
-2. Complete the final repository/documentation review and release checks. Only after explicit approval merge to `main`, tag `v3.0.2`, publish signed APK/SHA-256 and monitor F-Droid.
-3. Google Backup restore has **not** been separately tested on a physical device; keep that limitation clear.
+- The GitLab fdroiddata recipe was checked against the stable-only tag filter, version extraction, signing-key allowlist, public source links, license and donation link before the GitHub release.
+- F-Droid must independently detect/build/publish version 3.0.2 (15). Its build status and APK signature must be checked after publishing; no immediate F-Droid availability is implied.
+- Google Backup restore has **not** been separately tested on a physical device.
 
 ## Security and compatibility
 
-- Do not change any published stable artifacts or create a premature release tag.
+- Treat published stable tags and signed release artifacts as immutable.
 - Manual backup v3 uses AES-256-GCM but a shared, non-secret derived key. This is not strong confidentiality against determined third parties.
 - Android system backup excludes local usage data, while the user's selected provider controls transfer and storage.
 - F-Droid builds its own APK from the tagged source; signing keys may differ from GitHub-signed APKs. Do not assume cross-source upgrade compatibility.

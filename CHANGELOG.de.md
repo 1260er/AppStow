@@ -2,7 +2,7 @@
 
 **Deutsch** | [English](CHANGELOG.md)
 
-## 3.0.2 – Releasekandidat (noch nicht veröffentlicht)
+## 3.0.2 – 14. Oktober 2026
 
 - Neue Einstellung **Startansicht** mit zwei horizontal und mittig angeordneten Auswahlreihen: **Aus / Bei Start / Immer** und **Letzte Kategorie / Favoriten / Startseite**.
 - **Aus** behält die bisherige Startlogik bei und deaktiviert die zweite Auswahlreihe. Bereits gespeicherte Startverhalten werden übernommen.
@@ -14,7 +14,7 @@
 - Backup-Dateidialoge lösen unter **Immer** keinen unerwünschten Wechsel zur Startansicht mehr aus; auch Abbruch und Activity-Neuerstellung wurden abgesichert.
 - Neue Regressionstests für Startansicht, Systembackup-Regeln und Backup-Dateidialog.
 - Seedvault: Sicherung und Wiederherstellung auf einem Gerät erfolgreich getestet. Google-Backup: vorbereitet, jedoch noch nicht separat auf einem Gerät getestet.
-- Versionscode 15; der signierte CI-Upgrade-Test 3.0.1 (14) → 3.0.2 (15) war erfolgreich. Auch das direkte Update auf einem Smartphone ohne Deinstallation wurde erfolgreich getestet: Kategorien, Favoriten, Verknüpfungen, Reihenfolgen und Einstellungen blieben erhalten. Die Stable-Freigabe steht noch aus.
+- Versionscode 15; der signierte CI-Upgrade-Test 3.0.1 (14) → 3.0.2 (15) war erfolgreich. Auch das direkte Update auf einem Smartphone ohne Deinstallation wurde erfolgreich getestet: Kategorien, Favoriten, Verknüpfungen, Reihenfolgen und Einstellungen blieben erhalten. Die stabile Veröffentlichung folgt nach bestandenen Upgrade- und Regressionstests.
 
 ## 3.0.1 – 12. Oktober 2026
 
