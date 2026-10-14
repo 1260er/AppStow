@@ -107,6 +107,11 @@ public class MainActivity extends Activity {
                     + ".action.RESTORE_FINISHED";
 
     private static final String STATE_PAGE = "main_page";
+    // Ephemeral navigation state, deliberately outside user/system backups.
+    private static final String NAVIGATION_RUNTIME_PREFS =
+            "navigation_runtime";
+    private static final String KEY_LAST_NAVIGATION_PAGE =
+            "last_page";
     private static final String STATE_BACKUP_PICKER_PENDING =
             "backup_picker_pending";
     private static final String STATE_APP_SEARCH = "app_search";
@@ -1136,7 +1141,18 @@ public class MainActivity extends Activity {
                     true;
 
             showOverview();
-            applyStartupFavorites();
+            if (uiSettingsStore.load().startBehavior
+                    == UiSettingsStore.StartBehavior.NEVER) {
+                // A new Activity can be created when the launcher icon is
+                // tapped. "Off" must not discard the previous internal page.
+                restorePage(getSharedPreferences(
+                        NAVIGATION_RUNTIME_PREFS,
+                        MODE_PRIVATE).getString(
+                        KEY_LAST_NAVIGATION_PAGE,
+                        PAGE_OVERVIEW));
+            } else {
+                applyStartupFavorites();
+            }
 
         } else {
             showOnlyUnassignedApps =
@@ -1553,6 +1569,16 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop() {
+
+        if (!restoreRecoveryBlocked && !isChangingConfigurations()) {
+            // Keep only the current top-level page. Dialog and editor state
+            // continues to use Android's savedInstanceState mechanism.
+            getSharedPreferences(
+                    NAVIGATION_RUNTIME_PREFS,
+                    MODE_PRIVATE).edit().putString(
+                    KEY_LAST_NAVIGATION_PAGE,
+                    currentPage).apply();
+        }
 
         stoppedForBackground =
                 !isChangingConfigurations()

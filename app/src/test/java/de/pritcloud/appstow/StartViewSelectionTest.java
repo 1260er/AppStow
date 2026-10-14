@@ -30,7 +30,7 @@ public class StartViewSelectionTest {
         for (String name : new String[]{
                 "ui_settings", "sorting_settings", "categories", "shortcuts",
                 "favorites", "overview_display", "usage_statistics",
-                "statistics_display"}) {
+                "statistics_display", "navigation_runtime"}) {
             context.deleteSharedPreferences(name);
         }
     }
@@ -179,6 +179,78 @@ public class StartViewSelectionTest {
             scenario.moveToState(Lifecycle.State.CREATED);
             scenario.moveToState(Lifecycle.State.RESUMED);
             scenario.onActivity(activity -> assertEquals("statistics", currentPage(activity)));
+        }
+    }
+
+    @Test
+    public void offRestoresSettingsAfterFreshLauncherActivity() {
+        new UiSettingsStore(context).save(new UiSettingsStore.Settings(
+                UiSettingsStore.StartBehavior.NEVER));
+
+        try (ActivityScenario<MainActivity> first =
+                ActivityScenario.launch(MainActivity.class)) {
+            first.onActivity(activity -> {
+                activity.findViewById(R.id.navUiSettings).performClick();
+                assertEquals("ui_settings", currentPage(activity));
+            });
+            // The user leaves AppStow for another app or the launcher.
+            first.moveToState(Lifecycle.State.CREATED);
+        }
+
+        assertEquals("ui_settings", context.getSharedPreferences(
+                "navigation_runtime", Context.MODE_PRIVATE)
+                .getString("last_page", null));
+
+        // Relaunch without an Android saved-instance-state Bundle.
+        try (ActivityScenario<MainActivity> second =
+                ActivityScenario.launch(MainActivity.class)) {
+            second.onActivity(activity -> {
+                assertEquals("ui_settings", currentPage(activity));
+                assertEquals(android.view.View.VISIBLE,
+                        activity.findViewById(R.id.uiSettingsManagement)
+                                .getVisibility());
+            });
+        }
+    }
+
+    @Test
+    public void startOnlyAndAlwaysIgnoreRememberedSettingsPage() {
+        assertTrue(context.getSharedPreferences(
+                "navigation_runtime", Context.MODE_PRIVATE)
+                .edit().putString("last_page", "ui_settings").commit());
+
+        for (UiSettingsStore.StartBehavior behavior : new UiSettingsStore.StartBehavior[]{
+                UiSettingsStore.StartBehavior.START_ONLY,
+                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND}) {
+            new UiSettingsStore(context).save(new UiSettingsStore.Settings(
+                    behavior,
+                    UiSettingsStore.ControlSide.RIGHT,
+                    UiSettingsStore.ThemeMode.SYSTEM,
+                    UiSettingsStore.StartView.HOME));
+            try (ActivityScenario<MainActivity> scenario =
+                    ActivityScenario.launch(MainActivity.class)) {
+                scenario.onActivity(activity ->
+                        assertEquals("overview", currentPage(activity)));
+            }
+            // Simulate a remembered page again for each mode.
+            assertTrue(context.getSharedPreferences(
+                    "navigation_runtime", Context.MODE_PRIVATE)
+                    .edit().putString("last_page", "ui_settings").commit());
+        }
+    }
+
+    @Test
+    public void offFallsBackSafelyForUnknownRememberedPage() {
+        assertTrue(context.getSharedPreferences(
+                "navigation_runtime", Context.MODE_PRIVATE)
+                .edit().putString("last_page", "unknown_page").commit());
+        new UiSettingsStore(context).save(new UiSettingsStore.Settings(
+                UiSettingsStore.StartBehavior.NEVER));
+
+        try (ActivityScenario<MainActivity> scenario =
+                ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity ->
+                    assertEquals("overview", currentPage(activity)));
         }
     }
 
