@@ -412,9 +412,8 @@ None found</string>
     <string name="ui_control_side_right">Right</string>
     <string name="ui_control_side_left">Left</string>
     <string name="ui_start_behavior_title">Start view</string>
-    <string name="ui_start_behavior_description">When AppStow opens or returns to the foreground.</string>
+    <string name="ui_start_behavior_description">Off: last open page. Always: selected start view.</string>
     <string name="ui_start_never">Off</string>
-    <string name="ui_start_once">On start</string>
     <string name="ui_start_always">Always</string>
     <string name="ui_start_view_last_category">Last category</string>
     <string name="ui_start_view_favorites">Favorites</string>

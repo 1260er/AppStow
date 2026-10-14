@@ -84,7 +84,7 @@ public class StartViewSelectionTest {
                 assertTrue((target.getGravity() & Gravity.HORIZONTAL_GRAVITY_MASK)
                         == Gravity.CENTER_HORIZONTAL);
                 assertFalse(target.getChildAt(0).isEnabled());
-                activity.findViewById(R.id.uiStartOnce).performClick();
+                activity.findViewById(R.id.uiStartAlways).performClick();
                 assertTrue(target.getChildAt(0).isEnabled());
                 activity.findViewById(R.id.uiStartViewHome).performClick();
                 assertEquals(UiSettingsStore.StartView.HOME,
@@ -114,6 +114,11 @@ public class StartViewSelectionTest {
         legacy.getJSONObject("settings").getJSONObject("ui").remove("startView");
         assertEquals(UiSettingsStore.StartView.FAVORITES,
                 BackupV3Configuration.parse(legacy).ui.startView);
+        JSONObject legacyMode = new JSONObject(settings.toString());
+        legacyMode.getJSONObject("settings").getJSONObject("ui")
+                .put("startBehavior", "START_ONLY");
+        assertEquals(UiSettingsStore.StartBehavior.NEVER,
+                BackupV3Configuration.parse(legacyMode).ui.startBehavior);
     }
 
     @Test
@@ -123,7 +128,7 @@ public class StartViewSelectionTest {
         String id = "category:" + categories.getCategories().get(0).id;
         UiSettingsStore store = new UiSettingsStore(context);
         store.save(new UiSettingsStore.Settings(
-                UiSettingsStore.StartBehavior.START_ONLY,
+                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND,
                 UiSettingsStore.ControlSide.RIGHT,
                 UiSettingsStore.ThemeMode.SYSTEM,
                 UiSettingsStore.StartView.LAST_CATEGORY));
@@ -214,28 +219,40 @@ public class StartViewSelectionTest {
     }
 
     @Test
-    public void startOnlyAndAlwaysIgnoreRememberedSettingsPage() {
+    public void legacyStartOnlyBehavesAsOffForRememberedPage() {
         assertTrue(context.getSharedPreferences(
                 "navigation_runtime", Context.MODE_PRIVATE)
                 .edit().putString("last_page", "ui_settings").commit());
+        assertTrue(context.getSharedPreferences(
+                "ui_settings", Context.MODE_PRIVATE)
+                .edit().putString("start_behavior", "START_ONLY").commit());
 
-        for (UiSettingsStore.StartBehavior behavior : new UiSettingsStore.StartBehavior[]{
-                UiSettingsStore.StartBehavior.START_ONLY,
-                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND}) {
-            new UiSettingsStore(context).save(new UiSettingsStore.Settings(
-                    behavior,
-                    UiSettingsStore.ControlSide.RIGHT,
-                    UiSettingsStore.ThemeMode.SYSTEM,
-                    UiSettingsStore.StartView.HOME));
-            try (ActivityScenario<MainActivity> scenario =
-                    ActivityScenario.launch(MainActivity.class)) {
-                scenario.onActivity(activity ->
-                        assertEquals("overview", currentPage(activity)));
-            }
-            // Simulate a remembered page again for each mode.
-            assertTrue(context.getSharedPreferences(
-                    "navigation_runtime", Context.MODE_PRIVATE)
-                    .edit().putString("last_page", "ui_settings").commit());
+        try (ActivityScenario<MainActivity> scenario =
+                ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity -> {
+                assertEquals("ui_settings", currentPage(activity));
+                RadioGroup modes = activity.findViewById(R.id.uiStartBehaviorGroup);
+                assertEquals(2, modes.getChildCount());
+                assertEquals(R.id.uiStartNever, modes.getCheckedRadioButtonId());
+            });
+        }
+    }
+
+    @Test
+    public void alwaysIgnoresRememberedSettingsPage() {
+        assertTrue(context.getSharedPreferences(
+                "navigation_runtime", Context.MODE_PRIVATE)
+                .edit().putString("last_page", "ui_settings").commit());
+        new UiSettingsStore(context).save(new UiSettingsStore.Settings(
+                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND,
+                UiSettingsStore.ControlSide.RIGHT,
+                UiSettingsStore.ThemeMode.SYSTEM,
+                UiSettingsStore.StartView.HOME));
+
+        try (ActivityScenario<MainActivity> scenario =
+                ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity ->
+                    assertEquals("overview", currentPage(activity)));
         }
     }
 

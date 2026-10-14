@@ -1256,6 +1256,14 @@ public class MainActivity extends Activity {
             return;
         }
 
+        // Refresh the task flag once more after Android resumes the task.
+        // The prior onStart update alone may precede OEM Recents refreshes.
+        getWindow().getDecorView().post(() -> {
+            if (!isFinishing() && !isDestroyed() && uiSettingsStore != null) {
+                RecentTasksVisibilityController.apply(
+                        this, uiSettingsStore.load().showInRecents);
+            }
+        });
         refreshAppsIfPackagesChanged();
         refreshOverviewForActiveTimeProfile();
         scheduleNextSortingProfileBoundary();
@@ -6328,12 +6336,6 @@ public class MainActivity extends Activity {
         }
 
         if (settings.startBehavior
-                == UiSettingsStore.StartBehavior.START_ONLY) {
-
-            uiStartBehaviorGroup.check(
-                    R.id.uiStartOnce);
-
-        } else if (settings.startBehavior
                 == UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND) {
 
             uiStartBehaviorGroup.check(
@@ -6479,12 +6481,7 @@ public class MainActivity extends Activity {
 
         UiSettingsStore.StartBehavior startBehavior;
 
-        if (checkedId == R.id.uiStartOnce) {
-
-            startBehavior =
-                    UiSettingsStore.StartBehavior.START_ONLY;
-
-        } else if (checkedId == R.id.uiStartAlways) {
+        if (checkedId == R.id.uiStartAlways) {
 
             startBehavior =
                     UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND;
@@ -6557,6 +6554,14 @@ public class MainActivity extends Activity {
 
         if (current.showInRecents != showInRecents) {
             RecentTasksVisibilityController.apply(this, showInRecents);
+            // A second pass after the control updates makes the task flag
+            // independent of the chosen Start view mode (Off or Always).
+            uiShowInRecents.post(() -> {
+                if (!isFinishing() && !isDestroyed()) {
+                    RecentTasksVisibilityController.apply(
+                            this, uiSettingsStore.load().showInRecents);
+                }
+            });
         }
 
         if ((controlSideChanged

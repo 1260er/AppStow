@@ -122,7 +122,7 @@ public class UiAppearancePageTest {
                                 themeGroup.getChildCount());
 
                         assertEquals(
-                                3,
+                                2,
                                 startBehaviorGroup.getChildCount());
 
                         assertEquals(

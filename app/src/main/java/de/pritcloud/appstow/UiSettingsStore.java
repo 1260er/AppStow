@@ -34,6 +34,7 @@ final class UiSettingsStore {
 
     enum StartBehavior {
         NEVER,
+        // Legacy 3.0.2 / backup-v3 value: read-only; normalize to NEVER.
         START_ONLY,
         ALWAYS_FOREGROUND
     }
@@ -115,8 +116,13 @@ final class UiSettingsStore {
                         "UI settings are incomplete.");
             }
 
+            // The removed "On start" mode retains the previous page when
+            // returning. Map it to Off instead of unexpectedly switching
+            // pages on each foreground return. Older v3 backups remain valid.
             this.startBehavior =
-                    startBehavior;
+                    startBehavior == StartBehavior.START_ONLY
+                            ? StartBehavior.NEVER
+                            : startBehavior;
 
             this.startView =
                     startView;

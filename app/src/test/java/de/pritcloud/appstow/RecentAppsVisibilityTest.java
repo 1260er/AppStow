@@ -87,6 +87,33 @@ public class RecentAppsVisibilityTest {
     }
 
     @Test
+    public void visibilitySettingIsIndependentFromOffStartMode() {
+        UiSettingsStore store = new UiSettingsStore(context);
+        store.save(new UiSettingsStore.Settings(
+                UiSettingsStore.StartBehavior.NEVER,
+                UiSettingsStore.ControlSide.RIGHT,
+                UiSettingsStore.ThemeMode.SYSTEM,
+                UiSettingsStore.StartView.FAVORITES,
+                true));
+        try (ActivityScenario<MainActivity> scenario =
+                ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity -> {
+                activity.findViewById(R.id.navUiSettings).performClick();
+                CheckBox visible = activity.findViewById(R.id.uiShowInRecents);
+                assertTrue(visible.isChecked());
+                visible.performClick();
+                assertFalse(store.load().showInRecents);
+                assertEquals(UiSettingsStore.StartBehavior.NEVER,
+                        store.load().startBehavior);
+                visible.performClick();
+                assertTrue(store.load().showInRecents);
+                assertEquals(UiSettingsStore.StartBehavior.NEVER,
+                        store.load().startBehavior);
+            });
+        }
+    }
+
+    @Test
     public void uiTogglePersistsWithoutChangingOtherSettings() {
         try (ActivityScenario<MainActivity> scenario =
                 ActivityScenario.launch(MainActivity.class)) {

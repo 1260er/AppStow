@@ -69,6 +69,12 @@ public class MainActivityRecreationTest {
 
         context.deleteSharedPreferences(
                 "sorting_settings");
+
+        context.deleteSharedPreferences(
+                "ui_settings");
+
+        context.deleteSharedPreferences(
+                "navigation_runtime");
     }
 
     private static void seedSufficientAutomaticHistory(
@@ -407,6 +413,13 @@ public class MainActivityRecreationTest {
                                 21,
                                 10,
                                 true));
+
+        // "On start" is intentionally migrated to Off. Verify that the
+        // remaining Always mode still records startup Favorites exactly once
+        // across Activity recreation, including in manual sorting mode.
+        new UiSettingsStore(context).save(
+                new UiSettingsStore.Settings(
+                        UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND));
 
         try (ActivityScenario<MainActivity> scenario =
                      ActivityScenario.launch(

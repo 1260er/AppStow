@@ -34,7 +34,8 @@ public class UiStartBehaviorTest {
                 "categories",
                 "shortcuts",
                 "overview_display",
-                "statistics_display"
+                "statistics_display",
+                "navigation_runtime"
         };
 
         for (String name :
@@ -63,26 +64,16 @@ public class UiStartBehaviorTest {
     }
 
     @Test
-    public void startOnlyCountsInitialStartButNotRecreation() {
-
-        save(
-                UiSettingsStore.StartBehavior.START_ONLY);
+    public void oldStartOnlyIsMigratedToOffWithoutAutoLaunchingFavorites() {
+        save(UiSettingsStore.StartBehavior.START_ONLY);
+        assertEquals(UiSettingsStore.StartBehavior.NEVER,
+                new UiSettingsStore(context).load().startBehavior);
 
         try (ActivityScenario<MainActivity> scenario =
-                     ActivityScenario.launch(
-                             MainActivity.class)) {
-
-            assertEquals(
-                    1,
-                    favoriteAccessCount(
-                            scenario));
-
+                     ActivityScenario.launch(MainActivity.class)) {
+            assertEquals(0, favoriteAccessCount(scenario));
             scenario.recreate();
-
-            assertEquals(
-                    1,
-                    favoriteAccessCount(
-                            scenario));
+            assertEquals(0, favoriteAccessCount(scenario));
         }
     }
 

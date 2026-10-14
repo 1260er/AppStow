@@ -412,9 +412,8 @@ Keines gefunden</string>
     <string name="ui_control_side_right">Rechts</string>
     <string name="ui_control_side_left">Links</string>
     <string name="ui_start_behavior_title">Startansicht</string>
-    <string name="ui_start_behavior_description">Beim Start oder Zurückkehren gewünschte Ansicht öffnen.</string>
+    <string name="ui_start_behavior_description">Aus: letzte Seite. Immer: gewählte Startansicht.</string>
     <string name="ui_start_never">Aus</string>
-    <string name="ui_start_once">Bei Start</string>
     <string name="ui_start_always">Immer</string>
     <string name="ui_start_view_last_category">Letzte Kategorie</string>
     <string name="ui_start_view_favorites">Favoriten</string>

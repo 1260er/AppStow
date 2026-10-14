@@ -53,7 +53,7 @@ public class UiSettingsStoreTest {
     }
 
     @Test
-    public void legacyEnabledValueMigratesToStartOnly() {
+    public void legacyEnabledValueMigratesToOff() {
 
         context.getSharedPreferences(
                         "sorting_settings",
@@ -65,7 +65,7 @@ public class UiSettingsStoreTest {
                 .commit();
 
         assertEquals(
-                UiSettingsStore.StartBehavior.START_ONLY,
+                UiSettingsStore.StartBehavior.NEVER,
                 new UiSettingsStore(
                         context)
                         .load()
@@ -118,7 +118,7 @@ public class UiSettingsStoreTest {
                         .load();
 
         assertEquals(
-                UiSettingsStore.StartBehavior.START_ONLY,
+                UiSettingsStore.StartBehavior.NEVER,
                 saved.startBehavior);
 
         assertEquals(
@@ -169,7 +169,7 @@ public class UiSettingsStoreTest {
                 saved.controlSide);
 
         assertEquals(
-                UiSettingsStore.StartBehavior.START_ONLY,
+                UiSettingsStore.StartBehavior.NEVER,
                 saved.startBehavior);
 
         context.getSharedPreferences(
@@ -187,6 +187,25 @@ public class UiSettingsStoreTest {
                         context)
                         .load()
                         .themeMode);
+    }
+
+    @Test
+    public void storedStartOnlyBecomesOffAndPreservesTarget() {
+        context.getSharedPreferences("ui_settings", Context.MODE_PRIVATE)
+                .edit()
+                .putString("start_behavior", "START_ONLY")
+                .putString("start_view", "HOME")
+                .commit();
+
+        UiSettingsStore store = new UiSettingsStore(context);
+        assertEquals(UiSettingsStore.StartBehavior.NEVER,
+                store.load().startBehavior);
+        assertEquals(UiSettingsStore.StartView.HOME,
+                store.load().startView);
+        store.save(store.load());
+        assertEquals("NEVER", context.getSharedPreferences(
+                "ui_settings", Context.MODE_PRIVATE)
+                .getString("start_behavior", null));
     }
 
     @Test
