@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.RadioGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.test.core.app.ActivityScenario;
@@ -66,6 +67,10 @@ public class UiAppearancePageTest {
                                 activity.findViewById(
                                         R.id.uiStartBehaviorGroup);
 
+                        RadioGroup visibilityGroup =
+                                activity.findViewById(
+                                        R.id.uiRecentsGroup);
+
                         RadioGroup controlSideGroup =
                                 activity.findViewById(
                                         R.id.uiControlSideGroup);
@@ -86,6 +91,25 @@ public class UiAppearancePageTest {
                                 View.VISIBLE,
                                 controlSideGroup.getVisibility());
 
+                        assertEquals(View.VISIBLE,
+                                visibilityGroup.getVisibility());
+                        assertEquals(2, visibilityGroup.getChildCount());
+                        assertEquals(R.id.uiRecentsOn,
+                                visibilityGroup.getChildAt(0).getId());
+                        assertEquals(R.id.uiRecentsOff,
+                                visibilityGroup.getChildAt(1).getId());
+
+                        LinearLayout content = (LinearLayout)
+                                startBehaviorGroup.getParent();
+                        assertTrue(content.indexOfChild(startBehaviorGroup)
+                                < content.indexOfChild(visibilityGroup));
+                        assertTrue(content.indexOfChild(visibilityGroup)
+                                < content.indexOfChild(themeGroup));
+                        assertTrue(content.indexOfChild(themeGroup)
+                                < content.indexOfChild(controlSideGroup));
+                        assertTrue(content.indexOfChild(controlSideGroup)
+                                < content.indexOfChild(languageSelection));
+
                         assertEquals(
                                 View.VISIBLE,
                                 languageSelection.getVisibility());
@@ -97,6 +121,8 @@ public class UiAppearancePageTest {
                         assertEquals(
                                 RadioGroup.HORIZONTAL,
                                 startBehaviorGroup.getOrientation());
+                        assertEquals(RadioGroup.HORIZONTAL,
+                                visibilityGroup.getOrientation());
 
                         assertEquals(
                                 RadioGroup.HORIZONTAL,
@@ -111,6 +137,9 @@ public class UiAppearancePageTest {
                                 Gravity.CENTER_HORIZONTAL,
                                 startBehaviorGroup.getGravity()
                                         & Gravity.HORIZONTAL_GRAVITY_MASK);
+                        assertEquals(Gravity.CENTER_HORIZONTAL,
+                                visibilityGroup.getGravity()
+                                        & Gravity.HORIZONTAL_GRAVITY_MASK);
 
                         assertEquals(
                                 Gravity.CENTER_HORIZONTAL,
@@ -124,6 +153,10 @@ public class UiAppearancePageTest {
                         assertEquals(
                                 2,
                                 startBehaviorGroup.getChildCount());
+                        assertEquals(R.id.uiStartAlways,
+                                startBehaviorGroup.getChildAt(0).getId());
+                        assertEquals(R.id.uiStartNever,
+                                startBehaviorGroup.getChildAt(1).getId());
 
                         assertEquals(
                                 2,

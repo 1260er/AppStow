@@ -1,7 +1,7 @@
 package de.pritcloud.appstow;
 
 import android.content.Context;
-import android.widget.CheckBox;
+import android.widget.RadioGroup;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
@@ -99,13 +99,13 @@ public class RecentAppsVisibilityTest {
                 ActivityScenario.launch(MainActivity.class)) {
             scenario.onActivity(activity -> {
                 activity.findViewById(R.id.navUiSettings).performClick();
-                CheckBox visible = activity.findViewById(R.id.uiShowInRecents);
-                assertTrue(visible.isChecked());
-                visible.performClick();
+                RadioGroup visible = activity.findViewById(R.id.uiRecentsGroup);
+                assertEquals(R.id.uiRecentsOn, visible.getCheckedRadioButtonId());
+                activity.findViewById(R.id.uiRecentsOff).performClick();
                 assertFalse(store.load().showInRecents);
                 assertEquals(UiSettingsStore.StartBehavior.NEVER,
                         store.load().startBehavior);
-                visible.performClick();
+                activity.findViewById(R.id.uiRecentsOn).performClick();
                 assertTrue(store.load().showInRecents);
                 assertEquals(UiSettingsStore.StartBehavior.NEVER,
                         store.load().startBehavior);
@@ -119,9 +119,9 @@ public class RecentAppsVisibilityTest {
                 ActivityScenario.launch(MainActivity.class)) {
             scenario.onActivity(activity -> {
                 activity.findViewById(R.id.navUiSettings).performClick();
-                CheckBox box = activity.findViewById(R.id.uiShowInRecents);
-                assertTrue(box.isChecked());
-                box.performClick();
+                RadioGroup group = activity.findViewById(R.id.uiRecentsGroup);
+                assertEquals(R.id.uiRecentsOn, group.getCheckedRadioButtonId());
+                activity.findViewById(R.id.uiRecentsOff).performClick();
                 UiSettingsStore.Settings settings =
                         new UiSettingsStore(activity).load();
                 assertFalse(settings.showInRecents);
@@ -129,7 +129,7 @@ public class RecentAppsVisibilityTest {
                         settings.startBehavior);
                 assertEquals(UiSettingsStore.ThemeMode.SYSTEM,
                         settings.themeMode);
-                box.performClick();
+                activity.findViewById(R.id.uiRecentsOn).performClick();
                 assertTrue(new UiSettingsStore(activity).load().showInRecents);
             });
         }

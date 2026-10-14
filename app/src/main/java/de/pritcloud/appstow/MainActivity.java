@@ -239,7 +239,7 @@ public class MainActivity extends Activity {
     private RadioGroup uiControlSideGroup;
     private RadioGroup uiStartBehaviorGroup;
     private RadioGroup uiStartViewGroup;
-    private CheckBox uiShowInRecents;
+    private RadioGroup uiRecentsGroup;
     private UiSettingsStore uiSettingsStore;
     private boolean updatingUiSettingsUi;
     private boolean stoppedForBackground;
@@ -6238,12 +6238,12 @@ public class MainActivity extends Activity {
                 uiSettingsManagement.findViewById(
                         R.id.uiStartViewGroup);
 
-        uiShowInRecents =
+        uiRecentsGroup =
                 uiSettingsManagement.findViewById(
-                        R.id.uiShowInRecents);
+                        R.id.uiRecentsGroup);
 
-        uiShowInRecents.setOnCheckedChangeListener(
-                (buttonView, isChecked) -> {
+        uiRecentsGroup.setOnCheckedChangeListener(
+                (group, checkedId) -> {
                     if (!updatingUiSettingsUi) {
                         saveUiSettingsFromControls();
                     }
@@ -6355,7 +6355,9 @@ public class MainActivity extends Activity {
             uiStartViewGroup.check(R.id.uiStartViewFavorites);
         }
 
-        uiShowInRecents.setChecked(settings.showInRecents);
+        uiRecentsGroup.check(settings.showInRecents
+                ? R.id.uiRecentsOn
+                : R.id.uiRecentsOff);
 
         updatingUiSettingsUi = false;
         updateStartViewEnabled();
@@ -6542,7 +6544,8 @@ public class MainActivity extends Activity {
                 current.themeMode
                         != themeMode;
 
-        boolean showInRecents = uiShowInRecents.isChecked();
+        boolean showInRecents = uiRecentsGroup.getCheckedRadioButtonId()
+                == R.id.uiRecentsOn;
 
         uiSettingsStore.save(
                 new UiSettingsStore.Settings(
@@ -6556,7 +6559,7 @@ public class MainActivity extends Activity {
             RecentTasksVisibilityController.apply(this, showInRecents);
             // A second pass after the control updates makes the task flag
             // independent of the chosen Start view mode (Off or Always).
-            uiShowInRecents.post(() -> {
+            uiRecentsGroup.post(() -> {
                 if (!isFinishing() && !isDestroyed()) {
                     RecentTasksVisibilityController.apply(
                             this, uiSettingsStore.load().showInRecents);

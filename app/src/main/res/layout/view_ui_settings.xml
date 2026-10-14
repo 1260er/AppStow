@@ -1,236 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/uiSettingsManagement"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/uiSettingsManagement" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
 
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:text="@string/ui_theme_title"
-            android:textStyle="bold" />
+        <TextView style="@style/UiBodyText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_md" android:text="@string/ui_start_behavior_title" android:textStyle="bold" />
 
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:text="@string/ui_theme_description"
-            android:textColor="@color/ui_text_secondary" />
+<TextView style="@style/UiBodyText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_sm" android:text="@string/ui_start_behavior_description" android:textColor="@color/ui_text_secondary" />
 
-        <RadioGroup
-            android:id="@+id/uiThemeGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+<RadioGroup android:id="@+id/uiStartBehaviorGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_sm" android:gravity="center_horizontal" android:orientation="horizontal">
 
-            <RadioButton
-                android:id="@+id/uiThemeSystem"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_sm"
-                android:minHeight="48dp"
-                android:text="@string/ui_theme_system" />
+            <RadioButton android:id="@+id/uiStartAlways" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_sm" android:minHeight="48dp" android:text="@string/ui_start_always" />
 
-            <RadioButton
-                android:id="@+id/uiThemeLight"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_sm"
-                android:minHeight="48dp"
-                android:text="@string/ui_theme_light" />
+        <RadioButton android:id="@+id/uiStartNever" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_sm" android:minHeight="48dp" android:text="@string/ui_start_never" />
 
-            <RadioButton
-                android:id="@+id/uiThemeDark"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_sm"
-                android:minHeight="48dp"
-                android:text="@string/ui_theme_dark" />
+            </RadioGroup>
+
+<RadioGroup android:id="@+id/uiStartViewGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_sm" android:gravity="center_horizontal" android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/uiStartViewLastCategory" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="2dp" android:minHeight="48dp" android:textSize="14sp" android:text="@string/ui_start_view_last_category" />
+
+            <RadioButton android:id="@+id/uiStartViewFavorites" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="2dp" android:minHeight="48dp" android:textSize="14sp" android:text="@string/ui_start_view_favorites" />
+
+            <RadioButton android:id="@+id/uiStartViewHome" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="2dp" android:minHeight="48dp" android:textSize="14sp" android:text="@string/ui_start_view_home" />
 
         </RadioGroup>
 
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:text="@string/ui_start_behavior_title"
-            android:textStyle="bold" />
+<TextView style="@style/UiBodyText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_md" android:text="@string/ui_visibility_title" android:textStyle="bold" />
 
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:text="@string/ui_start_behavior_description"
-            android:textColor="@color/ui_text_secondary" />
+<TextView style="@style/UiBodyText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_sm" android:text="@string/ui_visibility_description" android:textColor="@color/ui_text_secondary" />
 
-        <RadioGroup
-            android:id="@+id/uiStartBehaviorGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+<RadioGroup android:id="@+id/uiRecentsGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_sm" android:gravity="center_horizontal" android:orientation="horizontal">
 
-            <RadioButton
-                android:id="@+id/uiStartNever"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_sm"
-                android:minHeight="48dp"
-                android:text="@string/ui_start_never" />
+            <RadioButton android:id="@+id/uiRecentsOn" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_sm" android:minHeight="48dp" android:text="@string/ui_start_always" />
 
-            <RadioButton
-                android:id="@+id/uiStartAlways"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_sm"
-                android:minHeight="48dp"
-                android:text="@string/ui_start_always" />
+        <RadioButton android:id="@+id/uiRecentsOff" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_sm" android:minHeight="48dp" android:text="@string/ui_start_never" />
+
+            </RadioGroup>
+
+<TextView style="@style/UiBodyText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_md" android:text="@string/ui_theme_title" android:textStyle="bold" />
+
+<RadioGroup android:id="@+id/uiThemeGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_sm" android:gravity="center_horizontal" android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/uiThemeSystem" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_sm" android:minHeight="48dp" android:text="@string/ui_theme_system" />
+
+            <RadioButton android:id="@+id/uiThemeLight" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_sm" android:minHeight="48dp" android:text="@string/ui_theme_light" />
+
+            <RadioButton android:id="@+id/uiThemeDark" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_sm" android:minHeight="48dp" android:text="@string/ui_theme_dark" />
 
         </RadioGroup>
 
-        <RadioGroup
-            android:id="@+id/uiStartViewGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+<TextView style="@style/UiBodyText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_md" android:text="@string/ui_control_side_title" android:textStyle="bold" />
 
-            <RadioButton
-                android:id="@+id/uiStartViewLastCategory"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="2dp"
-                android:minHeight="48dp"
-                android:textSize="14sp"
-                android:text="@string/ui_start_view_last_category" />
+<RadioGroup android:id="@+id/uiControlSideGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_sm" android:gravity="center_horizontal" android:orientation="horizontal">
 
-            <RadioButton
-                android:id="@+id/uiStartViewFavorites"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="2dp"
-                android:minHeight="48dp"
-                android:textSize="14sp"
-                android:text="@string/ui_start_view_favorites" />
+            <RadioButton android:id="@+id/uiControlSideLeft" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_lg" android:minHeight="48dp" android:text="@string/ui_control_side_left" />
 
-            <RadioButton
-                android:id="@+id/uiStartViewHome"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="2dp"
-                android:minHeight="48dp"
-                android:textSize="14sp"
-                android:text="@string/ui_start_view_home" />
+            <RadioButton android:id="@+id/uiControlSideRight" style="@style/UiBodyText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginHorizontal="@dimen/spacing_lg" android:minHeight="48dp" android:text="@string/ui_control_side_right" />
 
         </RadioGroup>
 
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:text="@string/ui_control_side_title"
-            android:textStyle="bold" />
+<TextView style="@style/UiBodyText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_md" android:text="@string/ui_language_title" android:textStyle="bold" />
 
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:text="@string/ui_control_side_description"
-            android:textColor="@color/ui_text_secondary" />
-
-        <RadioGroup
-            android:id="@+id/uiControlSideGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/uiControlSideLeft"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_lg"
-                android:minHeight="48dp"
-                android:text="@string/ui_control_side_left" />
-
-            <RadioButton
-                android:id="@+id/uiControlSideRight"
-                style="@style/UiBodyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_lg"
-                android:minHeight="48dp"
-                android:text="@string/ui_control_side_right" />
-
-        </RadioGroup>
-
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:text="@string/ui_language_title"
-            android:textStyle="bold" />
-
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:text="@string/ui_language_description"
-            android:textColor="@color/ui_text_secondary" />
-
-        <TextView
-            android:id="@+id/uiLanguageSelection"
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:background="@drawable/overview_section_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:minHeight="56dp"
-            android:paddingHorizontal="@dimen/spacing_md"
-            android:text="@string/ui_language_title"
-            android:textStyle="bold" />
-
-        <CheckBox
-            android:id="@+id/uiShowInRecents"
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:minHeight="48dp"
-            android:text="@string/ui_show_in_recents" />
+<TextView android:id="@+id/uiLanguageSelection" style="@style/UiBodyText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_sm" android:background="@drawable/overview_section_background" android:clickable="true" android:focusable="true" android:foreground="?android:attr/selectableItemBackground" android:gravity="center_vertical" android:minHeight="56dp" android:paddingHorizontal="@dimen/spacing_md" android:text="@string/ui_language_title" android:textStyle="bold" />
 
     </LinearLayout>
 

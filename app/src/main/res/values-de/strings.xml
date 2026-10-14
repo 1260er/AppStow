@@ -412,12 +412,13 @@ Keines gefunden</string>
     <string name="ui_control_side_right">Rechts</string>
     <string name="ui_control_side_left">Links</string>
     <string name="ui_start_behavior_title">Startansicht</string>
-    <string name="ui_start_behavior_description">Aus: letzte Seite. Immer: gewählte Startansicht.</string>
+    <string name="ui_start_behavior_description">An: gewählte Startansicht. Aus: letzte Seite.</string>
     <string name="ui_start_never">Aus</string>
-    <string name="ui_start_always">Immer</string>
+    <string name="ui_start_always">An</string>
     <string name="ui_start_view_last_category">Letzte Kategorie</string>
     <string name="ui_start_view_favorites">Favoriten</string>
     <string name="ui_start_view_home">Startseite</string>
-    <string name="ui_show_in_recents">In „Zuletzt verwendet“ anzeigen</string>
+    <string name="ui_visibility_title">Sichtbarkeit</string>
+    <string name="ui_visibility_description">Hier legst du fest, ob AppStow in „Zuletzt verwendet“ erscheint.</string>
 
 </resources>
