@@ -13,6 +13,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 35)
@@ -222,6 +224,31 @@ public class UiStartBehaviorTest {
 
             assertEquals(2, favoriteAccessCount(scenario));
         }
+    }
+
+    @Test
+    public void recentsPreviewFollowsAutomaticStartBehavior() {
+        assertTrue(MainActivity.shouldEnableRecentsScreenshot(
+                new UiSettingsStore.Settings(
+                        UiSettingsStore.StartBehavior.NEVER)));
+
+        assertFalse(MainActivity.shouldEnableRecentsScreenshot(
+                new UiSettingsStore.Settings(
+                        UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND)));
+
+        // Legacy mode is normalized to Off.
+        assertTrue(MainActivity.shouldEnableRecentsScreenshot(
+                new UiSettingsStore.Settings(
+                        UiSettingsStore.StartBehavior.START_ONLY)));
+
+        // Recents visibility is separate from screenshot policy.
+        assertFalse(MainActivity.shouldEnableRecentsScreenshot(
+                new UiSettingsStore.Settings(
+                        UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND,
+                        UiSettingsStore.ControlSide.RIGHT,
+                        UiSettingsStore.ThemeMode.SYSTEM,
+                        UiSettingsStore.StartView.HOME,
+                        false)));
     }
 
     private void save(
