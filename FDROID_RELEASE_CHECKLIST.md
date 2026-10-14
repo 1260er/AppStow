@@ -4,6 +4,8 @@
 
 ## Deutsch
 
+- [x] Sprachdateien vereinheitlicht: `CHANGELOG.md` ist Englisch (weiterhin das Ziel des F-Droid-Changelog-Links), `CHANGELOG.de.md` ist Deutsch; F-Droid-Metadaten bleiben unverändert.
+
 **Quelle:** https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/de.pritcloud.appstow.yml
 
 - [ ] GitLab-Rezept **über die Weboberfläche** prüfen. Bisheriger Plan: `AutoUpdateMode: Version`, `UpdateCheckMode: Tags` mit Filter auf `vX.Y.Z`-Stable-Tags. Tatsächliche Werte vor dem Release ablesen und bei Bedarf über GitLab bearbeiten.
@@ -18,6 +20,8 @@
 - [ ] `CurrentVersion`/`CurrentVersionCode` auf F-Droid erst als aktualisiert markieren, wenn der Upstream-Check/Build sie tatsächlich auf 3.0.2/15 gesetzt hat.
 
 ## English
+
+- [x] Documentation filenames normalized: `CHANGELOG.md` is English (the existing F-Droid changelog target), `CHANGELOG.de.md` is German; F-Droid metadata is unchanged.
 
 **Metadata:** https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/de.pritcloud.appstow.yml
 

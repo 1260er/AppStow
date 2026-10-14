@@ -24,4 +24,4 @@
 
 **Upgrade:** The in-place update from GitHub-signed AppStow 3.0.1 (versionCode 14) to 3.0.2 (versionCode 15), with the same package ID, passed on a physical device. Categories, favorites, shortcuts, ordering and settings were preserved. The signed CI upgrade check also passed. F-Droid installations may use different signing credentials.
 
-**Sources and changelogs:** [Deutsch](CHANGELOG.md) | [English](CHANGELOG.en.md)
+**Sources and changelogs:** [Deutsch](https://github.com/1260er/AppStow/blob/v3.0.2/CHANGELOG.de.md) | [English](https://github.com/1260er/AppStow/blob/v3.0.2/CHANGELOG.md)

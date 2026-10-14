@@ -237,9 +237,9 @@ License and attribution files:
 
 ## Releases and changes
 
-- [English changelog](CHANGELOG.en.md) | [Deutsches Changelog](CHANGELOG.md)
+- [English changelog](CHANGELOG.md) | [Deutsches Changelog](CHANGELOG.de.md)
 - [Release notes 3.0.2 (bilingual, once approved)](RELEASE_NOTES_3.0.2.md)
-- [Current project status](PROJECT_STATUS.en.md)
+- [Current project status](PROJECT_STATUS.md)
 
 https://github.com/1260er/AppStow/releases
 

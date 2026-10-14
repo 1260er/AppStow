@@ -187,9 +187,9 @@ Lizenz- und Urheberrechtshinweise:
 
 ## Releases und Änderungen
 
-- [Deutsches Changelog](CHANGELOG.md) | [English changelog](CHANGELOG.en.md)
+- [Deutsches Changelog](CHANGELOG.de.md) | [English changelog](CHANGELOG.md)
 - [Release-Hinweise 3.0.2 (zweisprachig, nach Freigabe)](RELEASE_NOTES_3.0.2.md)
-- [Aktueller Projektstatus](PROJECT_STATUS.md)
+- [Aktueller Projektstatus](PROJECT_STATUS.de.md)
 
 https://github.com/1260er/AppStow/releases
 

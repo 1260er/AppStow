@@ -1,86 +1,57 @@
 # Changelog
 
-**Deutsch** | [English](CHANGELOG.en.md)
+[Deutsch](CHANGELOG.de.md) | **English**
 
-## 3.0.2 – Releasekandidat (noch nicht veröffentlicht)
+## 3.0.2 – Release candidate (not yet published)
 
-- Neue Einstellung **Startansicht** mit zwei horizontal und mittig angeordneten Auswahlreihen: **Aus / Bei Start / Immer** und **Letzte Kategorie / Favoriten / Startseite**.
-- **Aus** behält die bisherige Startlogik bei und deaktiviert die zweite Auswahlreihe. Bereits gespeicherte Startverhalten werden übernommen.
-- Zuletzt besuchte Kategorien können beim Start geöffnet werden; die Listen- und Kachelansicht und gelöschte Kategorien werden berücksichtigt.
-- Android-Systembackup für Seedvault, Google-Backup und kompatible Backup-Dienste vorbereitet, mit strikter Positivliste der Konfigurationsdateien.
-- Nutzungsstatistiken, automatische Sortier-Snapshots, WebView-Sitzungen und das interne Wiederherstellungsjournal sind aus dem Systembackup ausgeschlossen; für Cloud-Backups werden Android-Verschlüsselungsfähigkeiten verlangt.
-- Systembackup stellt die gespeicherte Sortierkonfiguration ohne Nutzungshistorie wieder her und wählt, falls erforderlich, einen sicheren manuellen Sortiermodus.
-- Der eigene manuelle Sicherungs- und Wiederherstellungsweg bleibt beim kompatiblen AppStow-Backupformat **v3**.
-- Backup-Dateidialoge lösen unter **Immer** keinen unerwünschten Wechsel zur Startansicht mehr aus; auch Abbruch und Activity-Neuerstellung wurden abgesichert.
-- Neue Regressionstests für Startansicht, Systembackup-Regeln und Backup-Dateidialog.
-- Seedvault: Sicherung und Wiederherstellung auf einem Gerät erfolgreich getestet. Google-Backup: vorbereitet, jedoch noch nicht separat auf einem Gerät getestet.
-- Versionscode 15; der signierte CI-Upgrade-Test 3.0.1 (14) → 3.0.2 (15) war erfolgreich. Auch das direkte Update auf einem Smartphone ohne Deinstallation wurde erfolgreich getestet: Kategorien, Favoriten, Verknüpfungen, Reihenfolgen und Einstellungen blieben erhalten. Die Stable-Freigabe steht noch aus.
+- New **Start view** setting with two centered horizontal radio rows: **Off / On start / Always** and **Last category / Favorites / Home**.
+- **Off** preserves the previous startup behavior and disables the second row. Existing startup settings migrate without changing user preferences.
+- Reopen the last visited category on launch, supporting list/grid layouts and safe fallback for deleted categories.
+- Android system backup prepared for Seedvault, Google Backup, and compatible providers, using a strict allowlist of user-configuration files.
+- Exclude usage statistics, automatic sorting snapshots, WebView sessions and the internal recovery journal; require Android encryption capabilities for cloud backup.
+- Restore sorting configuration without usage history, with a safe fallback to manual sorting when needed.
+- Keep AppStow's separate manual backup and restore format **v3** compatible.
+- Returning from Android's backup file picker no longer triggers unwanted **Always** startup navigation; cancellation and activity recreation are also handled.
+- Add regression tests for start-view selection, system-backup policy, and file-picker navigation.
+- Seedvault backup and restore succeeded on a device. Google Backup is prepared, but has not yet been tested separately on a device.
+- Stable versionCode 15; the signed CI upgrade check from 3.0.1 (14) to 3.0.2 (15) passed. A direct in-place upgrade on a physical device was also successful without uninstalling; categories, favorites, shortcuts, ordering and settings were preserved. Stable release approval remains pending.
 
-## 3.0.1 – 12. Oktober 2026
+## 3.0.1 – October 12, 2026
 
-- Neue Intervall-Snapshots für halb- und vollautomatische Sortierung und optionale nutzungsbasierte Vorschläge.
-- Verbesserte Sortier- und Favoritenlogik sowie weitere Tests der manuellen Reihenfolgen.
-- Verbesserungen beim Schreiben und Verifizieren von Sicherungen über Android-Dokumentanbieter.
-- Zusätzliche UI-Anpassungen und Regressionstests; Versionscode auf 14 erhöht.
+- Introduce interval-based sorting snapshots for semi-/fully automatic sorting and optional usage-based suggestions.
+- Improve sorting and favorite behavior, with additional tests for manual ordering.
+- Improve backup writing and verification through Android document providers.
+- Additional UI refinements and regression tests; increase versionCode to 14.
 
-## 3.0.0
+## 3.0.0 – October 9, 2026
 
-- Neue lokale Nutzungsstatistik für über AppStow gestartete Apps und Shortcuts.
-- Auswertungen nach Zeitraum, meistgenutzten und nicht gestarteten Apps sowie Nutzung von Kategorien.
-- Statistikdaten bleiben lokal, werden höchstens ein Jahr gespeichert und können separat zurückgesetzt werden.
-- Neue manuelle, halbautomatische und vollautomatische Sortierung.
-- Halbautomatik steuert Favoriten, Kategorien, Kategorieinhalte und eigene Shortcuts unabhängig; Apps und Shortcuts werden innerhalb eines Bereichs gemeinsam behandelt.
-- Sortiervorschläge lassen sich bereichsweise übernehmen.
-- Optionale nutzungsbasierte Sortiervorschläge und Tag-/Abendprofile.
-- Neue Einstellungen für Darstellung, Bedienseite, Startverhalten und Design.
-- Der direkte APK-Upgrade-Test von Stable 2.0.1 auf 3.0.0 wurde auf einem physischen Smartphone erfolgreich durchgeführt; die bestehende Konfiguration blieb erhalten.
-- Baseline Profiles für den aktuellen Entwicklungsstand neu generiert.
-- Neues verschlüsseltes Backupformat v3 für die AppStow-Konfiguration.
-- Sicherungen aus der Vollautomatik bewahren die zuletzt angezeigten Favoriten einschließlich App-/Shortcut-Reihenfolge; Rückfall nach Restore ohne Nutzungsstatistik abgesichert.
-- Wiederherstellung gegen Prozessabbrüche durch privates, atomar geschriebenes Recovery-Journal gehärtet; Start-Rücksicherung und laufender Restore sind synchronisiert.
-- Blob-Downloads aus integrierten Web-Apps gegen übergroße Datenblöcke und unbegrenzte Nachrichtenwarteschlangen abgesichert.
-- Hinweis zum begrenzten Schutz der Backup-Verschlüsselung in Deutsch und Englisch ergänzt.
-- Sortier-, Anzeige-, Bedienungs-, Sprach- und Statistik-Anzeigeeinstellungen werden mitgesichert.
-- Nutzungsstatistiken selbst werden nicht gesichert und nach erfolgreicher Wiederherstellung zurückgesetzt.
-- Nicht mehr installierte Apps werden bei der Wiederherstellung aus Favoriten, Kategoriezuweisungen und App-Reihenfolgen entfernt.
-- Kategorien und eigene Shortcuts bleiben bei der Wiederherstellung erhalten.
-- Das Backupformat von AppStow 3.0 ist absichtlich nicht mit AppStow 2.x kompatibel.
-- Vollständiger Deep-Review einschließlich Smartphone-Nachtests, paralleler Restore-Sperre und signiertem Upgrade-Test erfolgreich abgeschlossen.
+- New local usage statistics for apps and shortcuts launched from AppStow, including periods, most-used and unused apps, and category usage.
+- Manual, semi-automatic, and fully automatic sorting, optional suggestions and day/evening profiles.
+- Appearance, handedness, startup behavior, and theme settings.
+- New encrypted v3 configuration backup, including visible automatic favorites and their app/shortcut order.
+- Restores reset usage statistics and use an atomic private journal for interrupted restore recovery.
+- Remove references to missing apps on manual restore while retaining categories and user-created shortcuts.
+- Backup format v3 is intentionally incompatible with AppStow 2.x backups.
+- Add regression tests, Android baseline profiles and a successful on-device upgrade test from 2.0.1.
+- Improve WebView blob download limits and message-queue handling.
 
-## 2.0.1 – 4. Oktober 2026
+## 2.0.1 – October 4, 2026
 
-- Android-App-Sprachauswahl für Deutsch und Englisch ergänzt.
-- Vorbereitungen für die Veröffentlichung auf F-Droid.
-- Versionscode für zukünftige Updates erhöht.
+- Add German/English in-app language selection and F-Droid publishing preparations.
+- Increase the version code to support future updates.
 
-## 2.0.0 – 2. Oktober 2026
+## 2.0.0 – October 2, 2026
 
-- Neue Listen- und Kachelansicht für App starten.
-- Globale Kachelansicht mit 3, 4 oder 5 Spalten.
-- Individuelle Spaltenzahl für geöffnete Bereiche.
-- Apps zuweisen übernimmt die globale Listen- oder Kachelansicht.
-- Kategoriezuweisung durch kurzes Antippen einer App.
-- Einheitliche Favoritensterne in den Kachelansichten.
-- Kompakte 32-dp-Tippfläche bei unveränderter Sternposition.
-- Verschiebegriff ersetzt beim Sortieren den Favoritenstern.
-- Suche, Filter und Sortierung der Inhalte.
-- Anzeigeeinstellungen werden im Backup berücksichtigt.
-- Verbesserte Validierung und Absicherung der Wiederherstellung.
-- Überarbeitete Hilfe auf Deutsch und Englisch.
-- Erweiterte App-Informationen mit Erklärung des Namens.
-- Ko-fi-Link zur Unterstützung der Projekte insgesamt.
+- List/grid views for launch overview, configurable grid columns, and matching assignment views.
+- App-category assignment by tap, drag handles when sorting, and unified favorite controls.
+- Search, filtering and sorting within sections; additional backup validation and bilingual help.
+- Expanded app information and a Ko-fi link supporting the projects.
 
-## 0.1.3 – 1. Oktober 2026
+## 0.1.3 – October 1, 2026
 
-- Erweiterte HTTPS-Web-App-Unterstützung.
-- Verbesserte Datei-, Foto- und Kamera-Uploads.
-- Zoom, Vollbild und Webberechtigungen.
-- HTTPS- und Blob-Downloads einschließlich Papra-PDFs.
-- Geschützte Sitzungscookies bei HTTPS-Weiterleitungen.
-- Korrekte Dateinamen bei wiederholten Blob-Downloads.
-- Verbesserte WebView-Bereinigung und Regressionstests.
+- Extended HTTPS web apps, file/photo/camera upload, zoom, fullscreen, web permissions and downloads.
+- Improved handling of Blob/Papra PDFs, cookies on redirects, filename collisions and cleanup.
 
-## 0.1.2 – Stabiler Release
+## 0.1.2 – Stable release
 
-- Verbesserungen bei Backup und Wiederherstellung.
-- Weitere Stabilitätskorrekturen.
+- Improvements to backup and restore, with further stability fixes.
