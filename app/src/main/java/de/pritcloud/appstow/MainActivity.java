@@ -234,6 +234,7 @@ public class MainActivity extends Activity {
     private RadioGroup uiControlSideGroup;
     private RadioGroup uiStartBehaviorGroup;
     private RadioGroup uiStartViewGroup;
+    private CheckBox uiShowInRecents;
     private UiSettingsStore uiSettingsStore;
     private boolean updatingUiSettingsUi;
     private boolean stoppedForBackground;
@@ -1507,6 +1508,9 @@ public class MainActivity extends Activity {
         if (restoreRecoveryBlocked) {
             return;
         }
+
+        RecentTasksVisibilityController.apply(
+                this, uiSettingsStore.load().showInRecents);
 
         boolean returningFromBackground =
                 stoppedForBackground;
@@ -6200,6 +6204,17 @@ public class MainActivity extends Activity {
                 uiSettingsManagement.findViewById(
                         R.id.uiStartViewGroup);
 
+        uiShowInRecents =
+                uiSettingsManagement.findViewById(
+                        R.id.uiShowInRecents);
+
+        uiShowInRecents.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> {
+                    if (!updatingUiSettingsUi) {
+                        saveUiSettingsFromControls();
+                    }
+                });
+
         uiThemeGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {
 
@@ -6311,6 +6326,8 @@ public class MainActivity extends Activity {
         } else {
             uiStartViewGroup.check(R.id.uiStartViewFavorites);
         }
+
+        uiShowInRecents.setChecked(settings.showInRecents);
 
         updatingUiSettingsUi = false;
         updateStartViewEnabled();
@@ -6502,12 +6519,19 @@ public class MainActivity extends Activity {
                 current.themeMode
                         != themeMode;
 
+        boolean showInRecents = uiShowInRecents.isChecked();
+
         uiSettingsStore.save(
                 new UiSettingsStore.Settings(
                         startBehavior,
                         controlSide,
                         themeMode,
-                        startView));
+                        startView,
+                        showInRecents));
+
+        if (current.showInRecents != showInRecents) {
+            RecentTasksVisibilityController.apply(this, showInRecents);
+        }
 
         if ((controlSideChanged
                 || themeChanged)

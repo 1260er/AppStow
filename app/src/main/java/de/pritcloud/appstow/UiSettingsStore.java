@@ -23,6 +23,9 @@ final class UiSettingsStore {
     private static final String KEY_THEME_MODE =
             "theme_mode";
 
+    private static final String KEY_SHOW_IN_RECENTS =
+            "show_in_recents";
+
     private static final String LEGACY_SORTING_PREFS =
             "sorting_settings";
 
@@ -58,6 +61,7 @@ final class UiSettingsStore {
         final StartView startView;
         final ControlSide controlSide;
         final ThemeMode themeMode;
+        final boolean showInRecents;
 
         Settings(
                 StartBehavior startBehavior) {
@@ -92,6 +96,15 @@ final class UiSettingsStore {
                 ControlSide controlSide,
                 ThemeMode themeMode,
                 StartView startView) {
+            this(startBehavior, controlSide, themeMode, startView, true);
+        }
+
+        Settings(
+                StartBehavior startBehavior,
+                ControlSide controlSide,
+                ThemeMode themeMode,
+                StartView startView,
+                boolean showInRecents) {
 
             if (startBehavior == null
                     || controlSide == null
@@ -113,6 +126,9 @@ final class UiSettingsStore {
 
             this.themeMode =
                     themeMode;
+
+            this.showInRecents =
+                    showInRecents;
         }
     }
 
@@ -171,7 +187,10 @@ final class UiSettingsStore {
                 parseThemeMode(
                         storedThemeMode),
                 parseStartView(
-                        storedStartView));
+                        storedStartView),
+                preferences.getBoolean(
+                        KEY_SHOW_IN_RECENTS,
+                        true));
     }
 
     void save(
@@ -200,6 +219,9 @@ final class UiSettingsStore {
                 .putString(
                         KEY_THEME_MODE,
                         settings.themeMode.name())
+                .putBoolean(
+                        KEY_SHOW_IN_RECENTS,
+                        settings.showInRecents)
                 .apply();
     }
 

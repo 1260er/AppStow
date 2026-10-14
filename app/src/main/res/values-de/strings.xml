@@ -395,29 +395,30 @@ Keines gefunden</string>
 
 
     <string name="ui_theme_title">Design</string>
-    <string name="ui_theme_description">Lege fest, ob AppStow dem Systemdesign folgt oder immer ein helles bzw. dunkles Design verwendet.</string>
+    <string name="ui_theme_description">Systemdesign, hell oder dunkel wählen.</string>
     <string name="ui_theme_system">System</string>
     <string name="ui_theme_light">Hell</string>
     <string name="ui_theme_dark">Dunkel</string>
 
     <string name="ui_language_title">Sprache</string>
-    <string name="ui_language_description">Verwende die Android-Systemsprache oder wähle eine Sprache für AppStow.</string>
+    <string name="ui_language_description">AppStow-Sprache auswählen.</string>
     <string name="ui_language_system">System</string>
     <string name="ui_language_german">Deutsch</string>
     <string name="ui_language_english">English</string>
     <string name="ui_language_value">Sprache: %1$s</string>
 
     <string name="ui_control_side_title">Bedienseite</string>
-    <string name="ui_control_side_description">Platziert häufig genutzte Bedienelemente auf der Seite, die einhändig leichter erreichbar ist.</string>
+    <string name="ui_control_side_description">Seite der Bedienelemente wählen.</string>
     <string name="ui_control_side_right">Rechts</string>
     <string name="ui_control_side_left">Links</string>
     <string name="ui_start_behavior_title">Startansicht</string>
-    <string name="ui_start_behavior_description">Lege fest, welche Ansicht AppStow beim Start und bei der Rückkehr aus dem Hintergrund öffnet. Bei Aus beginnt ein Neustart auf der Startseite; beim Zurückkehren bleibt die aktuelle Seite erhalten.</string>
+    <string name="ui_start_behavior_description">Beim Start oder Zurückkehren gewünschte Ansicht öffnen.</string>
     <string name="ui_start_never">Aus</string>
     <string name="ui_start_once">Bei Start</string>
     <string name="ui_start_always">Immer</string>
     <string name="ui_start_view_last_category">Letzte Kategorie</string>
     <string name="ui_start_view_favorites">Favoriten</string>
     <string name="ui_start_view_home">Startseite</string>
+    <string name="ui_show_in_recents">In „Zuletzt verwendet“ anzeigen</string>
 
 </resources>

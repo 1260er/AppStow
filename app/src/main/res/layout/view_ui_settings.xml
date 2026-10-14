@@ -14,13 +14,6 @@
             style="@style/UiBodyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/ui_settings_description"
-            android:textColor="@color/ui_text_secondary" />
-
-        <TextView
-            style="@style/UiBodyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
             android:text="@string/ui_theme_title"
             android:textStyle="bold" />
@@ -238,6 +231,15 @@
             android:paddingHorizontal="@dimen/spacing_md"
             android:text="@string/ui_language_title"
             android:textStyle="bold" />
+
+        <CheckBox
+            android:id="@+id/uiShowInRecents"
+            style="@style/UiBodyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:minHeight="48dp"
+            android:text="@string/ui_show_in_recents" />
 
     </LinearLayout>
 

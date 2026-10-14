@@ -194,6 +194,9 @@ final class BackupV3Configuration {
                                 "themeMode",
                                 ui.themeMode.name())
                         .put(
+                                "showInRecents",
+                                ui.showInRecents)
+                        .put(
                                 "language",
                                 language.name());
 
@@ -401,12 +404,21 @@ final class BackupV3Configuration {
                         "language",
                         "Ungültige Sprache im Backup.");
 
+        // Older v3 backups predate this setting and must keep the
+        // historical behavior: AppStow remains visible in Recents.
+        boolean showInRecents = !ui.has("showInRecents")
+                || requireBoolean(
+                        ui,
+                        "showInRecents",
+                        "Ungültige Zuletzt-verwendet-Einstellung im Backup.");
+
         UiSettingsStore.Settings uiSettings =
                 new UiSettingsStore.Settings(
                         startBehavior,
                         controlSide,
                         themeMode,
-                        startView);
+                        startView,
+                        showInRecents);
 
         JSONObject statisticsDisplay =
                 settings.getJSONObject(
@@ -550,6 +562,9 @@ final class BackupV3Configuration {
                         .putString(
                                 "theme_mode",
                                 state.ui.themeMode.name())
+                        .putBoolean(
+                                "show_in_recents",
+                                state.ui.showInRecents)
                         .commit();
 
         boolean statisticsDisplaySaved =
