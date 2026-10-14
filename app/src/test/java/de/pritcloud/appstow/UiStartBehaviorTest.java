@@ -194,6 +194,36 @@ public class UiStartBehaviorTest {
         }
     }
 
+    @Test
+    public void favoritesGridReturnsAfterBackgroundAndCountsOnce() {
+        save(UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND);
+
+        org.junit.Assert.assertTrue(
+                context.getSharedPreferences(
+                        "overview_display", Context.MODE_PRIVATE)
+                        .edit().putBoolean("grid_mode", true).commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+
+            scenario.onActivity(activity ->
+                    activity.findViewById(R.id.navStatistics).performClick());
+
+            scenario.moveToState(Lifecycle.State.CREATED);
+            scenario.moveToState(Lifecycle.State.RESUMED);
+
+            scenario.onActivity(activity -> {
+                assertEquals("overview",
+                        privateField(activity, "currentPage", String.class));
+                OverviewAdapter adapter = privateField(
+                        activity, "overviewAdapter", OverviewAdapter.class);
+                assertEquals("favorites", adapter.getGridOpenSectionId());
+            });
+
+            assertEquals(2, favoriteAccessCount(scenario));
+        }
+    }
+
     private void save(
             UiSettingsStore.StartBehavior behavior) {
 

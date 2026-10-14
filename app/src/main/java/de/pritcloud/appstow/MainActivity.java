@@ -2697,7 +2697,14 @@ public class MainActivity extends Activity {
         }
 
         if (returningFromBackground) {
-            showOverview();
+            // Record Favorites before rebuilding the overview so that
+            // automatic sorting sees the updated usage statistics.
+            if (settings.startView == UiSettingsStore.StartView.FAVORITES) {
+                usageStatisticsStore.recordSectionAccess("favorites");
+            }
+
+            // The selected start view performs the final adapter update.
+            showOverview(true);
         }
 
         if (settings.startView == UiSettingsStore.StartView.HOME) {
@@ -2711,7 +2718,7 @@ public class MainActivity extends Activity {
         }
 
         // Preserve the old Favorites startup behaviour and its usage accounting.
-        openConfiguredFavorites();
+        openConfiguredFavorites(returningFromBackground);
     }
 
     private void showDefaultStartOverview() {
@@ -2762,13 +2769,15 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void openConfiguredFavorites() {
+    private void openConfiguredFavorites(boolean accessAlreadyRecorded) {
         /*
          * Preserve the existing usage-weighting logic. Opening another
          * start view must never count as an access to Favorites.
          */
-        usageStatisticsStore.recordSectionAccess("favorites");
-        refreshOverviewForSortingSettingsChange();
+        if (!accessAlreadyRecorded) {
+            usageStatisticsStore.recordSectionAccess("favorites");
+            refreshOverviewForSortingSettingsChange();
+        }
 
         OverviewSection favorites = null;
         int favoritesIndex = -1;
@@ -2811,6 +2820,10 @@ public class MainActivity extends Activity {
     }
 
     private void showOverview() {
+        showOverview(false);
+    }
+
+    private void showOverview(boolean deferStartViewContent) {
         currentPage = PAGE_OVERVIEW;
         setTopNavigation(true);
 
@@ -2846,7 +2859,10 @@ public class MainActivity extends Activity {
                         : View.GONE);
 
         rebuildOverviewSections();
-        overviewAdapter.setApps(apps);
+
+        if (!deferStartViewContent) {
+            overviewAdapter.setApps(apps);
+        }
 
         pageTitle.setText(R.string.nav_overview);
 

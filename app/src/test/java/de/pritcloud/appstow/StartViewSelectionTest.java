@@ -271,6 +271,154 @@ public class StartViewSelectionTest {
         }
     }
 
+    @Test
+    public void homeReturnInGridModeShowsCollapsedStartPage() {
+        new UiSettingsStore(context).save(new UiSettingsStore.Settings(
+                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND,
+                UiSettingsStore.ControlSide.RIGHT,
+                UiSettingsStore.ThemeMode.SYSTEM,
+                UiSettingsStore.StartView.HOME));
+
+        assertTrue(context.getSharedPreferences(
+                "overview_display", Context.MODE_PRIVATE)
+                .edit().putBoolean("grid_mode", true).commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity ->
+                    activity.findViewById(R.id.navStatistics).performClick());
+
+            scenario.moveToState(Lifecycle.State.CREATED);
+            scenario.moveToState(Lifecycle.State.RESUMED);
+
+            scenario.onActivity(activity -> {
+                assertEquals("overview", currentPage(activity));
+                assertNull(readAdapter(activity).getGridOpenSectionId());
+                for (Object item : readSections(activity)) {
+                    assertFalse(((OverviewSection) item).expanded);
+                }
+            });
+        }
+    }
+
+    @Test
+    public void lastCategoryReturnsInListMode() {
+        CategoryStore categories = new CategoryStore(context);
+        assertTrue(categories.addCategory("Tools", "🔧"));
+        String id = "category:" + categories.getCategories().get(0).id;
+
+        UiSettingsStore store = new UiSettingsStore(context);
+        store.save(new UiSettingsStore.Settings(
+                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND,
+                UiSettingsStore.ControlSide.RIGHT,
+                UiSettingsStore.ThemeMode.SYSTEM,
+                UiSettingsStore.StartView.LAST_CATEGORY));
+        store.rememberLastCategory(id);
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity ->
+                    activity.findViewById(R.id.navStatistics).performClick());
+
+            scenario.moveToState(Lifecycle.State.CREATED);
+            scenario.moveToState(Lifecycle.State.RESUMED);
+
+            scenario.onActivity(activity -> {
+                assertEquals("overview", currentPage(activity));
+                boolean found = false;
+                for (Object item : readSections(activity)) {
+                    OverviewSection section = (OverviewSection) item;
+                    assertEquals(id.equals(section.id), section.expanded);
+                    if (id.equals(section.id)) {
+                        found = true;
+                    }
+                }
+                assertTrue(found);
+            });
+        }
+    }
+
+    @Test
+    public void lastCategoryReturnsInGridMode() {
+        CategoryStore categories = new CategoryStore(context);
+        assertTrue(categories.addCategory("Tools", "🔧"));
+        String id = "category:" + categories.getCategories().get(0).id;
+
+        UiSettingsStore store = new UiSettingsStore(context);
+        store.save(new UiSettingsStore.Settings(
+                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND,
+                UiSettingsStore.ControlSide.RIGHT,
+                UiSettingsStore.ThemeMode.SYSTEM,
+                UiSettingsStore.StartView.LAST_CATEGORY));
+        store.rememberLastCategory(id);
+
+        assertTrue(context.getSharedPreferences(
+                "overview_display", Context.MODE_PRIVATE)
+                .edit().putBoolean("grid_mode", true).commit());
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity ->
+                    activity.findViewById(R.id.navStatistics).performClick());
+
+            scenario.moveToState(Lifecycle.State.CREATED);
+            scenario.moveToState(Lifecycle.State.RESUMED);
+
+            scenario.onActivity(activity -> {
+                assertEquals("overview", currentPage(activity));
+                assertEquals(id, readAdapter(activity).getGridOpenSectionId());
+            });
+        }
+    }
+
+    @Test
+    public void missingLastCategoryFallsBackToStartPage() {
+        UiSettingsStore store = new UiSettingsStore(context);
+        store.save(new UiSettingsStore.Settings(
+                UiSettingsStore.StartBehavior.ALWAYS_FOREGROUND,
+                UiSettingsStore.ControlSide.RIGHT,
+                UiSettingsStore.ThemeMode.SYSTEM,
+                UiSettingsStore.StartView.LAST_CATEGORY));
+        store.rememberLastCategory("category:deleted");
+
+        try (ActivityScenario<MainActivity> scenario =
+                     ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity ->
+                    activity.findViewById(R.id.navStatistics).performClick());
+
+            scenario.moveToState(Lifecycle.State.CREATED);
+            scenario.moveToState(Lifecycle.State.RESUMED);
+
+            scenario.onActivity(activity -> {
+                assertEquals("overview", currentPage(activity));
+                assertNull(readAdapter(activity).getGridOpenSectionId());
+                for (Object item : readSections(activity)) {
+                    assertFalse(((OverviewSection) item).expanded);
+                }
+            });
+        }
+    }
+
+    private static OverviewAdapter readAdapter(MainActivity activity) {
+        return readField(activity, "overviewAdapter", OverviewAdapter.class);
+    }
+
+    private static java.util.List<?> readSections(MainActivity activity) {
+        return readField(activity, "overviewSections", java.util.List.class);
+    }
+
+    private static <T> T readField(
+            MainActivity activity, String name, Class<T> type) {
+        try {
+            java.lang.reflect.Field field =
+                    MainActivity.class.getDeclaredField(name);
+            field.setAccessible(true);
+            return type.cast(field.get(activity));
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError(exception);
+        }
+    }
+
     private static String currentPage(MainActivity activity) {
         try {
             java.lang.reflect.Field field = MainActivity.class.getDeclaredField("currentPage");
