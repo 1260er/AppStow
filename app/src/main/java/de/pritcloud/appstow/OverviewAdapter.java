@@ -118,6 +118,7 @@ final class OverviewAdapter
 
     private boolean semiAutomaticSorting;
     private boolean fullAutomaticSorting;
+    private boolean sortingRefreshDeferred;
 
     private final Set<String>
             automaticFavoriteItemIds =
@@ -175,6 +176,10 @@ final class OverviewAdapter
 
         refreshShortcutEntries();
         rebuildRows();
+    }
+
+    void setSortingRefreshDeferred(boolean deferred) {
+        sortingRefreshDeferred = deferred;
     }
 
     void setSemiAutomaticSorting(
@@ -238,11 +243,15 @@ final class OverviewAdapter
             }
         }
 
+        // Keep derived content current even when a later navigation
+        // operation performs the final adapter rebuild.
         refreshFavoriteApps();
         refreshShortcutEntries();
 
-        rebuildRows();
-        notifyStructureChanged();
+        if (!sortingRefreshDeferred) {
+            rebuildRows();
+            notifyStructureChanged();
+        }
     }
 
     void setFullAutomaticSorting(
@@ -306,11 +315,15 @@ final class OverviewAdapter
                     profileLaunches);
         }
 
+        // Keep derived content current even when a later navigation
+        // operation performs the final adapter rebuild.
         refreshFavoriteApps();
         refreshShortcutEntries();
 
-        rebuildRows();
-        notifyStructureChanged();
+        if (!sortingRefreshDeferred) {
+            rebuildRows();
+            notifyStructureChanged();
+        }
     }
 
     void setApps(List<AppEntry> apps) {

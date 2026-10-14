@@ -84,6 +84,68 @@ public class ManualOverviewOrderingTest {
         adapter.setApps(Collections.emptyList());
     }
 
+    @Test
+    public void semiAutomaticRefreshCanBeDeferredUntilFinalUpdate() {
+        java.util.concurrent.atomic.AtomicInteger changes =
+                new java.util.concurrent.atomic.AtomicInteger();
+
+        adapter.registerAdapterDataObserver(
+                new androidx.recyclerview.widget.RecyclerView.AdapterDataObserver() {
+                    @Override
+                    public void onChanged() {
+                        changes.incrementAndGet();
+                    }
+                });
+
+        adapter.setSortingRefreshDeferred(true);
+        try {
+            adapter.setSemiAutomaticSorting(
+                    true, true, true, true, true,
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    false);
+
+            assertEquals(0, changes.get());
+        } finally {
+            adapter.setSortingRefreshDeferred(false);
+        }
+
+        adapter.setApps(Collections.emptyList());
+        assertEquals(1, changes.get());
+    }
+
+    @Test
+    public void fullAutomaticRefreshCanBeDeferredUntilFinalUpdate() {
+        java.util.concurrent.atomic.AtomicInteger changes =
+                new java.util.concurrent.atomic.AtomicInteger();
+
+        adapter.registerAdapterDataObserver(
+                new androidx.recyclerview.widget.RecyclerView.AdapterDataObserver() {
+                    @Override
+                    public void onChanged() {
+                        changes.incrementAndGet();
+                    }
+                });
+
+        adapter.setSortingRefreshDeferred(true);
+        try {
+            adapter.setFullAutomaticSorting(
+                    Collections.emptySet(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    false);
+
+            assertEquals(0, changes.get());
+        } finally {
+            adapter.setSortingRefreshDeferred(false);
+        }
+
+        adapter.setApps(Collections.emptyList());
+        assertEquals(1, changes.get());
+    }
+
     private static void setItemSortSection(OverviewAdapter target, String id)
             throws Exception {
         Field field = OverviewAdapter.class.getDeclaredField("itemSortSectionId");

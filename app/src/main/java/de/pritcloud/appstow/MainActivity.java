@@ -1719,7 +1719,21 @@ public class MainActivity extends Activity {
         applySavedOverviewOrder();
 
         captureManualOverviewBaseline();
-        applyOverviewSorting();
+
+        // Every caller either updates the adapter with setApps()
+        // or opens the selected grid section afterwards.
+        // Avoid an intermediate row rebuild and full notification.
+        if (overviewAdapter != null) {
+            overviewAdapter.setSortingRefreshDeferred(true);
+        }
+
+        try {
+            applyOverviewSorting();
+        } finally {
+            if (overviewAdapter != null) {
+                overviewAdapter.setSortingRefreshDeferred(false);
+            }
+        }
     }
 
     private void applySavedOverviewOrder() {
