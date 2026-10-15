@@ -194,11 +194,11 @@ jobs:
             echo "Tag $GITHUB_REF_NAME passt nicht zu versionName $VERSION (erwartet: $EXPECTED_TAG)"
             exit 1
           }
-          if [[ "$VERSION" == "3.0.2" ]]; then
+          if [[ "$VERSION" == "3.0.2" || "$VERSION" == "3.0.3" ]]; then
             gh release create "$GITHUB_REF_NAME" \
               "$APK_FILE" "$APK_FILE.sha256" \
               --title "AppStow $VERSION" \
-              --notes-file RELEASE_NOTES_3.0.2.md
+              --notes-file "RELEASE_NOTES_${VERSION}.md"
           else
             gh release create "$GITHUB_REF_NAME" \
               "$APK_FILE" "$APK_FILE.sha256" \

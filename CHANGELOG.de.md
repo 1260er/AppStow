@@ -2,6 +2,18 @@
 
 **Deutsch** | [English](CHANGELOG.md)
 
+## 3.0.3 – 15. Oktober 2026
+
+- Rückkehr zur eingestellten Startseite, zu Favoriten oder zur letzten Kategorie beschleunigt.
+- Sichtbarkeit unter Android „Zuletzt verwendet“ unabhängig vom Startverhalten einstellbar.
+- Normale Android-Vorschau beibehalten; kein Ersatz durch einen neutralen Hintergrund.
+- Wiederholtes Speichern unveränderter Bereichsreihenfolgen vermieden.
+- Doppelte asynchrone Icon-Ladevorgänge reduziert und veraltete Icon-Ergebnisse abgesichert.
+- Überflüssige Zwischenaktualisierungen der Übersicht bei Sortierberechnungen entfernt.
+- Zusätzliche Regressionstests für Startansicht, Oberfläche, Icon-Lader und Sortierung.
+- Vollständige Tests, Android Lint, Debug-/Release-Builds, Final-Audit und Dev-241-Praxistest bestanden.
+- Stable-Version 3.0.3, Versionscode 16. Manuelles Backupformat v3 bleibt zu 3.x kompatibel.
+
 ## 3.0.2 – 14. Oktober 2026
 
 - Neue Einstellung **Startansicht** mit zwei horizontal und mittig angeordneten Auswahlreihen: **Aus / Bei Start / Immer** und **Letzte Kategorie / Favoriten / Startseite**.

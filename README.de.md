@@ -36,6 +36,8 @@ AppStow ist ein Android-Launcher und Organizer für installierte Apps, Favoriten
 
 ## Installation
 
+**Aktuelle stabile Version: AppStow 3.0.3 (Versionscode 16).**
+
 Die **zuletzt veröffentlichte stabile Version** und ihre SHA-256-Prüfsumme findest du hier:
 
 https://github.com/1260er/AppStow/releases/latest
@@ -113,6 +115,15 @@ Unter **Darstellung & Bedienung** legst du fest, wann AppStow die gewählte Ansi
 
 **Letzte Kategorie** merkt sich die zuletzt geöffnete Kategorie innerhalb von „Apps starten“ (Liste und Kachel). Ist sie nicht mehr vorhanden, wird die Startseite geöffnet. Einstellungen, Statistik und Backup sind keine Kategorien.
 
+## Verbesserungen in 3.0.3
+
+- Schnellere Rückkehr zu Startseite, Favoriten oder letzter Kategorie bei entsprechend eingestellter Startansicht.
+- Sichtbarkeit in Androids „Zuletzt verwendet“ unabhängig von der Startansicht einstellbar.
+- Überflüssige Schreibvorgänge bei der Sortierung und mehrfache Zwischenaktualisierungen reduziert.
+- Gleichzeitige Icon-Ladevorgänge zusammengefasst und veraltete Icon-Ergebnisse abgesichert.
+- Zusätzliche Regressionstests und erfolgreicher Praxistest mit Dev-241.
+- Die normale Android-Vorschau bleibt erhalten. Je nach Android-System kann beim Öffnen weiterhin ein kurzer Ansichtswechsel sichtbar sein.
+
 ## Backup und Wiederherstellung
 
 AppStow 3.x verwendet das verschlüsselte manuelle Sicherungsformat v3. Gesichert werden:
@@ -188,7 +199,7 @@ Lizenz- und Urheberrechtshinweise:
 ## Releases und Änderungen
 
 - [Deutsches Changelog](CHANGELOG.de.md) | [English changelog](CHANGELOG.md)
-- [AppStow 3.0.2 – Release-Hinweise (Deutsch und Englisch)](RELEASE_NOTES_3.0.2.md)
+- [AppStow 3.0.3 – Release-Hinweise (Deutsch und Englisch)](RELEASE_NOTES_3.0.3.md)
 - [Aktueller Projektstatus](PROJECT_STATUS.de.md)
 
 https://github.com/1260er/AppStow/releases

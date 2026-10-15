@@ -1,37 +1,39 @@
-# AppStow 3.0.2 – F-Droid release checklist / Prüfliste
+# AppStow 3.0.3 – F-Droid release checklist / Prüfliste
 
-> This file describes the planned process, **not proof that F-Droid has published 3.0.2**.
+This checklist is not proof of publication on F-Droid.
+Diese Prüfliste ist kein Nachweis für eine Veröffentlichung auf F-Droid.
 
 ## Deutsch
 
-- [x] Sprachdateien vereinheitlicht: `CHANGELOG.md` ist Englisch (weiterhin das Ziel des F-Droid-Changelog-Links), `CHANGELOG.de.md` ist Deutsch; F-Droid-Metadaten bleiben unverändert.
+- [x] Paketkennung `de.pritcloud.appstow`, versionName `3.0.3`, versionCode `16` im Stable-Quellcode kontrolliert.
+- [x] Stable-Tagfilter `^v[0-9]+\.[0-9]+\.[0-9]+$` und F-Droid-Versionscode-Auswertung kontrolliert.
+- [x] Lizenz GPL-3.0-or-later, Unicode/CLDR-Hinweise und freie AndroidX-Abhängigkeiten beibehalten.
+- [x] README, Changelog, Quellcode, Issue-Tracker und Ko-fi-Link geprüft.
+- [x] GitHub-Signaturschlüssel anhand der F-Droid-Allowlist kontrolliert.
+- [x] Getrennter Dev-241-Praxistest, Unit-Tests, Lint und Final-Audit abgeschlossen.
+- [ ] Stable-Tag `v3.0.3` sowie signierte APK und SHA-256-Prüfsumme auf GitHub bestätigt.
+- [ ] F-Droid-Autoupdate, Build, Reproduzierbarkeitsprüfung und Veröffentlichung beobachten.
+- [ ] `CurrentVersion` und `CurrentVersionCode` in fdroiddata erst als aktualisiert betrachten, wenn dort tatsächlich 3.0.3 / 16 steht.
+- [ ] Nur bei Bedarf die F-Droid-Rezeptur über GitLab korrigieren.
 
-**Quelle:** https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/de.pritcloud.appstow.yml
+F-Droid-Metadaten:
+https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/de.pritcloud.appstow.yml
 
-- [x] Live-Rezeptur im GitLab-fdroiddata-Master vor Veröffentlichung als Originaldatei geprüft: `AutoUpdateMode: Version`, `UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$`, Versionscode-Auswertung, Changelog-, Lizenz-, APK-, Signatur- und Ko-fi-Links. Keine Änderung auf GitLab notwendig.
-- [ ] Die Paketkennung bleibt `de.pritcloud.appstow`; Versionsname `3.0.2` und Versionscode `15` müssen im **Stable-Tag** stehen.
-- [ ] `dev-*`-Tags und `dev/`-Branches dürfen keinen F-Droid-Autoupdate-Build auslösen.
-- [ ] Lizenz GPL-3.0-or-later, Unicode/CLDR-Datenhinweise, nur bestehende freie AndroidX-Abhängigkeiten; keine Google-Play-Dienste und kein proprietäres SDK erforderlich.
-- [ ] App-Version und README-/Changelog-Links, Quellcode, Issue-Tracker und Unterstützungs-Link kontrollieren; Donate/Ko-fi-Eintrag nicht unabsichtlich verlieren.
-- [ ] F-Droid-Build ist ein **eigener** Build. Signatur und Updatekompatibilität gegenüber GitHub-APK nicht ohne Zertifikatsvergleich behaupten.
-- [x] Signierten Kandidaten und Geräte-Upgrade von 3.0.1 (14) auf 3.0.2 (15) erfolgreich geprüft; bestehende Daten blieben erhalten.
-- [ ] Erst danach Stable-Merge nach `main`, Tag `v3.0.2`, signiertes GitHub-Release sowie `AppStow-3.0.2.apk.sha256` erstellen.
-- [ ] Anschließend F-Droid-Autoupdate und Build-Logs beobachten; nur bei Bedarf GitLab-Rezept bearbeiten, Fehlermeldungen dokumentieren.
-- [ ] `CurrentVersion`/`CurrentVersionCode` auf F-Droid erst als aktualisiert markieren, wenn der Upstream-Check/Build sie tatsächlich auf 3.0.2/15 gesetzt hat.
+Der geprüfte öffentliche Metadatenstand nannte noch 3.0.1 / 14; die öffentliche F-Droid-App-Seite zeigte 3.0.0 / 13. Die Aktualisierung ist davon unabhängig.
+
+Die Rezeptur verwendet den upstream-signierten GitHub-Release als Referenz für den reproduzierbaren F-Droid-Build. Eine Signaturkompatibilität wird über den erlaubten Schlüssel geprüft, nicht allein aus der Paketkennung abgeleitet.
 
 ## English
 
-- [x] Documentation filenames normalized: `CHANGELOG.md` is English (the existing F-Droid changelog target), `CHANGELOG.de.md` is German; F-Droid metadata is unchanged.
+- [x] Confirm stable application ID, versionName 3.0.3, versionCode 16.
+- [x] Confirm stable-only tag matching and version extraction.
+- [x] Preserve GPL-3.0-or-later, Unicode/CLDR notices and free AndroidX dependencies.
+- [x] Verify README, changelog, source, issue tracker and Ko-fi links.
+- [x] Validate upstream signing certificate against the allowed F-Droid key.
+- [x] Complete Dev-241 device testing, unit tests, lint and final audit.
+- [ ] Confirm stable tag, signed APK and SHA-256 checksum on GitHub.
+- [ ] Monitor F-Droid auto-update, build, reproducibility verification and publication.
+- [ ] Confirm fdroiddata actually reports CurrentVersion 3.0.3 and CurrentVersionCode 16.
+- [ ] Change GitLab metadata only if required.
 
-**Metadata:** https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/de.pritcloud.appstow.yml
-
-- [x] Validated the live GitLab fdroiddata master recipe before publication: stable-only tag filter, update/version extraction, changelog, license, APK/source links, signing-key allowlist and Ko-fi metadata. No GitLab recipe edit required.
-- [ ] Preserve application ID `de.pritcloud.appstow`, stable versionName `3.0.2` and versionCode `15` in the tagged source.
-- [ ] Do not allow `dev-*` pre-release tags or development branches to trigger F-Droid updates.
-- [ ] Verify GPL-3.0-or-later, bundled Unicode/CLDR notices and free AndroidX dependencies; no Google Play services or proprietary SDK is needed.
-- [ ] Check README/changelog links, source, issue tracker and donation/Ko-fi metadata.
-- [ ] F-Droid builds and signs an APK independently; do not assume signing compatibility with the GitHub APK.
-- [x] Signed 3.0.1 (14) to 3.0.2 (15) candidate and on-device upgrade test passed; existing configuration was preserved.
-- [ ] After approval only, merge to `main`, create tag `v3.0.2`, and publish GitHub-signed APK and SHA-256.
-- [ ] Monitor F-Droid automatic update/build logs; edit its GitLab metadata only if required and document any issues.
-- [ ] Mark `CurrentVersion` / `CurrentVersionCode` updated only after F-Droid actually reports 3.0.2 / 15.
+F-Droid publication is independent of GitHub publication.

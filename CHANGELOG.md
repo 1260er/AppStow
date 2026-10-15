@@ -2,6 +2,18 @@
 
 [Deutsch](CHANGELOG.de.md) | **English**
 
+## 3.0.3 – October 15, 2026
+
+- Improve performance when returning to the selected Home, Favorites, or Last category start view.
+- Add configurable visibility in Android Recents independently of start-view behavior.
+- Preserve the normal Android Recents preview; no neutral screenshot replacement.
+- Avoid redundant persistent writes for unchanged section-item orders.
+- Prevent duplicate asynchronous icon loads and stale icon updates.
+- Avoid unnecessary intermediate overview refreshes when recalculating sorting.
+- Expand regression tests for startup behavior, UI updates, icon loading, and sorting.
+- Complete unit tests, Android lint, Debug/Release builds, final audit, and on-device Dev-241 testing.
+- Stable versionName 3.0.3, versionCode 16. Manual backup v3 remains compatible with 3.x.
+
 ## 3.0.2 – October 14, 2026
 
 - New **Start view** setting with two centered horizontal radio rows: **Off / On start / Always** and **Last category / Favorites / Home**.

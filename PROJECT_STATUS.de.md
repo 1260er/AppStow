@@ -2,56 +2,33 @@
 
 **Deutsch** | [English](PROJECT_STATUS.md)
 
-Stand: 14. Oktober 2026 – AppStow 3.0.2 Stable-Release (Versionscode 15)
+Stand: 15. Oktober 2026 – AppStow 3.0.3 Stable-Release (Versionscode 16)
 
-## Veröffentlichter Stand
+## Aktueller Stable-Release
 
-- **Stable:** AppStow 3.0.2, Versionscode **15**, Tag `v3.0.2`.
-- `main` enthält den Quellcode des getaggten Stable-Releases 3.0.2.
-- Signierte GitHub-Stable-APK und SHA-256-Datei: https://github.com/1260er/AppStow/releases/tag/v3.0.2.
-- Vorherige Stable-Version: AppStow 3.0.1 (Versionscode 14), Tag `v3.0.1`.
-- Die Veröffentlichung auf F-Droid erfolgt unabhängig. Aus dem GitHub-Release folgt keine sofortige F-Droid-Verfügbarkeit.
+- Version: 3.0.3, Versionscode 16, Tag `v3.0.3`.
+- Paketkennung: `de.pritcloud.appstow`; Entwicklungsbuilds verwenden das getrennte `.dev`-Paket.
+- Vorheriger Stable-Release: 3.0.2 mit Versionscode 15.
+- GitHub-Release: https://github.com/1260er/AppStow/releases/tag/v3.0.3
+- Signierte Stable-APK und SHA-256-Prüfsumme werden über GitHub Actions veröffentlicht.
 
-## Freigegebener Entwicklungsstand
+## Qualität und Kompatibilität
 
-- Basis: `dev/backup-ui-fix`, Commit `fefd4421861cfcfee7bb2b09fff16edcd4759203` (Dev-232).
-- Drei Commits über Stable 3.0.1: Startansicht, Android-Systembackup und Backup-UI-Korrektur.
-- Startansicht: „Aus / Bei Start / Immer“ und „Letzte Kategorie / Favoriten / Startseite“; beide Reihen horizontal und mittig. Bestehende Optionen bleiben kompatibel.
-- **Seedvault:** Sicherung und Wiederherstellung mit Dev-232 auf dem Gerät getestet und erfolgreich.
-- **Google-Backup:** Android-Integration vorbereitet; ein gesonderter praktischer Google-Restore-Test fehlt.
-- Android-Systembackup hat eine strenge Dateifreigabeliste und setzt für Cloud-Backups Verschlüsselungsfähigkeiten voraus. Nutzungsstatistiken, Sortier-Snapshots, WebView-Daten und Restore-Journal bleiben ausgeschlossen.
-- Manuelles Backupformat **v3** bleibt unverändert; v3 ist nicht mit 2.x-Sicherungen kompatibel.
-- Backup-UI: vier Praxistests mit Dev-232 bestanden, einschließlich des Abbruchs und echter Vordergrundrückkehr bei „Immer“.
-- Neue Regressionstests, vollständige Unit-Tests, Lint, Debug- und Release-Builds erfolgreich.
-
-## Stable 3.0.2 – bestandene Releaseprüfungen
-
-**Bestanden:**
-
-1. Version **3.0.2** mit Versionscode **15**, gleicher App-ID `de.pritcloud.appstow` und separatem `.dev`-Testpaket vorbereitet.
-2. README, Changelog, Projektstatus und Release-Hinweise in Deutsch und Englisch ergänzt; Eintrag 3.0.1 nachgetragen.
-3. GitHub Actions [Upgrade-Test 38472809157](https://github.com/1260er/AppStow/actions/runs/38472809157) bestanden: signierte APKs, gleiche Paketkennung und Signatur, Versionsfolge 14 → 15, Tests, Lint und optimierter Release-Build.
-4. Signierten 3.0.2-Kandidaten auf einem physischen Smartphone **ohne Deinstallation** über GitHub-Stable 3.0.1 installiert. Kategorien, Favoriten, eigene Verknüpfungen, Reihenfolgen und Einstellungen wurden geprüft und blieben erhalten.
-5. Startansicht, Backup-UI und Seedvault-Sicherung/Wiederherstellung bereits auf Dev-232 praktisch getestet.
-
-**F-Droid-Nachkontrolle:**
-
-- Die GitLab-Rezeptur wurde vor dem GitHub-Release anhand der Originaldatei auf Stable-Tag-Filter, Versionsauswertung, erlaubten Signaturschlüssel, Quelllinks, Lizenz und Spendenlink geprüft.
-- F-Droid muss Version 3.0.2 (15) unabhängig erkennen, bauen und veröffentlichen. Buildstatus und APK-Signatur anschließend kontrollieren; keine sofortige F-Droid-Verfügbarkeit behaupten.
-- Für Google-Backup fehlt weiterhin ein gesonderter praktischer Wiederherstellungstest.
-
-## Wichtige Sicherheits- und Kompatibilitätshinweise
-
-- Veröffentlichte Stable-Tags und signierte Release-Dateien bleiben unveränderlich.
-- Das manuelle Backup v3 verwendet AES-256-GCM, aber keinen persönlichen geheimen Schlüssel; die feste Schlüsselableitung bietet keinen starken Schutz gegen entschlossene Dritte. Die Einschränkung wird in beiden READMEs erklärt.
-- Die Android-Systembackup-Regeln schließen lokale Nutzungsstatistiken aus. Die Art der Datenübertragung hängt vom gewählten Android-Backup-Dienst ab.
-- F-Droid erstellt ein eigenes APK aus dem getaggten Quellcode; seine Signatur kann von der GitHub-APK abweichen. Kein unbestätigtes Upgrade von F-Droid auf GitHub-APK versprechen.
+- Dev-241 wurde erfolgreich auf einem physischen Smartphone getestet.
+- Vollständige Debug-/Release-Unit-Tests, Lint, optimierte Builds und Final-Audit bestanden.
+- Icon-Lader, Sortierspeicherung und UI-Aktualisierungen optimiert.
+- Normale Android-Vorschau unter „Zuletzt verwendet“ bleibt erhalten.
+- Manuelles Backupformat v3 unverändert und zu AppStow 3.x kompatibel.
+- Ein gesonderter praktischer Google-Backup-Restore-Test steht weiterhin aus.
+- Ein separates direktes Geräte-Upgrade von GitHub-Stable 3.0.2 auf 3.0.3 wurde nicht gemeldet.
+- F-Droid erkennt, baut und veröffentlicht neue Versionen unabhängig von GitHub.
+- Der tatsächliche F-Droid-Versionsstand wird nach Veröffentlichung getrennt geprüft.
 
 ## Dokumentation
 
 - [README Deutsch](README.de.md) | [README English](README.md)
 - [Changelog Deutsch](CHANGELOG.de.md) | [Changelog English](CHANGELOG.md)
-- [Bilinguale Release-Hinweise 3.0.2](RELEASE_NOTES_3.0.2.md)
+- [Bilinguale Release-Hinweise 3.0.3](RELEASE_NOTES_3.0.3.md)
 - [F-Droid-Prüfliste](FDROID_RELEASE_CHECKLIST.md)
 
 ---
